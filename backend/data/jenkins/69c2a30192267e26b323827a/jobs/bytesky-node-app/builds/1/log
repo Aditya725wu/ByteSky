@@ -1,0 +1,12 @@
+Started by user [8mha:////4M6wV+HSaWBf5Bzp2/JrznmK4E7VzKT7MQTUCDl0Ql8mAAAAlx+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAzWEgZu/dLi1CL9xJTczDwAj6GcLcAAAAA=[0madmin
+Running as SYSTEM
+Building in workspace /var/jenkins_home/workspace/bytesky-node-app
+[bytesky-node-app] $ /bin/sh -xe /tmp/jenkins3791329850986116633.sh
++ set -e
++ PROJECT_DIR=/workspace/bytesky-cloud
++ [ ! -d /workspace/bytesky-cloud ]
++ cd /workspace/bytesky-cloud
++ npm install
+/tmp/jenkins3791329850986116633.sh: 9: npm: not found
+Build step 'Execute shell' marked build as failure
+Finished: FAILURE

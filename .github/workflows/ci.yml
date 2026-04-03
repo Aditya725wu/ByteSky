@@ -1,0 +1,30 @@
+name: ByteSky CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "codex/**"
+  pull_request:
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Syntax check backend bootstrap
+        run: node --check backend/server.js
+
+      - name: Validate Docker Compose
+        run: docker compose -f docker-compose.yml config
