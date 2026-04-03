@@ -17,6 +17,24 @@ const keycloakConfig = {
 let cachedToken = null;
 let cachedTokenExpiresAt = 0;
 
+function normalizeKeycloakFetchError(error) {
+  const code = error?.cause?.code || error?.code || '';
+  const message = String(error?.message || '');
+  const networkCodes = new Set(['ECONNREFUSED', 'ENOTFOUND', 'EHOSTUNREACH', 'ETIMEDOUT', 'ECONNRESET']);
+
+  if (message.includes('fetch failed') || networkCodes.has(code)) {
+    const hostHint = keycloakConfig.baseUrl
+      ? `Check KEYCLOAK_BASE_URL (${keycloakConfig.baseUrl}) and make sure Keycloak is reachable from the backend container.`
+      : 'Check KEYCLOAK_BASE_URL and make sure Keycloak is reachable from the backend container.';
+
+    const normalized = new Error(`Keycloak is unreachable. ${hostHint}`);
+    normalized.status = 503;
+    return normalized;
+  }
+
+  return error;
+}
+
 function ensureConfigured() {
   if (!keycloakConfig.baseUrl) {
     throw new Error('Keycloak base URL is not configured');
@@ -63,13 +81,18 @@ async function requestAdminToken(forceRefresh = false) {
     body.set('client_secret', keycloakConfig.clientSecret);
   }
 
-  const response = await fetch(tokenUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: body.toString()
-  });
+  let response;
+  try {
+    response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: body.toString()
+    });
+  } catch (error) {
+    throw normalizeKeycloakFetchError(error);
+  }
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -85,14 +108,19 @@ async function requestAdminToken(forceRefresh = false) {
 async function keycloakRequest(method, resourcePath, body) {
   const performRequest = async (forceRefresh = false) => {
     const accessToken = await requestAdminToken(forceRefresh);
-    const response = await fetch(`${keycloakConfig.baseUrl}${resourcePath}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        ...(body ? { 'Content-Type': 'application/json' } : {})
-      },
-      ...(body ? { body: JSON.stringify(body) } : {})
-    });
+    let response;
+    try {
+      response = await fetch(`${keycloakConfig.baseUrl}${resourcePath}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          ...(body ? { 'Content-Type': 'application/json' } : {})
+        },
+        ...(body ? { body: JSON.stringify(body) } : {})
+      });
+    } catch (error) {
+      throw normalizeKeycloakFetchError(error);
+    }
 
     if (response.status === 401 && !forceRefresh) {
       return performRequest(true);

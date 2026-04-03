@@ -5231,7 +5231,7 @@ async function deleteTicket(id) {
 // IAM FUNCTIONS
 // ============================================
 
-let currentIAMTab = 'policies';
+let currentIAMTab = 'api-keys';
 let adminUsersCache = [];
 let filteredAdminUsers = [];
 let adminCurrentPage = 1;
@@ -5275,25 +5275,21 @@ function showIAMTab(tabName) {
 }
 
 async function refreshIAMTabCounts() {
-    try {
-        const [policiesRes, apiKeysRes] = await Promise.all([
-            fetch(`${API_URL}/iam/policies`, { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch(`${API_URL}/iam/api-keys`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
+    const [policiesResult, apiKeysResult] = await Promise.allSettled([
+        fetch(`${API_URL}/iam/policies`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/iam/api-keys`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ]);
 
-        if (policiesRes.ok) {
-            const policies = await policiesRes.json();
-            const policyCount = document.getElementById('tab-count-policies');
-            if (policyCount) policyCount.innerText = String(policies.length);
-        }
+    if (policiesResult.status === 'fulfilled' && policiesResult.value.ok) {
+        const policies = await policiesResult.value.json();
+        const policyCount = document.getElementById('tab-count-policies');
+        if (policyCount) policyCount.innerText = String(policies.length);
+    }
 
-        if (apiKeysRes.ok) {
-            const apiKeys = await apiKeysRes.json();
-            const apiKeyCount = document.getElementById('tab-count-api-keys');
-            if (apiKeyCount) apiKeyCount.innerText = String(apiKeys.length);
-        }
-    } catch (err) {
-        console.error('IAM count refresh error:', err);
+    if (apiKeysResult.status === 'fulfilled' && apiKeysResult.value.ok) {
+        const apiKeys = await apiKeysResult.value.json();
+        const apiKeyCount = document.getElementById('tab-count-api-keys');
+        if (apiKeyCount) apiKeyCount.innerText = String(apiKeys.length);
     }
 }
 
@@ -5352,7 +5348,7 @@ async function loadIAMPolicies() {
         });
     } catch (err) {
         console.error('Load Policies Error:', err);
-        showToast('Error loading policies');
+        showToast('Unable to load policies. Keycloak may not be running or reachable.');
     }
 }
 

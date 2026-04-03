@@ -2023,3 +2023,89 @@
 {"environment":"development","level":"error","message":"Request failed User validation failed: role: `Admin` is not a valid enum value for path `role`.","method":"POST","path":"/api/auth/google","service":"bytesky-backend","stack":"ValidationError: User validation failed: role: `Admin` is not a valid enum value for path `role`.\n    at Document.invalidate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3420:32)\n    at validatePath (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3192:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Promise.all (index 3)\n    at async model.$__validate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3133:3)\n    at async model.validate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:2702:5)\n    at async model.validateBeforeSavePreSave (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\plugins\\validateBeforeSave.js:39:5)\n    at async Kareem.execPre (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\kareem\\index.js:70:24)\n    at async model.$__save (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\model.js:376:5)\n    at async model.save (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\model.js:642:5)","timestamp":"2026-04-02T12:51:46.331Z"}
 {"environment":"development","level":"error","message":"Request failed User validation failed: role: `Admin` is not a valid enum value for path `role`.","method":"POST","path":"/api/auth/google","service":"bytesky-backend","stack":"ValidationError: User validation failed: role: `Admin` is not a valid enum value for path `role`.\n    at Document.invalidate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3420:32)\n    at validatePath (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3192:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Promise.all (index 3)\n    at async model.$__validate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:3133:3)\n    at async model.validate (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\document.js:2702:5)\n    at async model.validateBeforeSavePreSave (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\plugins\\validateBeforeSave.js:39:5)\n    at async Kareem.execPre (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\kareem\\index.js:70:24)\n    at async model.$__save (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\model.js:376:5)\n    at async model.save (E:\\KUNALBYTE\\bytesky-cloud\\backend\\node_modules\\mongoose\\lib\\model.js:642:5)","timestamp":"2026-04-02T12:51:54.286Z"}
 {"environment":"development","error":"Connection to localhost:27017 interrupted due to server monitor timeout","level":"error","message":"Metrics simulation failed","service":"bytesky-backend","timestamp":"2026-04-03T03:05:18.156Z"}
+{"environment":"development","level":"info","message":"MongoDB connected to mongodb://localhost:27017/bytesky","service":"bytesky-backend","timestamp":"2026-04-03T04:07:33.172Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:33.192Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:33.423Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:33.687Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:34.061Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:34.528Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:35.443Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:37.062Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:39.116Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:41.220Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:43.376Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:45.501Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:47.668Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:49.855Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:52.014Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:54.098Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:56.296Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:07:58.452Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:00.615Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:02.690Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:04.817Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:07.015Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:09.168Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:11.233Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:13.349Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:15.390Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:17.547Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:19.757Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:21.892Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:23.985Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:26.049Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:08:28.258Z"}
+{"environment":"development","level":"info","message":"Received SIGINT, shutting down gracefully","service":"bytesky-backend","timestamp":"2026-04-03T04:08:28.329Z"}
+{"environment":"development","level":"info","message":"Redis connected to redis://localhost:6379","service":"bytesky-backend","timestamp":"2026-04-03T04:08:30.376Z"}
+{"environment":"development","level":"info","message":"Seeded 5 regions","service":"bytesky-backend","timestamp":"2026-04-03T04:08:30.408Z"}
+{"environment":"development","level":"info","message":"Metrics worker started with interval 5000ms","service":"bytesky-backend","timestamp":"2026-04-03T04:08:30.412Z"}
+{"environment":"development","level":"info","message":"ByteSky backend listening on port 5000","service":"bytesky-backend","timestamp":"2026-04-03T04:08:30.412Z"}
+{"environment":"development","level":"info","message":"MongoDB connected to mongodb://localhost:27017/bytesky","service":"bytesky-backend","timestamp":"2026-04-03T04:11:38.629Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:38.648Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:38.798Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:38.956Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:39.219Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:39.798Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:40.637Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:42.483Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:44.590Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:46.705Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:48.856Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:50.949Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:53.057Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:55.229Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:57.339Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:11:59.472Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:01.587Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:03.777Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:05.951Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:08.165Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:10.374Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:12.529Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:14.575Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:16.759Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:18.958Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:21.124Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:23.159Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:25.354Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:27.388Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:29.438Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:31.620Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:33.735Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:35.878Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:38.072Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:40.221Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:42.273Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:44.388Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:46.552Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:48.607Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:50.728Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:52.748Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:54.778Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:56.841Z"}
+{"environment":"development","error":"","level":"error","message":"Redis client error","service":"bytesky-backend","timestamp":"2026-04-03T04:12:59.024Z"}
+{"environment":"development","level":"info","message":"Received SIGINT, shutting down gracefully","service":"bytesky-backend","timestamp":"2026-04-03T04:13:00.481Z"}
+{"environment":"development","level":"info","message":"Redis connected to redis://localhost:6379","service":"bytesky-backend","timestamp":"2026-04-03T04:13:01.170Z"}
+{"environment":"development","level":"info","message":"Seeded 5 regions","service":"bytesky-backend","timestamp":"2026-04-03T04:13:01.190Z"}
+{"environment":"development","level":"info","message":"Metrics worker started with interval 5000ms","service":"bytesky-backend","timestamp":"2026-04-03T04:13:01.193Z"}
+{"environment":"development","level":"info","message":"ByteSky backend listening on port 5000","service":"bytesky-backend","timestamp":"2026-04-03T04:13:01.193Z"}
