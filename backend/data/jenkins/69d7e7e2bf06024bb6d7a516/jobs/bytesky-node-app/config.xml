@@ -1,0 +1,36 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <description>ByteSky Node.js build job managed automatically by the Docker marketplace.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>
+set -e
+PROJECT_DIR=&quot;/workspace/bytesky-cloud&quot;
+if [ ! -d &quot;/workspace/bytesky-cloud&quot; ]; then
+  echo &quot;Project directory not found: /workspace/bytesky-cloud&quot;
+  exit 1
+fi
+cd &quot;/workspace/bytesky-cloud&quot;
+npm install
+npm --prefix backend install
+if command -v docker &gt;/dev/null 2&gt;&amp;1; then
+  docker build -t bytesky-cloud-app .
+else
+  echo &quot;Docker CLI is not available inside Jenkins, skipping docker build.&quot;
+fi
+</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

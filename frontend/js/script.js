@@ -44,8 +44,6 @@ let googleInitAttempts = 0;
 let clientConfigPromise = null;
 let saasStatusRefreshInterval = null;
 let selectedSaaSApp = null;
-let billing = JSON.parse(localStorage.getItem('bytesky_billing') || '[]');
-let saasIntegrations = JSON.parse(localStorage.getItem('bytesky_saas_integrations') || '[]');
 let marketplaceServices = [];
 let activeMarketplaceSessions = [];
 
@@ -59,6 +57,25 @@ const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
+
+function readJsonFromStorage(key, fallback) {
+    const rawValue = localStorage.getItem(key);
+
+    if (!rawValue) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(rawValue);
+    } catch (error) {
+        console.warn(`[Storage] Ignoring invalid JSON for ${key}`, error);
+        localStorage.removeItem(key);
+        return fallback;
+    }
+}
+
+let billing = readJsonFromStorage('bytesky_billing', []);
+let saasIntegrations = readJsonFromStorage('bytesky_saas_integrations', []);
 
 function isCompactSidebarLayout() {
     return window.innerWidth <= SIDEBAR_DISMISS_BREAKPOINT;
@@ -684,10 +701,10 @@ function setTheme(theme) {
     showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} mode activated`);
 }
 
-let sshKeys = JSON.parse(localStorage.getItem('bytesky_ssh_keys') || '[]');
+let sshKeys = readJsonFromStorage('bytesky_ssh_keys', []);
 
 function getStoredSSHKeys() {
-    sshKeys = JSON.parse(localStorage.getItem('bytesky_ssh_keys') || '[]');
+    sshKeys = readJsonFromStorage('bytesky_ssh_keys', []);
     return sshKeys;
 }
 
@@ -809,7 +826,7 @@ function loadProfileData() {
     if (emailInput) emailInput.value = currentUser.email || '';
 
     // Load saved profile data
-    const savedProfile = JSON.parse(localStorage.getItem('bytesky_profile'));
+    const savedProfile = readJsonFromStorage('bytesky_profile', null);
     if (savedProfile) {
         document.getElementById('profile-phone').value = savedProfile.phone || '';
         document.getElementById('profile-job').value = savedProfile.job || '';
@@ -2795,7 +2812,7 @@ function applyMonitoringMetricVisibility(metricType = activeMonitoringMetric) {
 function setAlertThreshold(instanceId) {
     const cpuThreshold = prompt('Set CPU alert threshold (%):', '80');
     if (cpuThreshold) {
-        const thresholds = JSON.parse(localStorage.getItem('bytesky_alert_thresholds') || '{}');
+        const thresholds = readJsonFromStorage('bytesky_alert_thresholds', {});
         thresholds[instanceId] = { cpu: Number(cpuThreshold) };
         localStorage.setItem('bytesky_alert_thresholds', JSON.stringify(thresholds));
         showToast(`Alert set: CPU > ${cpuThreshold}% for instance ${instanceId}`);
@@ -3240,8 +3257,8 @@ async function loadContainerSessions() {
     }
 
     try {
-        console.log('[VM] Loading active sessions from', `${API_URL}/vm/active`);
-        const res = await fetch(`${API_URL}/vm/active`, {
+        console.log('[VM] Loading Ubuntu VM status from', `${API_URL}/docker/containers`);
+        const res = await fetch(`${API_URL}/docker/containers`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -3251,8 +3268,13 @@ async function loadContainerSessions() {
         }
 
         const data = await res.json();
-        const sessions = Array.isArray(data.vms)
-            ? data.vms.map(vm => ({ ...vm, hostPort: vm.port }))
+        const vmService = getVmServiceFromDockerPayload(data);
+        const sessions = vmService?.running
+            ? [{
+                ...vmService,
+                hostPort: vmService.hostPort || vmService.port,
+                accessUrl: vmService.url
+            }]
             : [];
         renderContainerSessions(sessions);
         return sessions;
@@ -3275,19 +3297,21 @@ function renderContainerSessions(sessions) {
     listEl.innerHTML = '';
 
     if (!sessions.length) {
-        stateEl.innerHTML = 'No active browser VM session.';
+        stateEl.innerHTML = 'No active Ubuntu desktop VM.';
         if (stopBtn) stopBtn.style.display = 'none';
         return;
     }
 
     if (stopBtn) stopBtn.style.display = 'inline-flex';
 
-    const nextExpiry = new Date(sessions[0].expiresAt).toLocaleTimeString();
-    stateEl.innerHTML = `Active browser VM ready. Auto-cleanup at ${nextExpiry}.`;
+    const currentVm = sessions[0];
+    stateEl.innerHTML = currentVm.url
+        ? `Ubuntu desktop VM is running. <a href="${currentVm.url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Desktop</a>`
+        : 'Ubuntu desktop VM is running.';
 
     sessions.forEach(session => {
         const openAction = session.url
-            ? `<a class="btn btn-primary" href="${session.url}" target="_blank" rel="noopener noreferrer">Open Your VM</a>`
+            ? `<a class="btn btn-primary" href="${session.url}" target="_blank" rel="noopener noreferrer">Open Desktop</a>`
             : '';
 
         listEl.innerHTML += `
@@ -3296,8 +3320,9 @@ function renderContainerSessions(sessions) {
                     <div>
                         <div style="font-weight:700; color:#0f172a;">${session.containerName}</div>
                         <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Container ${session.containerId}</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Browser-accessible sandbox container with live development tooling</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort} • ` : ''}Expires ${new Date(session.expiresAt).toLocaleString()}</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Ubuntu desktop container with browser-based LXDE access</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort}` : 'Port unavailable'}</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.url || 'URL unavailable'}</div>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         ${openAction}
@@ -3313,7 +3338,7 @@ function setVmLaunchButtonState(isLoading) {
     const btn = document.getElementById('launchVmBtn');
     if (btn) {
         btn.disabled = isLoading;
-        btn.innerText = isLoading ? 'Provisioning Sandbox...' : 'Launch VM';
+        btn.innerText = isLoading ? 'Starting Ubuntu VM...' : 'Start Ubuntu VM';
     }
 }
 
@@ -3324,8 +3349,8 @@ function renderVmLaunchResult(session, url) {
     if (!stateEl || !listEl || !session) return;
 
     stateEl.innerHTML = `
-        Browser VM started successfully.
-        ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Your VM</a>` : ''}
+        Ubuntu desktop VM started successfully.
+        ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Desktop</a>` : ''}
     `;
 
     listEl.innerHTML = `
@@ -3334,12 +3359,12 @@ function renderVmLaunchResult(session, url) {
                 <div>
                     <div style="font-weight:700; color:#0f172a;">${session.containerName || session.containerId}</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Container ${session.containerId}</div>
-                    <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Node.js sandbox container with browser-ready status page</div>
+                    <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Ubuntu desktop container with browser-based LXDE access</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort || session.port ? `Port ${session.hostPort || session.port}` : 'Port pending'}</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${url || 'URL unavailable'}</div>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    ${url ? `<a class="btn btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Open Your VM</a>` : ''}
+                    ${url ? `<a class="btn btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Open Desktop</a>` : ''}
                     <button class="btn btn-outline" type="button" onclick="stopBrowserVm('${session.containerId}')">Stop VM</button>
                 </div>
             </div>
@@ -3350,8 +3375,8 @@ function renderVmLaunchResult(session, url) {
 async function launchVM() {
     console.log('[VM] Launch VM invoked', {
         hasToken: Boolean(token),
-        endpoint: `${API_URL}/vm/create`,
-        image: 'node:18'
+        endpoint: `${API_URL}/docker/run-vm`,
+        image: 'dorowu/ubuntu-desktop-lxde-vnc'
     });
 
     if (vmLaunchInProgress) {
@@ -3369,14 +3394,12 @@ async function launchVM() {
     setVmLaunchButtonState(true);
 
     try {
-        console.log('[VM] Sending POST request to create VM');
-        const res = await fetch(`${API_URL}/vm/create`, {
+        console.log('[VM] Sending POST request to start Ubuntu VM');
+        const res = await fetch(`${API_URL}/docker/run-vm`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ image: 'node:18' })
+            }
         });
 
         console.log('[VM] Response received', { status: res.status, ok: res.ok });
@@ -3384,22 +3407,22 @@ async function launchVM() {
         console.log('[VM] Response payload', data);
 
         if (!res.ok) {
-            showToast(data.message || data.msg || 'Unable to launch browser VM');
+            showToast(data.message || data.msg || 'Unable to start Ubuntu VM');
             return;
         }
 
-        const session = data.vm || {
-            containerId: data.containerId,
-            containerName: data.containerId,
-            hostPort: data.port,
-            port: data.port,
-            url: data.url
+        const service = data.service || {};
+        const session = {
+            containerId: service.containerId || data.containerId,
+            containerName: service.containerName || service.name || 'vm',
+            hostPort: service.hostPort || service.port,
+            port: service.port,
+            url: service.url || data.url
         };
-        session.hostPort = session.hostPort || session.port;
-        const url = data.accessUrl || data.url || session.url;
+        const url = session.url;
 
         renderVmLaunchResult(session, url);
-        showToast('Browser VM launched successfully');
+        showToast('Ubuntu desktop VM launched successfully');
         await loadContainerSessions();
 
         if (url) {
@@ -3407,7 +3430,7 @@ async function launchVM() {
         }
     } catch (err) {
         console.error('[VM] Launch Browser VM Error:', err);
-        showToast('Unable to reach the VM launch API');
+        showToast('Unable to reach the Ubuntu VM launch API');
     } finally {
         vmLaunchInProgress = false;
         setVmLaunchButtonState(false);
@@ -3426,10 +3449,9 @@ async function stopBrowserVm(containerId) {
     }
 
     try {
-        const res = await fetch(`${API_URL}/vm/${targetContainerId}`, {
-            method: 'DELETE',
+        const res = await fetch(`${API_URL}/docker/stop/${targetContainerId}`, {
+            method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
@@ -3440,7 +3462,7 @@ async function stopBrowserVm(containerId) {
             return;
         }
 
-        showToast('Browser VM stopped');
+        showToast('Ubuntu desktop VM stopped');
         await loadContainerSessions();
     } catch (err) {
         console.error('Stop Browser VM Error:', err);

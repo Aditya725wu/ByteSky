@@ -6,7 +6,17 @@ const logger = require('./logger');
 let client = null;
 
 async function connectRedis() {
-  client = createClient({ url: env.redisUrl });
+  client = createClient({
+    url: env.redisUrl,
+    socket: {
+      // Fail fast in local/dev when Redis is unavailable so the backend can
+      // continue booting with caching disabled.
+      connectTimeout: 3000,
+      reconnectStrategy(retries) {
+        return retries >= 1 ? false : 100;
+      }
+    }
+  });
 
   client.on('error', (error) => {
     logger.error('Redis client error', { error: error.message });

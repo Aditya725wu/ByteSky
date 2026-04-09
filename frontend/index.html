@@ -22,8 +22,16 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-brand">
-            <button class="console-toggle" id="consoleToggle" type="button" aria-controls="sidebar" aria-expanded="false"
-                aria-label="Toggle navigation menu" title="Toggle menu" onclick="toggleSidebar()" hidden>
+            <button
+                id="consoleToggle"
+                class="console-toggle"
+                type="button"
+                onclick="toggleSidebar()"
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+                title="Open menu"
+                hidden
+            >
                 <span class="console-toggle-icon" aria-hidden="true">
                     <span class="console-toggle-line"></span>
                     <span class="console-toggle-line"></span>
@@ -180,16 +188,16 @@
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start;">
                         <div>
-                            <h3 style="margin-bottom: 8px;">Browser VM Sandbox</h3>
-                            <p style="color:#64748b; margin:0;">Launch an isolated container session and open it in your browser.</p>
+                            <h3 style="margin-bottom: 8px;">Ubuntu Desktop VM</h3>
+                            <p style="color:#64748b; margin:0;">Start the real Ubuntu desktop container and open it in your browser.</p>
                         </div>
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <button class="btn btn-primary" id="launchVmBtn" type="button">Launch VM</button>
+                            <button class="btn btn-primary" id="launchVmBtn" type="button">Start Ubuntu VM</button>
                             <button class="btn btn-outline" id="stopVmBtn" onclick="stopBrowserVm()" style="display:none;">Stop VM</button>
                         </div>
                     </div>
                     <div id="vmSessionState" style="margin-top: 16px; padding: 14px; border-radius: 10px; background: #f8fafc; color:#64748b;">
-                        No active browser VM session.
+                        No active Ubuntu desktop VM.
                     </div>
                     <div id="vmSessionList" style="margin-top: 14px; display:grid; gap:12px;"></div>
                 </div>
@@ -272,7 +280,7 @@
                     <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 15px; align-items: end;">
                         <div>
                             <label> Search Instances</label>
-                            <input type="text" id="instanceSearch" placeholder="Search by name, IP, VPC, subnet, or ID..."
+                            <input type="text" id="instanceSearch" placeholder="Search by name, IP, or ID..."
                                 onkeyup="filterInstances()">
                         </div>
                         <div>
@@ -324,7 +332,7 @@
                 <div class="card">
                     <h3>Launch New Instance</h3>
                     <div
-                        style="display:grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap:15px; align-items:end;">
+                        style="display:grid; grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr auto; gap:15px; align-items:end;">
                         <div>
                             <label>Instance Name</label>
                             <input type="text" id="vmName" placeholder="e.g. web-server-01" style="margin-bottom:0;">
@@ -398,7 +406,6 @@
                                     </th>
                                     <th>NAME</th>
                                     <th>REGION</th>
-                                    <th>NETWORK</th>
                                     <th>PUBLIC IP</th>
                                     <th>STATUS</th>
                                     <th>HOURLY RATE</th>
@@ -472,7 +479,7 @@
                     </div>
                 </div>
             </div>
-            <!-- NETWORK PAGE -->
+             <!-- NETWORK PAGE -->
             <div id="network" class="page">
                 <div class="header-bar">
                     <h2>Network & VPC</h2>
