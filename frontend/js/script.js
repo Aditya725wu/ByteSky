@@ -23,6 +23,22 @@ const API_URL = (() => {
 
     return `${origin}/api`;
 })();
+
+function getExternalServiceHost() {
+    return window.location.hostname || 'localhost';
+}
+
+function buildExternalServiceUrl(port, options = {}) {
+    const protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
+    const host = options.host || getExternalServiceHost();
+    const includePort = port && !(
+        (protocol === 'http:' && Number(port) === 80)
+        || (protocol === 'https:' && Number(port) === 443)
+    );
+
+    return `${protocol}//${host}${includePort ? `:${port}` : ''}`;
+}
+
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51T5lPlFRBdmpZ6N0v3l17Z2O7yYFCCSSGIxoDDCkRPauDlYffZjX3So5KiQaqKk9njO3iS63un695KIwVVJlJ5C600Xzo5DnTN';
 const DEFAULT_GOOGLE_CLIENT_ID = '54516308982-1q21ghba191vu089q332jvrqdvaasj1q.apps.googleusercontent.com';
 const PUBLIC_PAGES = new Set(['home', 'login', 'register']);
@@ -5756,7 +5772,7 @@ function createDefaultApacheService(overrides = {}) {
         icon: 'AP',
         containerId: '',
         containerName: 'bytesky-apache',
-        url: 'http://localhost:8080',
+        url: buildExternalServiceUrl(8080),
         hostPort: 8080,
         containerPort: 80,
         status: 'Stopped',
@@ -5794,7 +5810,7 @@ function createDefaultJenkinsService(overrides = {}) {
         port: 8081,
         hostPort: 8081,
         containerPort: 8080,
-        url: 'http://localhost:8081',
+        url: buildExternalServiceUrl(8081),
         jobName: 'bytesky-node-app',
         status: 'stopped',
         running: false,
@@ -5822,7 +5838,7 @@ function createDefaultPostgresService(overrides = {}) {
         status: 'stopped',
         running: false,
         connection: {
-            host: 'localhost',
+            host: getExternalServiceHost(),
             port: 5432,
             user: 'admin',
             password: 'admin123',
@@ -5846,7 +5862,7 @@ function createDefaultMetabaseService(overrides = {}) {
         port: 3005,
         hostPort: 3005,
         containerPort: 3000,
-        url: 'http://localhost:3005',
+        url: buildExternalServiceUrl(3005),
         status: 'stopped',
         running: false,
         ...overrides
@@ -5870,7 +5886,7 @@ function createDefaultRedisService(overrides = {}) {
         status: 'stopped',
         running: false,
         connection: {
-            host: 'localhost',
+            host: getExternalServiceHost(),
             port: 6379
         },
         ...overrides
@@ -5891,7 +5907,7 @@ function createDefaultVmService(overrides = {}) {
         port: 6080,
         hostPort: 6080,
         containerPort: 80,
-        url: 'http://localhost:6080',
+        url: buildExternalServiceUrl(6080),
         status: 'stopped',
         running: false,
         stateMessage: 'No active VM',
@@ -6734,7 +6750,7 @@ function openVmService() {
         return;
     }
 
-    window.open(service.url || 'http://localhost:6080', '_blank', 'noopener');
+    window.open(service.url || buildExternalServiceUrl(6080), '_blank', 'noopener');
 }
 
 async function refreshVmStatus(showResult = false) {
@@ -6813,7 +6829,7 @@ function openMetabaseService() {
         return;
     }
 
-    window.open(service.url || 'http://localhost:3005', '_blank', 'noopener');
+    window.open(service.url || buildExternalServiceUrl(3005), '_blank', 'noopener');
 }
 
 async function refreshMetabaseStatus(showResult = false) {
@@ -7005,7 +7021,7 @@ async function loadSaaSSubscriptions() {
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <div style="text-align: right;">
-                    <div style="font-weight: 600; color: var(--primary);">${sub.type === 'postgres' || sub.type === 'redis' ? `localhost:${sub.connection.port}` : `<a href="${sub.url}" target="_blank" rel="noopener">Open</a>`}</div>
+                    <div style="font-weight: 600; color: var(--primary);">${sub.type === 'postgres' || sub.type === 'redis' ? `${sub.connection.host}:${sub.connection.port}` : `<a href="${sub.url}" target="_blank" rel="noopener">Open</a>`}</div>
                     <div style="font-size: 0.85rem; color: #10b981;">${sub.type === 'jenkins' ? `${sub.status} | ${sub.build?.label || 'Not built yet'}` : sub.status}</div>
                 </div>
                 <button class="btn btn-outline" style="font-size: 0.75rem;" onclick="manageSubscription('${sub.id}')">${sub.type === 'postgres' || sub.type === 'redis' ? 'Refresh' : 'Open'}</button>

@@ -1,12 +1,29 @@
 const docker = require('./docker.service');
 const vmService = require('./vm.service');
+const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 
 const APACHE_IMAGE = 'httpd';
 const APACHE_NAME_PREFIX = 'bytesky-apache-';
 const APACHE_HOST_PORT = 8080;
 const APACHE_CONTAINER_PORT = 80;
-const APACHE_URL = `http://localhost:${APACHE_HOST_PORT}`;
+function parsePublicBaseUrl(baseUrl) {
+  try {
+    return new URL(baseUrl);
+  } catch (_error) {
+    return new URL('http://localhost');
+  }
+}
+
+function buildPublicServiceUrl(baseUrl, port, options = {}) {
+  const parsed = parsePublicBaseUrl(baseUrl);
+  parsed.protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
+  parsed.port = String(port);
+  parsed.pathname = '/';
+  parsed.search = '';
+  parsed.hash = '';
+  return parsed.toString().replace(/\/$/, '');
+}
 
 function getApacheContainerName(userId) {
   return `${APACHE_NAME_PREFIX}${String(userId).slice(-6)}`;
@@ -105,6 +122,7 @@ async function inspectApacheContainer(userId) {
 function formatApacheService(userId, details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || getApacheContainerName(userId);
+  const url = buildPublicServiceUrl(env.containerPublicBaseUrl || env.appBaseUrl, APACHE_HOST_PORT);
 
   return {
     id: 'apache-server',
@@ -115,7 +133,7 @@ function formatApacheService(userId, details) {
     icon: '🌐',
     containerId: details?.Id || '',
     containerName,
-    url: APACHE_URL,
+    url,
     hostPort: APACHE_HOST_PORT,
     containerPort: APACHE_CONTAINER_PORT,
     status: running ? 'Running' : 'Stopped',

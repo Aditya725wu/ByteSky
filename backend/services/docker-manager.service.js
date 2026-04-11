@@ -1,4 +1,5 @@
 const docker = require('./docker.service');
+const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 
 const POSTGRES_IMAGE = 'postgres';
@@ -14,7 +15,6 @@ const METABASE_IMAGE = 'metabase/metabase';
 const METABASE_CONTAINER_NAME = 'metabase';
 const METABASE_HOST_PORT = 3005;
 const METABASE_CONTAINER_PORT = 3000;
-const METABASE_URL = `http://localhost:${METABASE_HOST_PORT}`;
 const REDIS_IMAGE = 'redis';
 const REDIS_CONTAINER_NAME = 'bytesky-redis';
 const REDIS_HOST_PORT = 6379;
@@ -23,7 +23,28 @@ const VM_IMAGE = 'dorowu/ubuntu-desktop-lxde-vnc';
 const VM_CONTAINER_NAME = 'vm';
 const VM_HOST_PORT = 6080;
 const VM_CONTAINER_PORT = 80;
-const VM_URL = `http://localhost:${VM_HOST_PORT}`;
+
+function parsePublicBaseUrl(baseUrl) {
+  try {
+    return new URL(baseUrl);
+  } catch (_error) {
+    return new URL('http://localhost');
+  }
+}
+
+function buildPublicServiceUrl(baseUrl, port, options = {}) {
+  const parsed = parsePublicBaseUrl(baseUrl);
+  parsed.protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
+  parsed.port = String(port);
+  parsed.pathname = '/';
+  parsed.search = '';
+  parsed.hash = '';
+  return parsed.toString().replace(/\/$/, '');
+}
+
+function getPublicServiceHost(baseUrl) {
+  return parsePublicBaseUrl(baseUrl).hostname || 'localhost';
+}
 
 function getPostgresContainerName(userId) {
   return `${POSTGRES_NAME_PREFIX}${String(userId).slice(-6)}`;
@@ -106,6 +127,7 @@ function formatContainer(container) {
 function formatPostgresService(userId, details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || getPostgresContainerName(userId);
+  const publicHost = getPublicServiceHost(env.containerPublicBaseUrl || env.appBaseUrl);
 
   return {
     id: 'postgresql',
@@ -123,7 +145,7 @@ function formatPostgresService(userId, details) {
     status: running ? 'running' : 'stopped',
     running,
     connection: {
-      host: 'localhost',
+      host: publicHost,
       port: POSTGRES_HOST_PORT,
       user: POSTGRES_ENV.POSTGRES_USER,
       password: POSTGRES_ENV.POSTGRES_PASSWORD,
@@ -135,6 +157,10 @@ function formatPostgresService(userId, details) {
 function formatMetabaseService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || METABASE_CONTAINER_NAME;
+  const url = buildPublicServiceUrl(
+    env.containerPublicBaseUrl || env.appBaseUrl,
+    METABASE_HOST_PORT
+  );
 
   return {
     id: 'metabase-analytics',
@@ -149,7 +175,7 @@ function formatMetabaseService(details) {
     port: METABASE_HOST_PORT,
     hostPort: METABASE_HOST_PORT,
     containerPort: METABASE_CONTAINER_PORT,
-    url: METABASE_URL,
+    url,
     status: running ? 'running' : 'stopped',
     running
   };
@@ -158,6 +184,7 @@ function formatMetabaseService(details) {
 function formatRedisService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || REDIS_CONTAINER_NAME;
+  const publicHost = getPublicServiceHost(env.containerPublicBaseUrl || env.appBaseUrl);
 
   return {
     id: 'redis-cache',
@@ -175,7 +202,7 @@ function formatRedisService(details) {
     status: running ? 'running' : 'stopped',
     running,
     connection: {
-      host: 'localhost',
+      host: publicHost,
       port: REDIS_HOST_PORT
     }
   };
@@ -184,6 +211,10 @@ function formatRedisService(details) {
 function formatVmService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || VM_CONTAINER_NAME;
+  const url = buildPublicServiceUrl(
+    env.vmPublicBaseUrl || env.containerPublicBaseUrl || env.appBaseUrl,
+    VM_HOST_PORT
+  );
 
   return {
     id: 'ubuntu-vm',
@@ -198,7 +229,7 @@ function formatVmService(details) {
     port: VM_HOST_PORT,
     hostPort: VM_HOST_PORT,
     containerPort: VM_CONTAINER_PORT,
-    url: VM_URL,
+    url,
     status: running ? 'running' : 'stopped',
     running,
     stateMessage: running ? 'Running' : 'No active VM'
