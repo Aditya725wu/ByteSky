@@ -6,6 +6,12 @@ const path = require('path');
 const env = require('../config/env');
 const docker = require('./docker.service');
 const ApiError = require('../utils/ApiError');
+const {
+  buildLoopbackServiceUrl,
+  buildMarketplaceServiceUrl,
+  normalizePrefix,
+  resolveServiceBindHost
+} = require('../utils/marketplaceAccess');
 
 const JENKINS_NAME_PREFIX = 'bytesky-jenkins-';
 const JENKINS_PROJECT_PATH = '/workspace/bytesky-cloud';
@@ -186,7 +192,7 @@ function formatJenkinsService(userId, details, options = {}) {
     port: env.jenkinsHostPort,
     hostPort: env.jenkinsHostPort,
     containerPort: env.jenkinsContainerPort,
-    url: env.jenkinsUrl,
+    url: getJenkinsPublicUrl(),
     jobName: env.jenkinsJobName,
     status: running ? 'running' : 'stopped',
     running,
@@ -225,9 +231,50 @@ function getJenkinsAuthHeader() {
   return `Basic ${encoded}`;
 }
 
+function getJenkinsPublicUrl() {
+  if (env.jenkinsPublicUrl) {
+    return env.jenkinsPublicUrl;
+  }
+
+  return buildMarketplaceServiceUrl({
+    baseUrl: env.appBaseUrl || 'http://localhost',
+    port: env.jenkinsHostPort,
+    path: env.jenkinsPublicPath,
+    mode: env.marketplaceUrlMode
+  });
+}
+
+function getJenkinsInternalUrl() {
+  if (env.jenkinsInternalUrl) {
+    return env.jenkinsInternalUrl;
+  }
+
+  if (String(env.marketplaceUrlMode).toLowerCase() === 'path') {
+    return buildLoopbackServiceUrl(env.jenkinsHostPort, env.jenkinsPublicPath);
+  }
+
+  return buildLoopbackServiceUrl(env.jenkinsHostPort, '/');
+}
+
+function getJenkinsRuntimeOptions() {
+  const options = [];
+  const existingOptions = String(env.jenkinsOpts || '').trim();
+
+  if (existingOptions) {
+    options.push(existingOptions);
+  }
+
+  if (String(env.marketplaceUrlMode).toLowerCase() === 'path' && !existingOptions.includes('--prefix=')) {
+    options.push(`--prefix=${normalizePrefix(env.jenkinsPublicPath)}`);
+  }
+
+  return options.filter(Boolean).join(' ').trim();
+}
+
 function requestJenkins(pathname, options = {}) {
   return new Promise((resolve, reject) => {
-    const baseUrl = new URL(env.jenkinsUrl.endsWith('/') ? env.jenkinsUrl : `${env.jenkinsUrl}/`);
+    const internalUrl = getJenkinsInternalUrl();
+    const baseUrl = new URL(internalUrl.endsWith('/') ? internalUrl : `${internalUrl}/`);
     const requestUrl = new URL(pathname.replace(/^\//, ''), baseUrl);
     const query = options.query || {};
 
@@ -463,11 +510,13 @@ async function launchJenkinsService(userId) {
 
   if (!jenkins) {
     try {
+      const runtimeOptions = getJenkinsRuntimeOptions();
       const container = await docker.createContainer({
         name: getJenkinsContainerName(userId),
         Image: env.jenkinsImage,
         Env: [
           'JAVA_OPTS=-Djenkins.install.runSetupWizard=false',
+          ...(runtimeOptions ? [`JENKINS_OPTS=${runtimeOptions}`] : []),
           `BYTESKY_JENKINS_ADMIN_USER=${env.jenkinsAdminUser}`,
           `BYTESKY_JENKINS_ADMIN_PASSWORD=${env.jenkinsAdminPassword}`,
           `BYTESKY_JENKINS_JOB_NAME=${env.jenkinsJobName}`,
@@ -486,7 +535,10 @@ async function launchJenkinsService(userId) {
         },
         HostConfig: {
           PortBindings: {
-            [`${env.jenkinsContainerPort}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(env.jenkinsHostPort) }]
+            [`${env.jenkinsContainerPort}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(env.jenkinsHostPort)
+            }]
           },
           Binds: [
             `${homeDir}:/var/jenkins_home`,

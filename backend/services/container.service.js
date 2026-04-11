@@ -2,28 +2,14 @@ const docker = require('./docker.service');
 const vmService = require('./vm.service');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
+const {
+  buildMarketplaceServiceUrl,
+  resolveServiceBindHost
+} = require('../utils/marketplaceAccess');
 
 const APACHE_IMAGE = 'httpd';
 const APACHE_NAME_PREFIX = 'bytesky-apache-';
-const APACHE_HOST_PORT = 8080;
 const APACHE_CONTAINER_PORT = 80;
-function parsePublicBaseUrl(baseUrl) {
-  try {
-    return new URL(baseUrl);
-  } catch (_error) {
-    return new URL('http://localhost');
-  }
-}
-
-function buildPublicServiceUrl(baseUrl, port, options = {}) {
-  const parsed = parsePublicBaseUrl(baseUrl);
-  parsed.protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
-  parsed.port = String(port);
-  parsed.pathname = '/';
-  parsed.search = '';
-  parsed.hash = '';
-  return parsed.toString().replace(/\/$/, '');
-}
 
 function getApacheContainerName(userId) {
   return `${APACHE_NAME_PREFIX}${String(userId).slice(-6)}`;
@@ -46,7 +32,7 @@ function sanitizeDockerError(error) {
   }
 
   if (reason.toLowerCase().includes('port is already allocated')) {
-    return `Port ${APACHE_HOST_PORT} is already in use. Stop the existing Apache container or free that port first.`;
+    return `Port ${env.apacheHostPort} is already in use. Stop the existing Apache container or free that port first.`;
   }
 
   return reason.trim();
@@ -102,9 +88,9 @@ async function inspectApacheContainer(userId) {
       const names = container.Names || [];
       const usesManagedName = names.some((name) => name.replace(/^\//, '') === containerName);
       const usesApacheImage = String(container.Image || '').toLowerCase().startsWith(APACHE_IMAGE);
-      const bindsPort8080 = (container.Ports || []).some((port) => port.PublicPort === APACHE_HOST_PORT);
+      const bindsApachePort = (container.Ports || []).some((port) => port.PublicPort === env.apacheHostPort);
 
-      return usesManagedName || (usesApacheImage && bindsPort8080);
+      return usesManagedName || (usesApacheImage && bindsApachePort);
     });
 
     if (!existing) {
@@ -122,7 +108,12 @@ async function inspectApacheContainer(userId) {
 function formatApacheService(userId, details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || getApacheContainerName(userId);
-  const url = buildPublicServiceUrl(env.containerPublicBaseUrl || env.appBaseUrl, APACHE_HOST_PORT);
+  const url = buildMarketplaceServiceUrl({
+    baseUrl: env.containerPublicBaseUrl || env.appBaseUrl,
+    port: env.apacheHostPort,
+    path: env.apachePublicPath,
+    mode: env.marketplaceUrlMode
+  });
 
   return {
     id: 'apache-server',
@@ -134,7 +125,7 @@ function formatApacheService(userId, details) {
     containerId: details?.Id || '',
     containerName,
     url,
-    hostPort: APACHE_HOST_PORT,
+    hostPort: env.apacheHostPort,
     containerPort: APACHE_CONTAINER_PORT,
     status: running ? 'Running' : 'Stopped',
     running
@@ -183,12 +174,15 @@ async function launchApacheService(userId) {
         'bytesky.service': 'apache',
         'bytesky.userId': String(userId)
       },
-      HostConfig: {
-        PortBindings: {
-          [`${APACHE_CONTAINER_PORT}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(APACHE_HOST_PORT) }]
-        },
-        AutoRemove: false
-      }
+        HostConfig: {
+          PortBindings: {
+            [`${APACHE_CONTAINER_PORT}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(env.apacheHostPort)
+            }]
+          },
+          AutoRemove: false
+        }
     });
 
     await container.start();

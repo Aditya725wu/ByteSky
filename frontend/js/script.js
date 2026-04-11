@@ -39,6 +39,30 @@ function buildExternalServiceUrl(port, options = {}) {
     return `${protocol}//${host}${includePort ? `:${port}` : ''}`;
 }
 
+function normalizeMarketplacePath(pathValue) {
+    const trimmed = String(pathValue || '/').trim();
+
+    if (!trimmed || trimmed === '/') {
+        return '/';
+    }
+
+    const cleaned = trimmed.replace(/^\/+|\/+$/g, '');
+    return `/${cleaned}/`;
+}
+
+function shouldUseMarketplacePaths() {
+    const hostname = window.location.hostname || '';
+    return hostname !== 'localhost' && hostname !== '127.0.0.1';
+}
+
+function buildMarketplaceServiceUrl(port, pathValue, options = {}) {
+    if (shouldUseMarketplacePaths() && pathValue) {
+        return `${window.location.origin}${normalizeMarketplacePath(pathValue)}`;
+    }
+
+    return buildExternalServiceUrl(port, options);
+}
+
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51T5lPlFRBdmpZ6N0v3l17Z2O7yYFCCSSGIxoDDCkRPauDlYffZjX3So5KiQaqKk9njO3iS63un695KIwVVJlJ5C600Xzo5DnTN';
 const DEFAULT_GOOGLE_CLIENT_ID = '54516308982-1q21ghba191vu089q332jvrqdvaasj1q.apps.googleusercontent.com';
 const PUBLIC_PAGES = new Set(['home', 'login', 'register']);
@@ -5772,7 +5796,7 @@ function createDefaultApacheService(overrides = {}) {
         icon: 'AP',
         containerId: '',
         containerName: 'bytesky-apache',
-        url: buildExternalServiceUrl(8080),
+        url: buildMarketplaceServiceUrl(8080, '/apache/'),
         hostPort: 8080,
         containerPort: 80,
         status: 'Stopped',
@@ -5810,7 +5834,7 @@ function createDefaultJenkinsService(overrides = {}) {
         port: 8081,
         hostPort: 8081,
         containerPort: 8080,
-        url: buildExternalServiceUrl(8081),
+        url: buildMarketplaceServiceUrl(8081, '/jenkins/'),
         jobName: 'bytesky-node-app',
         status: 'stopped',
         running: false,
@@ -5862,7 +5886,7 @@ function createDefaultMetabaseService(overrides = {}) {
         port: 3005,
         hostPort: 3005,
         containerPort: 3000,
-        url: buildExternalServiceUrl(3005),
+        url: buildMarketplaceServiceUrl(3005, '/metabase/'),
         status: 'stopped',
         running: false,
         ...overrides
@@ -5907,7 +5931,7 @@ function createDefaultVmService(overrides = {}) {
         port: 6080,
         hostPort: 6080,
         containerPort: 80,
-        url: buildExternalServiceUrl(6080),
+        url: buildMarketplaceServiceUrl(6080, '/vm/'),
         status: 'stopped',
         running: false,
         stateMessage: 'No active VM',
@@ -6750,7 +6774,7 @@ function openVmService() {
         return;
     }
 
-    window.open(service.url || buildExternalServiceUrl(6080), '_blank', 'noopener');
+    window.open(service.url || buildMarketplaceServiceUrl(6080, '/vm/'), '_blank', 'noopener');
 }
 
 async function refreshVmStatus(showResult = false) {
@@ -6829,7 +6853,7 @@ function openMetabaseService() {
         return;
     }
 
-    window.open(service.url || buildExternalServiceUrl(3005), '_blank', 'noopener');
+    window.open(service.url || buildMarketplaceServiceUrl(3005, '/metabase/'), '_blank', 'noopener');
 }
 
 async function refreshMetabaseStatus(showResult = false) {

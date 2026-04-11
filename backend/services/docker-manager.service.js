@@ -1,6 +1,11 @@
 const docker = require('./docker.service');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
+const {
+  buildMarketplaceServiceUrl,
+  getMarketplaceServiceHost,
+  resolveServiceBindHost
+} = require('../utils/marketplaceAccess');
 
 const POSTGRES_IMAGE = 'postgres';
 const POSTGRES_NAME_PREFIX = 'bytesky-postgres-';
@@ -24,26 +29,12 @@ const VM_CONTAINER_NAME = 'vm';
 const VM_HOST_PORT = 6080;
 const VM_CONTAINER_PORT = 80;
 
-function parsePublicBaseUrl(baseUrl) {
-  try {
-    return new URL(baseUrl);
-  } catch (_error) {
-    return new URL('http://localhost');
+function getPrivateConnectionHost() {
+  if (env.marketplaceBindHost && env.marketplaceBindHost !== '0.0.0.0') {
+    return env.marketplaceBindHost;
   }
-}
 
-function buildPublicServiceUrl(baseUrl, port, options = {}) {
-  const parsed = parsePublicBaseUrl(baseUrl);
-  parsed.protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
-  parsed.port = String(port);
-  parsed.pathname = '/';
-  parsed.search = '';
-  parsed.hash = '';
-  return parsed.toString().replace(/\/$/, '');
-}
-
-function getPublicServiceHost(baseUrl) {
-  return parsePublicBaseUrl(baseUrl).hostname || 'localhost';
+  return getMarketplaceServiceHost(env.containerPublicBaseUrl || env.appBaseUrl);
 }
 
 function getPostgresContainerName(userId) {
@@ -127,7 +118,7 @@ function formatContainer(container) {
 function formatPostgresService(userId, details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || getPostgresContainerName(userId);
-  const publicHost = getPublicServiceHost(env.containerPublicBaseUrl || env.appBaseUrl);
+  const publicHost = getPrivateConnectionHost();
 
   return {
     id: 'postgresql',
@@ -157,10 +148,12 @@ function formatPostgresService(userId, details) {
 function formatMetabaseService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || METABASE_CONTAINER_NAME;
-  const url = buildPublicServiceUrl(
-    env.containerPublicBaseUrl || env.appBaseUrl,
-    METABASE_HOST_PORT
-  );
+  const url = buildMarketplaceServiceUrl({
+    baseUrl: env.containerPublicBaseUrl || env.appBaseUrl,
+    port: METABASE_HOST_PORT,
+    path: env.metabasePublicPath,
+    mode: env.marketplaceUrlMode
+  });
 
   return {
     id: 'metabase-analytics',
@@ -184,7 +177,7 @@ function formatMetabaseService(details) {
 function formatRedisService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || REDIS_CONTAINER_NAME;
-  const publicHost = getPublicServiceHost(env.containerPublicBaseUrl || env.appBaseUrl);
+  const publicHost = getPrivateConnectionHost();
 
   return {
     id: 'redis-cache',
@@ -211,10 +204,12 @@ function formatRedisService(details) {
 function formatVmService(details) {
   const running = Boolean(details?.State?.Running);
   const containerName = details?.Name?.replace(/^\//, '') || VM_CONTAINER_NAME;
-  const url = buildPublicServiceUrl(
-    env.vmPublicBaseUrl || env.containerPublicBaseUrl || env.appBaseUrl,
-    VM_HOST_PORT
-  );
+  const url = buildMarketplaceServiceUrl({
+    baseUrl: env.vmPublicBaseUrl || env.containerPublicBaseUrl || env.appBaseUrl,
+    port: VM_HOST_PORT,
+    path: env.vmPublicPath,
+    mode: env.marketplaceUrlMode
+  });
 
   return {
     id: 'ubuntu-vm',
@@ -401,9 +396,9 @@ async function runPostgresContainer(userId) {
 
   let postgres = await inspectPostgresContainer(userId);
   if (!postgres) {
-    const container = await docker.createContainer({
-      name: getPostgresContainerName(userId),
-      Image: POSTGRES_IMAGE,
+      const container = await docker.createContainer({
+        name: getPostgresContainerName(userId),
+        Image: POSTGRES_IMAGE,
       Env: Object.entries(POSTGRES_ENV).map(([key, value]) => `${key}=${value}`),
       ExposedPorts: {
         [`${POSTGRES_CONTAINER_PORT}/tcp`]: {}
@@ -413,12 +408,15 @@ async function runPostgresContainer(userId) {
         'bytesky.service': 'postgres',
         'bytesky.userId': String(userId)
       },
-      HostConfig: {
-        PortBindings: {
-          [`${POSTGRES_CONTAINER_PORT}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(POSTGRES_HOST_PORT) }]
-        },
-        AutoRemove: false
-      }
+        HostConfig: {
+          PortBindings: {
+            [`${POSTGRES_CONTAINER_PORT}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(POSTGRES_HOST_PORT)
+            }]
+          },
+          AutoRemove: false
+        }
     });
 
     await container.start();
@@ -449,6 +447,14 @@ async function runMetabaseContainer() {
       const container = await docker.createContainer({
         name: METABASE_CONTAINER_NAME,
         Image: METABASE_IMAGE,
+        Env: [
+          `MB_SITE_URL=${buildMarketplaceServiceUrl({
+            baseUrl: env.containerPublicBaseUrl || env.appBaseUrl,
+            port: METABASE_HOST_PORT,
+            path: env.metabasePublicPath,
+            mode: env.marketplaceUrlMode
+          })}`
+        ],
         ExposedPorts: {
           [`${METABASE_CONTAINER_PORT}/tcp`]: {}
         },
@@ -458,7 +464,10 @@ async function runMetabaseContainer() {
         },
         HostConfig: {
           PortBindings: {
-            [`${METABASE_CONTAINER_PORT}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(METABASE_HOST_PORT) }]
+            [`${METABASE_CONTAINER_PORT}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(METABASE_HOST_PORT)
+            }]
           },
           AutoRemove: false
         }
@@ -504,7 +513,10 @@ async function runRedisContainer() {
         },
         HostConfig: {
           PortBindings: {
-            [`${REDIS_CONTAINER_PORT}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(REDIS_HOST_PORT) }]
+            [`${REDIS_CONTAINER_PORT}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(REDIS_HOST_PORT)
+            }]
           },
           AutoRemove: false
         }
@@ -550,7 +562,10 @@ async function runVmContainer() {
         },
         HostConfig: {
           PortBindings: {
-            [`${VM_CONTAINER_PORT}/tcp`]: [{ HostIp: '0.0.0.0', HostPort: String(VM_HOST_PORT) }]
+            [`${VM_CONTAINER_PORT}/tcp`]: [{
+              HostIp: resolveServiceBindHost(env.marketplaceBindHost),
+              HostPort: String(VM_HOST_PORT)
+            }]
           },
           AutoRemove: false
         }
