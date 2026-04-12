@@ -68,31 +68,109 @@
         <!-- Main Content -->
         <div class="main-content">
             <!-- HOME PAGE -->
-                <div id="home" class="page active">
-                <div class="hero">
-                    <img class="hero-logo" src="assets/bytesky-logo.svg" alt="ByteSky cloud platform logo">
-                    <h1>Build Faster on ByteSky</h1>
-                    <p>Deploy virtual machines, managed databases, and serverless functions in seconds.</p>
-                    <button class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem;"
-                        onclick="router('register')">Start Free Trial</button>
-                </div>
-                <div class="grid-3">
-                    <div class="card">
-                        <h3> High Performance</h3>
-                        <p style="color:#64748b; margin-top:10px;">NVMe SSD storage and latest gen processors for your
-                            VMs.</p>
+            <div id="home" class="page active home-page">
+                <section class="hero hero-premium">
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow">Enterprise cloud infrastructure for modern teams</span>
+                        <img class="hero-logo" src="assets/bytesky-logo.svg" alt="ByteSky cloud platform logo">
+                        <h1>Build Faster on ByteSky</h1>
+                        <p>Deploy virtual machines, managed databases, and serverless functions in seconds.</p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary hero-primary-action" onclick="router('register')">Start Free Trial</button>
+                            <button class="btn btn-outline hero-secondary-action" onclick="router('login')">Explore Console</button>
+                        </div>
+                        <div class="hero-proof">
+                            <div class="hero-proof-item">
+                                <strong>25+</strong>
+                                <span>global-ready regions</span>
+                            </div>
+                            <div class="hero-proof-item">
+                                <strong>NVMe</strong>
+                                <span>performance-first compute</span>
+                            </div>
+                            <div class="hero-proof-item">
+                                <strong>Secure</strong>
+                                <span>DDoS, firewall, and encryption defaults</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3> Global Network</h3>
-                        <p style="color:#64748b; margin-top:10px;">Low latency connectivity with our edge network in 25
-                            regions.</p>
+                    <div class="hero-visual">
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-topline">
+                                <span>Platform Snapshot</span>
+                                <span class="hero-visual-status">Live-ready</span>
+                            </div>
+                            <div class="hero-visual-grid">
+                                <div class="hero-visual-metric">
+                                    <span>Provisioning</span>
+                                    <strong>In seconds</strong>
+                                </div>
+                                <div class="hero-visual-metric">
+                                    <span>Workloads</span>
+                                    <strong>VMs, DBs, Functions</strong>
+                                </div>
+                                <div class="hero-visual-metric">
+                                    <span>Latency</span>
+                                    <strong>Global edge network</strong>
+                                </div>
+                                <div class="hero-visual-metric">
+                                    <span>Security</span>
+                                    <strong>Enterprise-grade controls</strong>
+                                </div>
+                            </div>
+                            <div class="hero-visual-list">
+                                <div class="hero-visual-row">
+                                    <span class="hero-visual-dot hero-visual-dot--success"></span>
+                                    High-performance compute on modern infrastructure
+                                </div>
+                                <div class="hero-visual-row">
+                                    <span class="hero-visual-dot hero-visual-dot--info"></span>
+                                    Managed databases and serverless flows ready to scale
+                                </div>
+                                <div class="hero-visual-row">
+                                    <span class="hero-visual-dot hero-visual-dot--accent"></span>
+                                    Security posture designed for serious production teams
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3> Enterprise Security</h3>
-                        <p style="color:#64748b; margin-top:10px;">DDoS protection, firewalls, and encrypted storage
-                            included.</p>
+                </section>
+
+                <section class="home-value-strip">
+                    <div class="home-value-tile">
+                        <span class="home-value-label">Faster launches</span>
+                        <strong>Go from signup to live infrastructure with a cleaner workflow</strong>
                     </div>
-                </div>
+                    <div class="home-value-tile">
+                        <span class="home-value-label">Operator confidence</span>
+                        <strong>One platform for compute, networking, storage, and monitoring</strong>
+                    </div>
+                    <div class="home-value-tile">
+                        <span class="home-value-label">Built to impress</span>
+                        <strong>A polished cloud experience customers can trust at first glance</strong>
+                    </div>
+                </section>
+
+                <section class="home-feature-grid">
+                    <article class="home-feature-card">
+                        <span class="home-feature-kicker">Performance</span>
+                        <h3>High Performance</h3>
+                        <p>NVMe SSD storage and the latest generation processors for workloads that cannot afford lag.</p>
+                        <span class="home-feature-note">Optimized for fast boot times and steady throughput</span>
+                    </article>
+                    <article class="home-feature-card">
+                        <span class="home-feature-kicker">Reach</span>
+                        <h3>Global Network</h3>
+                        <p>Low-latency connectivity with an edge-aware network footprint designed for distributed teams.</p>
+                        <span class="home-feature-note">Move closer to users without adding operational drag</span>
+                    </article>
+                    <article class="home-feature-card">
+                        <span class="home-feature-kicker">Security</span>
+                        <h3>Enterprise Security</h3>
+                        <p>DDoS protection, firewall controls, and encrypted storage included from day one.</p>
+                        <span class="home-feature-note">Security posture that feels premium, not bolted on</span>
+                    </article>
+                </section>
             </div>
 
             <!-- LOGIN PAGE -->
