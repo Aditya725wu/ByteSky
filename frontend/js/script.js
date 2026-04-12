@@ -93,10 +93,422 @@ let storageView = 'list';
 let selectedStorageIds = [];
 let activeMonitoringMetric = 'cpu';
 const THEME_STORAGE_KEY = 'bytesky_theme';
+const PROFILE_STORAGE_KEY = 'bytesky_profile';
+const LANGUAGE_STORAGE_KEY = 'bytesky_language';
+const REGION_STORAGE_KEY = 'bytesky_region';
+const DEFAULT_LANGUAGE_PREFERENCE = 'en-US';
+const DEFAULT_REGION_PREFERENCE = 'US';
 const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
+
+const UI_TRANSLATIONS = {
+    'en-US': {
+        'meta.title': 'ByteSky | Enterprise Cloud Solutions',
+        'nav.home': 'Home',
+        'nav.login': 'Login',
+        'nav.register': 'Register',
+        'nav.logout': 'Logout',
+        'sidebar.console': 'Console',
+        'sidebar.dashboard': 'Dashboard',
+        'sidebar.iaas': 'Compute (IaaS)',
+        'sidebar.network': 'Network & VPC',
+        'sidebar.saas': 'Marketplace (SaaS)',
+        'sidebar.monitoring': 'Monitoring',
+        'sidebar.storage': 'Storage',
+        'sidebar.support': 'Support',
+        'sidebar.iam': 'IAM',
+        'sidebar.billing': 'Billing',
+        'sidebar.profile': 'Profile',
+        'home.heroTitle': 'Build Faster on ByteSky',
+        'home.heroSubtitle': 'Deploy virtual machines, managed databases, and serverless functions in seconds.',
+        'home.startFreeTrial': 'Start Free Trial',
+        'profile.accountSettings': 'Account Settings',
+        'profile.editProfile': 'Edit Profile',
+        'profile.personal': 'Personal',
+        'profile.security': 'Security',
+        'profile.preferences': 'Preferences',
+        'profile.usage': 'Usage',
+        'profile.sshKeys': 'SSH Keys',
+        'profile.personalInformation': 'Personal Information',
+        'profile.fullName': 'Full Name',
+        'profile.emailAddress': 'Email Address',
+        'profile.phoneNumber': 'Phone Number',
+        'profile.jobTitle': 'Job Title',
+        'profile.company': 'Company',
+        'profile.timezone': 'Timezone',
+        'profile.saveChanges': 'Save Changes',
+        'profile.cancel': 'Cancel',
+        'profile.accountDetails': 'Account Details',
+        'profile.accountId': 'Account ID',
+        'profile.accountType': 'Account Type',
+        'profile.memberSince': 'Member since',
+        'profile.memberSinceTitle': 'Member Since',
+        'profile.lastLogin': 'Last Login',
+        'profile.securitySettings': 'Security Settings',
+        'profile.changePassword': 'Change Password',
+        'profile.currentPassword': 'Current Password',
+        'profile.newPassword': 'New Password',
+        'profile.confirmNewPassword': 'Confirm New Password',
+        'profile.updatePassword': 'Update Password',
+        'profile.twoFactorAuthentication': 'Two-Factor Authentication',
+        'profile.twoFactorDescription': 'Add an extra layer of security to your account',
+        'profile.activeSessions': 'Active Sessions',
+        'profile.preferencesTitle': 'Preferences',
+        'profile.notificationPreferences': 'Notification Preferences',
+        'profile.notificationBilling': 'Email notifications for billing alerts',
+        'profile.notificationSecurity': 'Email notifications for security alerts',
+        'profile.notificationSms': 'SMS notifications for critical events',
+        'profile.notificationMarketing': 'Marketing emails and product updates',
+        'profile.appearance': 'Appearance',
+        'profile.lightMode': 'Light Mode',
+        'profile.darkMode': 'Dark Mode',
+        'profile.systemDefault': 'System Default',
+        'profile.languageRegion': 'Language & Region',
+        'profile.language': 'Language',
+        'profile.region': 'Region',
+        'toast.languageUpdated': 'Language updated',
+        'toast.profileUpdated': 'Profile updated successfully!',
+        'toast.profileUpdateError': 'Error updating profile'
+    },
+    'en-GB': {
+        'meta.title': 'ByteSky | Enterprise Cloud Solutions',
+        'nav.home': 'Home',
+        'nav.login': 'Log in',
+        'nav.register': 'Register',
+        'nav.logout': 'Log out',
+        'sidebar.console': 'Console',
+        'sidebar.dashboard': 'Dashboard',
+        'sidebar.iaas': 'Compute (IaaS)',
+        'sidebar.network': 'Network & VPC',
+        'sidebar.saas': 'Marketplace (SaaS)',
+        'sidebar.monitoring': 'Monitoring',
+        'sidebar.storage': 'Storage',
+        'sidebar.support': 'Support',
+        'sidebar.iam': 'IAM',
+        'sidebar.billing': 'Billing',
+        'sidebar.profile': 'Profile',
+        'home.heroTitle': 'Build Faster on ByteSky',
+        'home.heroSubtitle': 'Deploy virtual machines, managed databases, and serverless functions in seconds.',
+        'home.startFreeTrial': 'Start Free Trial',
+        'profile.accountSettings': 'Account Settings',
+        'profile.editProfile': 'Edit Profile',
+        'profile.personal': 'Personal',
+        'profile.security': 'Security',
+        'profile.preferences': 'Preferences',
+        'profile.usage': 'Usage',
+        'profile.sshKeys': 'SSH Keys',
+        'profile.personalInformation': 'Personal Information',
+        'profile.fullName': 'Full Name',
+        'profile.emailAddress': 'Email Address',
+        'profile.phoneNumber': 'Phone Number',
+        'profile.jobTitle': 'Job Title',
+        'profile.company': 'Organisation',
+        'profile.timezone': 'Time Zone',
+        'profile.saveChanges': 'Save Changes',
+        'profile.cancel': 'Cancel',
+        'profile.accountDetails': 'Account Details',
+        'profile.accountId': 'Account ID',
+        'profile.accountType': 'Account Type',
+        'profile.memberSince': 'Member since',
+        'profile.memberSinceTitle': 'Member Since',
+        'profile.lastLogin': 'Last Login',
+        'profile.securitySettings': 'Security Settings',
+        'profile.changePassword': 'Change Password',
+        'profile.currentPassword': 'Current Password',
+        'profile.newPassword': 'New Password',
+        'profile.confirmNewPassword': 'Confirm New Password',
+        'profile.updatePassword': 'Update Password',
+        'profile.twoFactorAuthentication': 'Two-Factor Authentication',
+        'profile.twoFactorDescription': 'Add an extra layer of security to your account',
+        'profile.activeSessions': 'Active Sessions',
+        'profile.preferencesTitle': 'Preferences',
+        'profile.notificationPreferences': 'Notification Preferences',
+        'profile.notificationBilling': 'Email notifications for billing alerts',
+        'profile.notificationSecurity': 'Email notifications for security alerts',
+        'profile.notificationSms': 'SMS notifications for critical events',
+        'profile.notificationMarketing': 'Marketing emails and product updates',
+        'profile.appearance': 'Appearance',
+        'profile.lightMode': 'Light Mode',
+        'profile.darkMode': 'Dark Mode',
+        'profile.systemDefault': 'System Default',
+        'profile.languageRegion': 'Language & Region',
+        'profile.language': 'Language',
+        'profile.region': 'Region',
+        'toast.languageUpdated': 'Language updated',
+        'toast.profileUpdated': 'Profile updated successfully!',
+        'toast.profileUpdateError': 'Error updating profile'
+    },
+    es: {
+        'meta.title': 'ByteSky | Soluciones Cloud Empresariales',
+        'nav.home': 'Inicio',
+        'nav.login': 'Iniciar sesión',
+        'nav.register': 'Registrarse',
+        'nav.logout': 'Cerrar sesión',
+        'sidebar.console': 'Consola',
+        'sidebar.dashboard': 'Panel',
+        'sidebar.iaas': 'Cómputo (IaaS)',
+        'sidebar.network': 'Red y VPC',
+        'sidebar.saas': 'Marketplace (SaaS)',
+        'sidebar.monitoring': 'Monitoreo',
+        'sidebar.storage': 'Almacenamiento',
+        'sidebar.support': 'Soporte',
+        'sidebar.iam': 'IAM',
+        'sidebar.billing': 'Facturación',
+        'sidebar.profile': 'Perfil',
+        'home.heroTitle': 'Construye más rápido con ByteSky',
+        'home.heroSubtitle': 'Implementa máquinas virtuales, bases de datos administradas y funciones serverless en segundos.',
+        'home.startFreeTrial': 'Comenzar prueba gratis',
+        'profile.accountSettings': 'Configuración de la cuenta',
+        'profile.editProfile': 'Editar perfil',
+        'profile.personal': 'Personal',
+        'profile.security': 'Seguridad',
+        'profile.preferences': 'Preferencias',
+        'profile.usage': 'Uso',
+        'profile.sshKeys': 'Claves SSH',
+        'profile.personalInformation': 'Información personal',
+        'profile.fullName': 'Nombre completo',
+        'profile.emailAddress': 'Correo electrónico',
+        'profile.phoneNumber': 'Número de teléfono',
+        'profile.jobTitle': 'Cargo',
+        'profile.company': 'Empresa',
+        'profile.timezone': 'Zona horaria',
+        'profile.saveChanges': 'Guardar cambios',
+        'profile.cancel': 'Cancelar',
+        'profile.accountDetails': 'Detalles de la cuenta',
+        'profile.accountId': 'ID de cuenta',
+        'profile.accountType': 'Tipo de cuenta',
+        'profile.memberSince': 'Miembro desde',
+        'profile.memberSinceTitle': 'Miembro desde',
+        'profile.lastLogin': 'Último acceso',
+        'profile.securitySettings': 'Configuración de seguridad',
+        'profile.changePassword': 'Cambiar contraseña',
+        'profile.currentPassword': 'Contraseña actual',
+        'profile.newPassword': 'Nueva contraseña',
+        'profile.confirmNewPassword': 'Confirmar nueva contraseña',
+        'profile.updatePassword': 'Actualizar contraseña',
+        'profile.twoFactorAuthentication': 'Autenticación de dos factores',
+        'profile.twoFactorDescription': 'Agrega una capa adicional de seguridad a tu cuenta',
+        'profile.activeSessions': 'Sesiones activas',
+        'profile.preferencesTitle': 'Preferencias',
+        'profile.notificationPreferences': 'Preferencias de notificación',
+        'profile.notificationBilling': 'Correos para alertas de facturación',
+        'profile.notificationSecurity': 'Correos para alertas de seguridad',
+        'profile.notificationSms': 'SMS para eventos críticos',
+        'profile.notificationMarketing': 'Correos de marketing y novedades',
+        'profile.appearance': 'Apariencia',
+        'profile.lightMode': 'Modo claro',
+        'profile.darkMode': 'Modo oscuro',
+        'profile.systemDefault': 'Predeterminado del sistema',
+        'profile.languageRegion': 'Idioma y región',
+        'profile.language': 'Idioma',
+        'profile.region': 'Región',
+        'toast.languageUpdated': 'Idioma actualizado',
+        'toast.profileUpdated': 'Perfil actualizado correctamente',
+        'toast.profileUpdateError': 'Error al actualizar el perfil'
+    },
+    fr: {
+        'meta.title': 'ByteSky | Solutions cloud pour entreprise',
+        'nav.home': 'Accueil',
+        'nav.login': 'Connexion',
+        'nav.register': 'Créer un compte',
+        'nav.logout': 'Déconnexion',
+        'sidebar.console': 'Console',
+        'sidebar.dashboard': 'Tableau de bord',
+        'sidebar.iaas': 'Calcul (IaaS)',
+        'sidebar.network': 'Réseau et VPC',
+        'sidebar.saas': 'Marketplace (SaaS)',
+        'sidebar.monitoring': 'Surveillance',
+        'sidebar.storage': 'Stockage',
+        'sidebar.support': 'Support',
+        'sidebar.iam': 'IAM',
+        'sidebar.billing': 'Facturation',
+        'sidebar.profile': 'Profil',
+        'home.heroTitle': 'Créez plus vite avec ByteSky',
+        'home.heroSubtitle': 'Déployez des machines virtuelles, des bases de données gérées et des fonctions serverless en quelques secondes.',
+        'home.startFreeTrial': 'Essai gratuit',
+        'profile.accountSettings': 'Paramètres du compte',
+        'profile.editProfile': 'Modifier le profil',
+        'profile.personal': 'Personnel',
+        'profile.security': 'Sécurité',
+        'profile.preferences': 'Préférences',
+        'profile.usage': 'Utilisation',
+        'profile.sshKeys': 'Clés SSH',
+        'profile.personalInformation': 'Informations personnelles',
+        'profile.fullName': 'Nom complet',
+        'profile.emailAddress': 'Adresse e-mail',
+        'profile.phoneNumber': 'Numéro de téléphone',
+        'profile.jobTitle': 'Poste',
+        'profile.company': 'Entreprise',
+        'profile.timezone': 'Fuseau horaire',
+        'profile.saveChanges': 'Enregistrer',
+        'profile.cancel': 'Annuler',
+        'profile.accountDetails': 'Détails du compte',
+        'profile.accountId': 'ID du compte',
+        'profile.accountType': 'Type de compte',
+        'profile.memberSince': 'Membre depuis',
+        'profile.memberSinceTitle': 'Membre depuis',
+        'profile.lastLogin': 'Dernière connexion',
+        'profile.securitySettings': 'Paramètres de sécurité',
+        'profile.changePassword': 'Changer le mot de passe',
+        'profile.currentPassword': 'Mot de passe actuel',
+        'profile.newPassword': 'Nouveau mot de passe',
+        'profile.confirmNewPassword': 'Confirmer le nouveau mot de passe',
+        'profile.updatePassword': 'Mettre à jour le mot de passe',
+        'profile.twoFactorAuthentication': 'Authentification à deux facteurs',
+        'profile.twoFactorDescription': 'Ajoutez une couche de sécurité supplémentaire à votre compte',
+        'profile.activeSessions': 'Sessions actives',
+        'profile.preferencesTitle': 'Préférences',
+        'profile.notificationPreferences': 'Préférences de notification',
+        'profile.notificationBilling': 'E-mails pour les alertes de facturation',
+        'profile.notificationSecurity': 'E-mails pour les alertes de sécurité',
+        'profile.notificationSms': 'SMS pour les événements critiques',
+        'profile.notificationMarketing': 'E-mails marketing et nouveautés',
+        'profile.appearance': 'Apparence',
+        'profile.lightMode': 'Mode clair',
+        'profile.darkMode': 'Mode sombre',
+        'profile.systemDefault': 'Système',
+        'profile.languageRegion': 'Langue et région',
+        'profile.language': 'Langue',
+        'profile.region': 'Région',
+        'toast.languageUpdated': 'Langue mise à jour',
+        'toast.profileUpdated': 'Profil mis à jour avec succès',
+        'toast.profileUpdateError': 'Erreur lors de la mise à jour du profil'
+    },
+    de: {
+        'meta.title': 'ByteSky | Cloud-Lösungen für Unternehmen',
+        'nav.home': 'Startseite',
+        'nav.login': 'Anmelden',
+        'nav.register': 'Registrieren',
+        'nav.logout': 'Abmelden',
+        'sidebar.console': 'Konsole',
+        'sidebar.dashboard': 'Dashboard',
+        'sidebar.iaas': 'Compute (IaaS)',
+        'sidebar.network': 'Netzwerk & VPC',
+        'sidebar.saas': 'Marketplace (SaaS)',
+        'sidebar.monitoring': 'Monitoring',
+        'sidebar.storage': 'Speicher',
+        'sidebar.support': 'Support',
+        'sidebar.iam': 'IAM',
+        'sidebar.billing': 'Abrechnung',
+        'sidebar.profile': 'Profil',
+        'home.heroTitle': 'Schneller bauen mit ByteSky',
+        'home.heroSubtitle': 'Stellen Sie virtuelle Maschinen, verwaltete Datenbanken und serverlose Funktionen in Sekunden bereit.',
+        'home.startFreeTrial': 'Kostenlos testen',
+        'profile.accountSettings': 'Kontoeinstellungen',
+        'profile.editProfile': 'Profil bearbeiten',
+        'profile.personal': 'Persönlich',
+        'profile.security': 'Sicherheit',
+        'profile.preferences': 'Einstellungen',
+        'profile.usage': 'Nutzung',
+        'profile.sshKeys': 'SSH-Schlüssel',
+        'profile.personalInformation': 'Persönliche Informationen',
+        'profile.fullName': 'Vollständiger Name',
+        'profile.emailAddress': 'E-Mail-Adresse',
+        'profile.phoneNumber': 'Telefonnummer',
+        'profile.jobTitle': 'Berufsbezeichnung',
+        'profile.company': 'Unternehmen',
+        'profile.timezone': 'Zeitzone',
+        'profile.saveChanges': 'Änderungen speichern',
+        'profile.cancel': 'Abbrechen',
+        'profile.accountDetails': 'Kontodetails',
+        'profile.accountId': 'Konto-ID',
+        'profile.accountType': 'Kontotyp',
+        'profile.memberSince': 'Mitglied seit',
+        'profile.memberSinceTitle': 'Mitglied seit',
+        'profile.lastLogin': 'Letzte Anmeldung',
+        'profile.securitySettings': 'Sicherheitseinstellungen',
+        'profile.changePassword': 'Passwort ändern',
+        'profile.currentPassword': 'Aktuelles Passwort',
+        'profile.newPassword': 'Neues Passwort',
+        'profile.confirmNewPassword': 'Neues Passwort bestätigen',
+        'profile.updatePassword': 'Passwort aktualisieren',
+        'profile.twoFactorAuthentication': 'Zwei-Faktor-Authentifizierung',
+        'profile.twoFactorDescription': 'Fügen Sie Ihrem Konto eine zusätzliche Sicherheitsebene hinzu',
+        'profile.activeSessions': 'Aktive Sitzungen',
+        'profile.preferencesTitle': 'Einstellungen',
+        'profile.notificationPreferences': 'Benachrichtigungseinstellungen',
+        'profile.notificationBilling': 'E-Mails für Rechnungswarnungen',
+        'profile.notificationSecurity': 'E-Mails für Sicherheitswarnungen',
+        'profile.notificationSms': 'SMS für kritische Ereignisse',
+        'profile.notificationMarketing': 'Marketing-E-Mails und Produktupdates',
+        'profile.appearance': 'Darstellung',
+        'profile.lightMode': 'Heller Modus',
+        'profile.darkMode': 'Dunkler Modus',
+        'profile.systemDefault': 'Systemstandard',
+        'profile.languageRegion': 'Sprache & Region',
+        'profile.language': 'Sprache',
+        'profile.region': 'Region',
+        'toast.languageUpdated': 'Sprache aktualisiert',
+        'toast.profileUpdated': 'Profil erfolgreich aktualisiert',
+        'toast.profileUpdateError': 'Fehler beim Aktualisieren des Profils'
+    }
+};
+
+const UI_TEXT_TARGETS = [
+    { selector: '.sidebar-header', key: 'sidebar.console' },
+    { selector: `.sidebar a[onclick="router('dashboard')"]`, key: 'sidebar.dashboard' },
+    { selector: `.sidebar a[onclick="router('iaas')"]`, key: 'sidebar.iaas' },
+    { selector: `.sidebar a[onclick="router('network')"]`, key: 'sidebar.network' },
+    { selector: `.sidebar a[onclick="router('saas')"]`, key: 'sidebar.saas' },
+    { selector: `.sidebar a[onclick="router('monitoring')"]`, key: 'sidebar.monitoring' },
+    { selector: `.sidebar a[onclick="router('storage')"]`, key: 'sidebar.storage' },
+    { selector: `.sidebar a[onclick="router('support')"]`, key: 'sidebar.support' },
+    { selector: `.sidebar a[onclick="router('iam')"]`, key: 'sidebar.iam' },
+    { selector: `.sidebar a[onclick="router('billing')"]`, key: 'sidebar.billing' },
+    { selector: `.sidebar a[onclick="router('profile')"]`, key: 'sidebar.profile' },
+    { selector: '#home .hero h1', key: 'home.heroTitle' },
+    { selector: '#home .hero p', key: 'home.heroSubtitle' },
+    { selector: '#home .hero .btn-primary', key: 'home.startFreeTrial' },
+    { selector: '#profile-settings-title', key: 'profile.accountSettings' },
+    { selector: '#profile-edit-btn', key: 'profile.editProfile' },
+    { selector: '#profile-tab-personal-btn', key: 'profile.personal' },
+    { selector: '#profile-tab-security-btn', key: 'profile.security' },
+    { selector: '#profile-tab-preferences-btn', key: 'profile.preferences' },
+    { selector: '#profile-tab-usage-btn', key: 'profile.usage' },
+    { selector: '#profile-tab-ssh-btn', key: 'profile.sshKeys' },
+    { selector: '#profile-personal-title', key: 'profile.personalInformation' },
+    { selector: '#profile-label-fullname', key: 'profile.fullName' },
+    { selector: '#profile-label-email', key: 'profile.emailAddress' },
+    { selector: '#profile-label-phone', key: 'profile.phoneNumber' },
+    { selector: '#profile-label-job', key: 'profile.jobTitle' },
+    { selector: '#profile-label-company', key: 'profile.company' },
+    { selector: '#profile-label-timezone', key: 'profile.timezone' },
+    { selector: '#profile-save-btn', key: 'profile.saveChanges' },
+    { selector: '#profile-cancel-btn', key: 'profile.cancel' },
+    { selector: '#profile-account-details-title', key: 'profile.accountDetails' },
+    { selector: '#profile-account-id-label', key: 'profile.accountId' },
+    { selector: '#profile-account-type-label', key: 'profile.accountType' },
+    { selector: '#profile-member-since-label', key: 'profile.memberSince' },
+    { selector: '#profile-joined-label', key: 'profile.memberSinceTitle' },
+    { selector: '#profile-last-login-label', key: 'profile.lastLogin' },
+    { selector: '#profile-security-title', key: 'profile.securitySettings' },
+    { selector: '#profile-change-password-title', key: 'profile.changePassword' },
+    { selector: '#profile-update-password-btn', key: 'profile.updatePassword' },
+    { selector: '#profile-2fa-title', key: 'profile.twoFactorAuthentication' },
+    { selector: '#profile-2fa-description', key: 'profile.twoFactorDescription' },
+    { selector: '#profile-active-sessions-title', key: 'profile.activeSessions' },
+    { selector: '#profile-preferences-title', key: 'profile.preferencesTitle' },
+    { selector: '#profile-notification-preferences-title', key: 'profile.notificationPreferences' },
+    { selector: '#profile-notification-billing-label', key: 'profile.notificationBilling' },
+    { selector: '#profile-notification-security-label', key: 'profile.notificationSecurity' },
+    { selector: '#profile-notification-sms-label', key: 'profile.notificationSms' },
+    { selector: '#profile-notification-marketing-label', key: 'profile.notificationMarketing' },
+    { selector: '#profile-appearance-title', key: 'profile.appearance' },
+    { selector: '#theme-light-btn', key: 'profile.lightMode' },
+    { selector: '#theme-dark-btn', key: 'profile.darkMode' },
+    { selector: '#theme-system-btn', key: 'profile.systemDefault' },
+    { selector: '#profile-language-region-title', key: 'profile.languageRegion' },
+    { selector: '#profile-language-label', key: 'profile.language' },
+    { selector: '#profile-region-label', key: 'profile.region' }
+];
+
+const UI_PLACEHOLDER_TARGETS = [
+    { selector: '#current-password', key: 'profile.currentPassword' },
+    { selector: '#new-password', key: 'profile.newPassword' },
+    { selector: '#confirm-password', key: 'profile.confirmNewPassword' }
+];
 
 function readJsonFromStorage(key, fallback) {
     const rawValue = localStorage.getItem(key);
@@ -111,6 +523,172 @@ function readJsonFromStorage(key, fallback) {
         console.warn(`[Storage] Ignoring invalid JSON for ${key}`, error);
         localStorage.removeItem(key);
         return fallback;
+    }
+}
+
+function getStoredProfilePreferences() {
+    return readJsonFromStorage(PROFILE_STORAGE_KEY, {}) || {};
+}
+
+function getSavedLanguagePreference() {
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY)
+        || getStoredProfilePreferences().language
+        || DEFAULT_LANGUAGE_PREFERENCE;
+}
+
+function getSavedRegionPreference() {
+    return localStorage.getItem(REGION_STORAGE_KEY)
+        || getStoredProfilePreferences().region
+        || DEFAULT_REGION_PREFERENCE;
+}
+
+function getActiveLocale(language = getSavedLanguagePreference(), region = getSavedRegionPreference()) {
+    switch (language) {
+        case 'en-GB':
+            return 'en-GB';
+        case 'es':
+            return region === 'US' ? 'es-US' : 'es-ES';
+        case 'fr':
+            return 'fr-FR';
+        case 'de':
+            return 'de-DE';
+        default:
+            return region === 'GB' ? 'en-GB' : 'en-US';
+    }
+}
+
+function getTranslationDictionary(language = getSavedLanguagePreference()) {
+    return UI_TRANSLATIONS[language] || UI_TRANSLATIONS[DEFAULT_LANGUAGE_PREFERENCE];
+}
+
+function t(key) {
+    const dictionary = getTranslationDictionary();
+    return dictionary[key]
+        || UI_TRANSLATIONS[DEFAULT_LANGUAGE_PREFERENCE][key]
+        || key;
+}
+
+function syncLanguageSelectors() {
+    const languageSelect = document.getElementById('profile-language');
+    const regionSelect = document.getElementById('profile-region');
+
+    if (languageSelect) {
+        languageSelect.value = getSavedLanguagePreference();
+    }
+
+    if (regionSelect) {
+        regionSelect.value = getSavedRegionPreference();
+    }
+}
+
+function applyStaticTranslations() {
+    document.documentElement.lang = getSavedLanguagePreference().split('-')[0];
+    document.title = t('meta.title');
+
+    UI_TEXT_TARGETS.forEach(({ selector, key }) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = t(key);
+        }
+    });
+
+    UI_PLACEHOLDER_TARGETS.forEach(({ selector, key }) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.placeholder = t(key);
+        }
+    });
+
+    syncLanguageSelectors();
+}
+
+function persistProfilePreferences(updates = {}, options = {}) {
+    const { announce = false } = options;
+    const nextProfile = {
+        ...getStoredProfilePreferences(),
+        ...updates
+    };
+
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
+
+    if (nextProfile.language) {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, nextProfile.language);
+    }
+
+    if (nextProfile.region) {
+        localStorage.setItem(REGION_STORAGE_KEY, nextProfile.region);
+    }
+
+    applyStaticTranslations();
+    updateNav();
+
+    if (typeof syncProfileMetaDates === 'function') {
+        syncProfileMetaDates();
+    }
+
+    if (announce) {
+        showToast(t('toast.languageUpdated'));
+    }
+
+    return nextProfile;
+}
+
+function handleLanguagePreferenceChange() {
+    const language = document.getElementById('profile-language')?.value || DEFAULT_LANGUAGE_PREFERENCE;
+    const region = document.getElementById('profile-region')?.value || DEFAULT_REGION_PREFERENCE;
+    persistProfilePreferences({ language, region }, { announce: true });
+}
+
+function formatLocalizedDate(value, options = {}) {
+    const parsedDate = value instanceof Date ? value : new Date(value);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+        return '';
+    }
+
+    return parsedDate.toLocaleDateString(getActiveLocale(), options);
+}
+
+function formatLocalizedDateTime(value, options = {}) {
+    const parsedDate = value instanceof Date ? value : new Date(value);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+        return '';
+    }
+
+    return parsedDate.toLocaleString(getActiveLocale(), options);
+}
+
+function syncProfileMetaDates() {
+    const referenceDate = currentUser?.createdAt || currentUser?.created_at || localStorage.getItem('bytesky_created_at') || new Date().toISOString();
+    const lastLoginDate = currentUser?.lastLoginAt || currentUser?.last_login_at || new Date().toISOString();
+
+    localStorage.setItem('bytesky_created_at', referenceDate);
+
+    const memberSince = document.getElementById('profile-member-since');
+    const joined = document.getElementById('profile-joined');
+    const lastLogin = document.getElementById('profile-last-login');
+
+    const memberSinceText = formatLocalizedDate(referenceDate, { month: 'short', year: 'numeric' }) || 'Jan 2026';
+    const joinedText = formatLocalizedDate(referenceDate, { month: 'long', year: 'numeric' }) || 'March 2026';
+    const lastLoginText = formatLocalizedDateTime(lastLoginDate, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) || 'Just now';
+
+    if (memberSince) {
+        memberSince.textContent = memberSinceText;
+    }
+
+    if (joined) {
+        joined.textContent = joinedText;
+    }
+
+    if (lastLogin) {
+        lastLogin.textContent = lastLoginText;
     }
 }
 
@@ -530,7 +1108,7 @@ function updateNav() {
     if (currentUser) {
         nav.innerHTML = `
             <span class="nav-user-email">${currentUser.email}</span>
-            <button class="btn-logout" onclick="logout()">Logout</button>
+            <button class="btn-logout" onclick="logout()">${t('nav.logout')}</button>
         `;
         if (consoleToggle) {
             consoleToggle.hidden = false;
@@ -541,9 +1119,9 @@ function updateNav() {
         }
     } else {
         nav.innerHTML = `
-            <a onclick="router('home')">Home</a>
-            <a onclick="router('login')">Login</a>
-            <a onclick="router('register')">Register</a>
+            <a onclick="router('home')">${t('nav.home')}</a>
+            <a onclick="router('login')">${t('nav.login')}</a>
+            <a onclick="router('register')">${t('nav.register')}</a>
         `;
         if (consoleToggle) {
             consoleToggle.hidden = true;
@@ -551,6 +1129,8 @@ function updateNav() {
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
+
+    applyStaticTranslations();
 }
 
 // ============================================
@@ -591,6 +1171,8 @@ async function saveProfile() {
     const job = document.getElementById('profile-job').value;
     const company = document.getElementById('profile-company').value;
     const timezone = document.getElementById('profile-timezone').value;
+    const language = document.getElementById('profile-language')?.value || getSavedLanguagePreference();
+    const region = document.getElementById('profile-region')?.value || getSavedRegionPreference();
 
     if (!fullName || !email) {
         showToast('Name and email are required');
@@ -608,7 +1190,9 @@ async function saveProfile() {
         phone,
         job,
         company,
-        timezone
+        timezone,
+        language,
+        region
     };
 
     try {
@@ -629,12 +1213,12 @@ async function saveProfile() {
 
         currentUser = data.user;
         localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
-        localStorage.setItem('bytesky_profile', JSON.stringify(profileData));
+        persistProfilePreferences(profileData);
 
         updateNav();
         loadProfileData();
     } catch (err) {
-        showToast('Error updating profile');
+        showToast(t('toast.profileUpdateError'));
         return;
     }
 
@@ -645,7 +1229,7 @@ async function saveProfile() {
         input.setAttribute('readonly', 'readonly');
     });
 
-    showToast('Profile updated successfully!');
+    showToast(t('toast.profileUpdated'));
 }
 
 function cancelEdit() {
@@ -866,7 +1450,7 @@ function loadProfileData() {
     if (emailInput) emailInput.value = currentUser.email || '';
 
     // Load saved profile data
-    const savedProfile = readJsonFromStorage('bytesky_profile', null);
+    const savedProfile = readJsonFromStorage(PROFILE_STORAGE_KEY, null);
     if (savedProfile) {
         document.getElementById('profile-phone').value = savedProfile.phone || '';
         document.getElementById('profile-job').value = savedProfile.job || '';
@@ -879,6 +1463,10 @@ function loadProfileData() {
         || `acc_${Math.random().toString(36).slice(2, 12)}`;
     localStorage.setItem('bytesky_account_id', accountId);
     document.getElementById('profile-account-id').innerText = accountId;
+
+    syncLanguageSelectors();
+    applyStaticTranslations();
+    syncProfileMetaDates();
 
     // Load SSH keys
     loadSSHKeys();
@@ -2876,7 +3464,7 @@ function formatMonitoringLabel(value, timeRange) {
             ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
             : { hour: '2-digit', minute: '2-digit', hour12: true };
 
-    return parsedDate.toLocaleString('en-US', options);
+    return parsedDate.toLocaleString(getActiveLocale(), options);
 }
 
 function formatMonitoringTooltipLabel(value) {
@@ -2885,7 +3473,7 @@ function formatMonitoringTooltipLabel(value) {
         return typeof value === 'string' && value.trim() ? value : 'Unknown time';
     }
 
-    return parsedDate.toLocaleString('en-US', {
+    return parsedDate.toLocaleString(getActiveLocale(), {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -3588,12 +4176,12 @@ function createCostChart(invoices) {
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        last7Days.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        last7Days.push(d.toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }));
     }
 
     const dailyCosts = last7Days.map(date => {
         return invoices
-            .filter(inv => new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date)
+            .filter(inv => new Date(inv.createdAt).toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }) === date)
             .reduce((sum, inv) => sum + inv.amount, 0);
     });
 
@@ -3817,7 +4405,7 @@ function createAdminTicketsChart(ticketsPerDay) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
-        labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        labels.push(d.toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }));
         values.push(map.get(key) || 0);
     }
 
@@ -6250,6 +6838,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     applyTheme();
+    applyStaticTranslations();
+    updateNav();
     syncMonitoringMetricButtons();
     window.launchVM = launchVM;
     window.launchBrowserVm = launchVM;
@@ -6283,6 +6873,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const home = document.getElementById('home');
         if (home) home.classList.add('active');
     }
+
+    applyStaticTranslations();
 });
 
 if (SYSTEM_THEME_QUERY) {

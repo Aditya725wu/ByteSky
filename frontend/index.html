@@ -1179,7 +1179,7 @@
             <!-- PROFILE PAGE (ENHANCED) -->
             <div id="profile" class="page">
                 <div class="header-bar">
-                    <h2>Account Settings</h2>
+                    <h2 id="profile-settings-title">Account Settings</h2>
                 </div>
 
                 <!-- Profile Header -->
@@ -1191,11 +1191,11 @@
                             <h3 id="profile-name-display">User Name</h3>
                             <p id="profile-email-display" style="color: #64748b; margin: 5px 0;">user@example.com</p>
                             <span class="badge bg-running" id="profile-role-display">USER</span>
-                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">Member since <span
+                            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;"><span id="profile-member-since-label">Member since</span> <span
                                     id="profile-member-since">Jan 2026</span></p>
                         </div>
                         <div style="margin-left: auto;">
-                            <button class="btn btn-outline" onclick="editProfile()"> Edit Profile</button>
+                            <button class="btn btn-outline" id="profile-edit-btn" onclick="editProfile()"> Edit Profile</button>
                         </div>
                     </div>
                 </div>
@@ -1203,51 +1203,51 @@
                 <!-- Tabs -->
                 <div
                     style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-                    <button class="btn btn-primary" onclick="showProfileTab('personal')"> Personal</button>
-                    <button class="btn btn-outline" onclick="showProfileTab('security')"> Security</button>
-                    <button class="btn btn-outline" onclick="showProfileTab('preferences')"> Preferences</button>
-                    <button class="btn btn-outline" onclick="showProfileTab('usage')"> Usage</button>
-                    <button class="btn btn-outline" onclick="showProfileTab('ssh')"> SSH Keys</button>
+                    <button class="btn btn-primary" id="profile-tab-personal-btn" onclick="showProfileTab('personal')"> Personal</button>
+                    <button class="btn btn-outline" id="profile-tab-security-btn" onclick="showProfileTab('security')"> Security</button>
+                    <button class="btn btn-outline" id="profile-tab-preferences-btn" onclick="showProfileTab('preferences')"> Preferences</button>
+                    <button class="btn btn-outline" id="profile-tab-usage-btn" onclick="showProfileTab('usage')"> Usage</button>
+                    <button class="btn btn-outline" id="profile-tab-ssh-btn" onclick="showProfileTab('ssh')"> SSH Keys</button>
                 </div>
 
                 <!-- Personal Info Tab -->
                 <div id="profile-personal" class="profile-tab">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;">Personal Information</h3>
+                        <h3 id="profile-personal-title" style="margin-bottom: 20px;">Personal Information</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
-                                <label
+                                <label id="profile-label-fullname"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Full
                                     Name</label>
                                 <input type="text" id="profile-fullname" value="User Name" readonly
                                     style="background: #f8fafc;">
                             </div>
                             <div>
-                                <label
+                                <label id="profile-label-email"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Email
                                     Address</label>
                                 <input type="email" id="profile-email-input" value="user@example.com" readonly
                                     style="background: #f8fafc;">
                             </div>
                             <div>
-                                <label
+                                <label id="profile-label-phone"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Phone
                                     Number</label>
                                 <input type="tel" id="profile-phone" placeholder="+1 (555) 000-0000">
                             </div>
                             <div>
-                                <label
+                                <label id="profile-label-job"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Job
                                     Title</label>
                                 <input type="text" id="profile-job" placeholder="Developer">
                             </div>
                             <div>
-                                <label
+                                <label id="profile-label-company"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Company</label>
                                 <input type="text" id="profile-company" placeholder="ByteSky Inc.">
                             </div>
                             <div>
-                                <label
+                                <label id="profile-label-timezone"
                                     style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Timezone</label>
                                 <select id="profile-timezone">
                                     <option value="UTC">UTC</option>
@@ -1261,30 +1261,30 @@
                             </div>
                         </div>
                         <div style="margin-top: 20px; display: flex; gap: 10px;">
-                            <button class="btn btn-primary" onclick="saveProfile()"> Save Changes</button>
-                            <button class="btn btn-outline" onclick="cancelEdit()">Cancel</button>
+                            <button class="btn btn-primary" id="profile-save-btn" onclick="saveProfile()"> Save Changes</button>
+                            <button class="btn btn-outline" id="profile-cancel-btn" onclick="cancelEdit()">Cancel</button>
                         </div>
                     </div>
 
                     <!-- Account Details -->
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;">Account Details</h3>
+                        <h3 id="profile-account-details-title" style="margin-bottom: 20px;">Account Details</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div style="padding: 15px; background: #f8fafc; border-radius: 6px;">
-                                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Account ID</div>
+                                <div id="profile-account-id-label" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Account ID</div>
                                 <div style="font-weight: 600; font-family: monospace;" id="profile-account-id">
                                     acc_1234567890</div>
                             </div>
                             <div style="padding: 15px; background: #f8fafc; border-radius: 6px;">
-                                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Account Type</div>
+                                <div id="profile-account-type-label" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Account Type</div>
                                 <div style="font-weight: 600;"><span class="badge bg-running">Professional</span></div>
                             </div>
                             <div style="padding: 15px; background: #f8fafc; border-radius: 6px;">
-                                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Member Since</div>
+                                <div id="profile-joined-label" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Member Since</div>
                                 <div style="font-weight: 600;" id="profile-joined">March 2026</div>
                             </div>
                             <div style="padding: 15px; background: #f8fafc; border-radius: 6px;">
-                                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Last Login</div>
+                                <div id="profile-last-login-label" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px;">Last Login</div>
                                 <div style="font-weight: 600;" id="profile-last-login">Just now</div>
                             </div>
                         </div>
@@ -1294,17 +1294,17 @@
                 <!-- Security Tab -->
                 <div id="profile-security" class="profile-tab" style="display: none;">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;"> Security Settings</h3>
+                        <h3 id="profile-security-title" style="margin-bottom: 20px;"> Security Settings</h3>
 
                         <!-- Change Password -->
                         <div style="margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0;">
-                            <h4 style="margin-bottom: 15px;">Change Password</h4>
+                            <h4 id="profile-change-password-title" style="margin-bottom: 15px;">Change Password</h4>
                             <div style="display: grid; grid-template-columns: 1fr; gap: 15px; max-width: 500px;">
                                 <input type="password" id="current-password" placeholder="Current Password">
                                 <input type="password" id="new-password" placeholder="New Password">
                                 <input type="password" id="confirm-password" placeholder="Confirm New Password">
                             </div>
-                            <button class="btn btn-primary" style="margin-top: 15px;" onclick="changePassword()">
+                            <button class="btn btn-primary" id="profile-update-password-btn" style="margin-top: 15px;" onclick="changePassword()">
                                 Update Password</button>
                         </div>
 
@@ -1313,8 +1313,8 @@
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                 <div>
-                                    <h4 style="margin-bottom: 5px;">Two-Factor Authentication</h4>
-                                    <p style="color: #64748b; font-size: 0.9rem;">Add an extra layer of security to your
+                                    <h4 id="profile-2fa-title" style="margin-bottom: 5px;">Two-Factor Authentication</h4>
+                                    <p id="profile-2fa-description" style="color: #64748b; font-size: 0.9rem;">Add an extra layer of security to your
                                         account</p>
                                 </div>
                                 <label class="switch">
@@ -1330,7 +1330,7 @@
 
                         <!-- Active Sessions -->
                         <div>
-                            <h4 style="margin-bottom: 15px;">Active Sessions</h4>
+                            <h4 id="profile-active-sessions-title" style="margin-bottom: 15px;">Active Sessions</h4>
                             <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 10px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div>
@@ -1359,58 +1359,66 @@
                 <!-- Preferences Tab -->
                 <div id="profile-preferences" class="profile-tab" style="display: none;">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;"> Preferences</h3>
+                        <h3 id="profile-preferences-title" style="margin-bottom: 20px;"> Preferences</h3>
 
                         <!-- Notifications -->
                         <div style="margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0;">
-                            <h4 style="margin-bottom: 15px;">Notification Preferences</h4>
+                            <h4 id="profile-notification-preferences-title" style="margin-bottom: 15px;">Notification Preferences</h4>
                             <div style="display: flex; flex-direction: column; gap: 15px;">
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="checkbox" checked>
-                                    <span>Email notifications for billing alerts</span>
+                                    <span id="profile-notification-billing-label">Email notifications for billing alerts</span>
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="checkbox" checked>
-                                    <span>Email notifications for security alerts</span>
+                                    <span id="profile-notification-security-label">Email notifications for security alerts</span>
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="checkbox">
-                                    <span>SMS notifications for critical events</span>
+                                    <span id="profile-notification-sms-label">SMS notifications for critical events</span>
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="checkbox" checked>
-                                    <span>Marketing emails and product updates</span>
+                                    <span id="profile-notification-marketing-label">Marketing emails and product updates</span>
                                 </label>
                             </div>
                         </div>
 
                         <!-- Appearance -->
                         <div style="margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0;">
-                            <h4 style="margin-bottom: 15px;">Appearance</h4>
+                            <h4 id="profile-appearance-title" style="margin-bottom: 15px;">Appearance</h4>
                             <div style="display: flex; gap: 15px;">
-                                <button class="btn btn-primary" data-theme-choice="light" onclick="setTheme('light')"> Light Mode</button>
-                                <button class="btn btn-outline" data-theme-choice="dark" onclick="setTheme('dark')"> Dark Mode</button>
-                                <button class="btn btn-outline" data-theme-choice="system" onclick="setTheme('system')"> System Default</button>
+                                <button class="btn btn-primary" id="theme-light-btn" data-theme-choice="light" onclick="setTheme('light')"> Light Mode</button>
+                                <button class="btn btn-outline" id="theme-dark-btn" data-theme-choice="dark" onclick="setTheme('dark')"> Dark Mode</button>
+                                <button class="btn btn-outline" id="theme-system-btn" data-theme-choice="system" onclick="setTheme('system')"> System Default</button>
                             </div>
                         </div>
 
                         <!-- Language -->
                         <div>
-                            <h4 style="margin-bottom: 15px;">Language & Region</h4>
+                            <h4 id="profile-language-region-title" style="margin-bottom: 15px;">Language & Region</h4>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 500px;">
-                                <select>
-                                    <option>English (US)</option>
-                                    <option>English (UK)</option>
-                                    <option>Spanish</option>
-                                    <option>French</option>
-                                    <option>German</option>
-                                </select>
-                                <select>
-                                    <option>United States</option>
-                                    <option>United Kingdom</option>
-                                    <option>India</option>
-                                    <option>Germany</option>
-                                </select>
+                                <div>
+                                    <label id="profile-language-label" for="profile-language" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Language</label>
+                                    <select id="profile-language" onchange="handleLanguagePreferenceChange()">
+                                        <option value="en-US">English (US)</option>
+                                        <option value="en-GB">English (UK)</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Français</option>
+                                        <option value="de">Deutsch</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label id="profile-region-label" for="profile-region" style="font-size: 0.85rem; color: #64748b; margin-bottom: 5px; display: block;">Region</label>
+                                    <select id="profile-region" onchange="handleLanguagePreferenceChange()">
+                                        <option value="US">United States</option>
+                                        <option value="GB">United Kingdom</option>
+                                        <option value="IN">India</option>
+                                        <option value="FR">France</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="ES">Spain</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
