@@ -1106,9 +1106,17 @@ function updateNav() {
     const sidebarWasOpen = sidebar?.classList.contains('active');
 
     if (currentUser) {
+        const displayName = currentUser.name || currentUser.email?.split('@')[0] || 'User';
+        const displayInitial = displayName.charAt(0).toUpperCase();
         nav.innerHTML = `
-            <span class="nav-user-email">${currentUser.email}</span>
-            <button class="btn-logout" onclick="logout()">${t('nav.logout')}</button>
+            <div class="nav-account">
+                <span class="nav-user-badge" aria-hidden="true">${displayInitial}</span>
+                <div class="nav-user-meta">
+                    <span class="nav-user-name">${displayName}</span>
+                    <span class="nav-user-email">${currentUser.email}</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">${t('nav.logout')}</button>
+            </div>
         `;
         if (consoleToggle) {
             consoleToggle.hidden = false;
