@@ -96,6 +96,7 @@ const THEME_STORAGE_KEY = 'bytesky_theme';
 const PROFILE_STORAGE_KEY = 'bytesky_profile';
 const LANGUAGE_STORAGE_KEY = 'bytesky_language';
 const REGION_STORAGE_KEY = 'bytesky_region';
+const PROFILE_AVATAR_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const DEFAULT_LANGUAGE_PREFERENCE = 'en-US';
 const DEFAULT_REGION_PREFERENCE = 'US';
 const SIDEBAR_DISMISS_BREAKPOINT = 1024;
@@ -633,6 +634,99 @@ function persistProfilePreferences(updates = {}, options = {}) {
     return nextProfile;
 }
 
+function getCurrentUserDisplayName() {
+    return currentUser?.name?.trim() || currentUser?.email?.split('@')[0] || 'User';
+}
+
+function getProfileAvatarDataUrl() {
+    return getStoredProfilePreferences().avatarDataUrl || '';
+}
+
+function syncProfileAvatarUI() {
+    const avatarShell = document.getElementById('profile-avatar-large');
+    const avatarImage = document.getElementById('profile-avatar-image');
+    const avatarFallback = document.getElementById('profile-avatar-fallback');
+    const removeButton = document.getElementById('profile-avatar-remove-btn');
+    const avatarInput = document.getElementById('profileAvatarInput');
+    const avatarDataUrl = getProfileAvatarDataUrl();
+    const displayInitial = getCurrentUserDisplayName().charAt(0).toUpperCase();
+
+    if (avatarShell) {
+        avatarShell.classList.toggle('has-image', Boolean(avatarDataUrl));
+    }
+
+    if (avatarFallback) {
+        avatarFallback.textContent = displayInitial;
+        avatarFallback.hidden = Boolean(avatarDataUrl);
+    }
+
+    if (avatarImage) {
+        if (avatarDataUrl) {
+            avatarImage.src = avatarDataUrl;
+            avatarImage.alt = `${getCurrentUserDisplayName()} profile picture`;
+            avatarImage.hidden = false;
+        } else {
+            avatarImage.hidden = true;
+            avatarImage.removeAttribute('src');
+        }
+    }
+
+    if (removeButton) {
+        removeButton.hidden = !avatarDataUrl;
+    }
+
+    if (avatarInput) {
+        avatarInput.value = '';
+    }
+}
+
+function handleProfileAvatarChange(event) {
+    const file = event?.target?.files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+        showToast('Please choose an image file');
+        event.target.value = '';
+        return;
+    }
+
+    if (file.size > PROFILE_AVATAR_MAX_FILE_SIZE_BYTES) {
+        showToast('Choose an image smaller than 2 MB');
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            persistProfilePreferences({ avatarDataUrl: String(reader.result || '') });
+            syncProfileAvatarUI();
+            showToast('Profile photo updated');
+        } catch (error) {
+            console.error('Avatar save failed:', error);
+            showToast('Could not save image. Try a smaller photo.');
+        }
+    };
+    reader.onerror = () => {
+        showToast('Could not read selected image');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeProfileAvatar() {
+    try {
+        persistProfilePreferences({ avatarDataUrl: '' });
+        syncProfileAvatarUI();
+        showToast('Profile photo removed');
+    } catch (error) {
+        console.error('Avatar removal failed:', error);
+        showToast('Could not remove profile photo');
+    }
+}
+
 function handleLanguagePreferenceChange() {
     const language = document.getElementById('profile-language')?.value || DEFAULT_LANGUAGE_PREFERENCE;
     const region = document.getElementById('profile-region')?.value || DEFAULT_REGION_PREFERENCE;
@@ -1106,12 +1200,17 @@ function updateNav() {
     const sidebarWasOpen = sidebar?.classList.contains('active');
 
     if (currentUser) {
-        const displayName = currentUser.name?.trim() || currentUser.email?.split('@')[0] || 'User';
+        const displayName = getCurrentUserDisplayName();
         const emailAddress = currentUser.email || 'user@example.com';
         const displayInitial = displayName.charAt(0).toUpperCase();
+        const avatarDataUrl = getProfileAvatarDataUrl();
         nav.innerHTML = `
             <div class="nav-account">
-                <span class="nav-user-badge" aria-hidden="true">${displayInitial}</span>
+                <span class="nav-user-badge${avatarDataUrl ? ' has-image' : ''}">
+                    ${avatarDataUrl
+                        ? `<img class="nav-user-avatar-image" src="${avatarDataUrl}" alt="${displayName} profile picture">`
+                        : `<span class="nav-user-badge-fallback" aria-hidden="true">${displayInitial}</span>`}
+                </span>
                 <div class="nav-user-meta">
                     <span class="nav-user-name">${displayName}</span>
                     <span class="nav-user-email">${emailAddress}</span>
@@ -1449,13 +1548,13 @@ function loadProfileData() {
     if (!currentUser) return;
 
     // Set basic info
-    document.getElementById('profile-name-display').innerText = currentUser.name;
+    const displayName = getCurrentUserDisplayName();
+    document.getElementById('profile-name-display').innerText = displayName;
     document.getElementById('profile-email-display').innerText = currentUser.email;
     document.getElementById('profile-role-display').innerText = currentUser.role?.toUpperCase() || 'USER';
-    document.getElementById('profile-avatar-large').innerText = currentUser.name.charAt(0).toUpperCase();
     const fullNameInput = document.getElementById('profile-fullname');
     const emailInput = document.getElementById('profile-email-input');
-    if (fullNameInput) fullNameInput.value = currentUser.name || '';
+    if (fullNameInput) fullNameInput.value = displayName;
     if (emailInput) emailInput.value = currentUser.email || '';
 
     // Load saved profile data
@@ -1466,6 +1565,8 @@ function loadProfileData() {
         document.getElementById('profile-company').value = savedProfile.company || '';
         document.getElementById('profile-timezone').value = savedProfile.timezone || 'UTC';
     }
+
+    syncProfileAvatarUI();
 
     // Generate account ID
     const accountId = localStorage.getItem('bytesky_account_id')

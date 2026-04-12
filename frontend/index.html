@@ -1204,9 +1204,19 @@
 
                 <!-- Profile Header -->
                 <div class="card" style="margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
-                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold;"
-                            id="profile-avatar-large">U</div>
+                    <div class="profile-header">
+                        <div class="profile-avatar-panel">
+                            <div class="profile-avatar-shell" id="profile-avatar-large">
+                                <img class="profile-avatar-image" id="profile-avatar-image" alt="Profile picture" hidden>
+                                <span class="profile-avatar-fallback" id="profile-avatar-fallback">U</span>
+                            </div>
+                            <div class="profile-avatar-actions">
+                                <label class="btn btn-outline profile-avatar-button" for="profileAvatarInput">Upload Photo</label>
+                                <button class="btn btn-outline profile-avatar-button" id="profile-avatar-remove-btn" type="button"
+                                    onclick="removeProfileAvatar()" hidden>Remove Photo</button>
+                                <input type="file" id="profileAvatarInput" accept="image/*" hidden onchange="handleProfileAvatarChange(event)">
+                            </div>
+                        </div>
                         <div>
                             <h3 id="profile-name-display">User Name</h3>
                             <p id="profile-email-display" style="color: #64748b; margin: 5px 0;">user@example.com</p>
