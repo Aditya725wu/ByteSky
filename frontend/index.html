@@ -173,30 +173,77 @@
             </div>
 
             <!-- LOGIN PAGE -->
-            <div id="login" class="page">
-                <div class="auth-box">
-                    <div class="auth-brand">
-                        <img class="auth-brand-mark" src="assets/bytesky-mark.svg" alt="ByteSky logo">
-                        <div class="auth-brand-copy">
-                            <strong>ByteSky</strong>
-                            <span>Build Faster in the Cloud</span>
+            <div id="login" class="page auth-page auth-page--login">
+                <div class="login-shell">
+                    <section class="login-showcase" aria-hidden="true">
+                        <div class="login-showcase-brand">
+                            <img class="login-showcase-brand-mark" src="assets/bytesky-mark.svg" alt="ByteSky logo">
+                            <div class="login-showcase-brand-copy">
+                                <strong>ByteSky</strong>
+                                <span>Build Faster in the Cloud</span>
+                            </div>
                         </div>
-                    </div>
-                    <h2 style="margin-bottom:20px; color:var(--dark);">Welcome Back</h2>
-                    <form onsubmit="handleLogin(event)">
-                        <label style="font-size:0.8rem; font-weight:bold; color:#64748b;">EMAIL ADDRESS</label>
-                        <input type="email" id="loginEmail" placeholder="name@example.com" required>
-                        <label style="font-size:0.8rem; font-weight:bold; color:#64748b;">PASSWORD</label>
-                        <input type="password" id="loginPass" placeholder="" required>
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Sign
-                            In</button>
-                    </form>
-                    <div style="margin-top:16px; text-align:center; color:#94a3b8; font-size:0.85rem;">or continue with</div>
-                    <div id="googleLoginButton" style="margin-top:14px; display:flex; justify-content:center;"></div>
-                    <div style="margin-top:20px; text-align:center; font-size:0.9rem;">
-                        <p>Don't have an account? <a href="#" onclick="router('register')"
-                                style="color:var(--primary);">Sign up</a></p>
-                    </div>
+                        <div class="login-showcase-copy">
+                            <span class="login-showcase-eyebrow">Cloud operations, refined</span>
+                            <h2>Sign in to your ByteSky control plane.</h2>
+                            <p>Manage compute, networking, storage, and observability from one polished cloud workspace built for modern teams.</p>
+                        </div>
+                        <div class="login-showcase-card">
+                            <div class="login-showcase-card-topline">
+                                <span>Platform readiness</span>
+                                <span class="login-showcase-badge">Premium</span>
+                            </div>
+                            <div class="login-showcase-metrics">
+                                <div class="login-showcase-metric">
+                                    <strong>25+</strong>
+                                    <span>global-ready regions</span>
+                                </div>
+                                <div class="login-showcase-metric">
+                                    <strong>NVMe</strong>
+                                    <span>high-performance compute</span>
+                                </div>
+                                <div class="login-showcase-metric">
+                                    <strong>Secure</strong>
+                                    <span>production-focused defaults</span>
+                                </div>
+                            </div>
+                            <div class="login-showcase-flow">
+                                <span class="login-showcase-node">Compute</span>
+                                <span class="login-showcase-link"></span>
+                                <span class="login-showcase-node">Network</span>
+                                <span class="login-showcase-link"></span>
+                                <span class="login-showcase-node">Deploy</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="login-panel">
+                        <div class="login-panel-inner">
+                            <div class="auth-brand login-panel-brand">
+                                <img class="auth-brand-mark" src="assets/bytesky-mark.svg" alt="ByteSky logo">
+                                <div class="auth-brand-copy">
+                                    <strong>ByteSky</strong>
+                                    <span>Build Faster in the Cloud</span>
+                                </div>
+                            </div>
+                            <div class="login-panel-copy">
+                                <h2>Welcome Back</h2>
+                                <p>Sign in to continue building and managing infrastructure on ByteSky.</p>
+                            </div>
+                            <form class="login-form" onsubmit="handleLogin(event)">
+                                <label class="auth-form-label" for="loginEmail">Email address</label>
+                                <input type="email" id="loginEmail" placeholder="name@example.com" autocomplete="email" required>
+                                <label class="auth-form-label" for="loginPass">Password</label>
+                                <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password" required>
+                                <button type="submit" class="btn btn-primary login-submit-btn">Sign In</button>
+                            </form>
+                            <div class="login-divider"><span>or continue with</span></div>
+                            <div id="googleLoginButton" class="login-social"></div>
+                            <div class="login-footer">
+                                <p>Don't have an account? <a href="#" onclick="router('register')">Create one</a></p>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
 
