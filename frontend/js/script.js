@@ -105,7 +105,7 @@ const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
 
 const UI_TRANSLATIONS = {
     'en-US': {
-        'meta.title': 'ByteSky | Enterprise Cloud Solutions',
+        'meta.title': 'ByteSky | Build Faster in the Cloud',
         'nav.home': 'Home',
         'nav.login': 'Login',
         'nav.register': 'Register',
@@ -173,7 +173,7 @@ const UI_TRANSLATIONS = {
         'toast.profileUpdateError': 'Error updating profile'
     },
     'en-GB': {
-        'meta.title': 'ByteSky | Enterprise Cloud Solutions',
+        'meta.title': 'ByteSky | Build Faster in the Cloud',
         'nav.home': 'Home',
         'nav.login': 'Log in',
         'nav.register': 'Register',
@@ -241,7 +241,7 @@ const UI_TRANSLATIONS = {
         'toast.profileUpdateError': 'Error updating profile'
     },
     es: {
-        'meta.title': 'ByteSky | Soluciones Cloud Empresariales',
+        'meta.title': 'ByteSky | Build Faster in the Cloud',
         'nav.home': 'Inicio',
         'nav.login': 'Iniciar sesión',
         'nav.register': 'Registrarse',
@@ -309,7 +309,7 @@ const UI_TRANSLATIONS = {
         'toast.profileUpdateError': 'Error al actualizar el perfil'
     },
     fr: {
-        'meta.title': 'ByteSky | Solutions cloud pour entreprise',
+        'meta.title': 'ByteSky | Build Faster in the Cloud',
         'nav.home': 'Accueil',
         'nav.login': 'Connexion',
         'nav.register': 'Créer un compte',
@@ -377,7 +377,7 @@ const UI_TRANSLATIONS = {
         'toast.profileUpdateError': 'Erreur lors de la mise à jour du profil'
     },
     de: {
-        'meta.title': 'ByteSky | Cloud-Lösungen für Unternehmen',
+        'meta.title': 'ByteSky | Build Faster in the Cloud',
         'nav.home': 'Startseite',
         'nav.login': 'Anmelden',
         'nav.register': 'Registrieren',

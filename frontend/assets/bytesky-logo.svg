@@ -1,0 +1,36 @@
+<svg width="512" height="256" viewBox="0 0 512 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="byteskyLogoGradient" x1="128" y1="44" x2="301" y2="176" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="0.52" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="byteskyLogoGlow" x="56" y="16" width="326" height="158" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="4.5" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0.72  0 0 1 0 1  0 0 0 0.18 0"/>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+  </defs>
+  <g filter="url(#byteskyLogoGlow)">
+    <path
+      d="M88 98C88 73.7 107.7 54 132 54C145.64 54 157.81 60.22 165.87 70C169.79 41.72 194.1 20 223.44 20C255.52 20 281.78 45.04 283.76 76.6C286.82 74.92 290.32 74 294 74C305.04 74 314 82.96 314 94C314 105.04 305.04 114 294 114H263"
+      stroke="url(#byteskyLogoGradient)"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M96 90C110.46 72.82 128.52 64.22 150.16 64.22C168.39 64.22 182.34 70.98 191.96 84.52C200.6 96.48 209.28 102.46 217.98 102.46C229.94 102.46 237.9 95.88 241.9 82.7C243.98 75.74 247.94 70.14 253.8 65.92C259.64 61.7 266.08 59.6 273.12 59.6C284.1 59.6 293.06 63.48 300 71.26"
+      stroke="url(#byteskyLogoGradient)"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <text x="256" y="176" text-anchor="middle" font-family="Plus Jakarta Sans, Segoe UI, Arial, sans-serif" font-size="48" font-weight="800" letter-spacing="0.22em" fill="#09111F">
+    BYTE<tspan fill="#1D4ED8">SKY</tspan>
+  </text>
+  <text x="256" y="212" text-anchor="middle" font-family="Plus Jakarta Sans, Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="0.36em" fill="#56667F">
+    BUILD FASTER IN THE CLOUD
+  </text>
+</svg>

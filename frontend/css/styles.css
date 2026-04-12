@@ -42,15 +42,51 @@ nav {
     min-width: 0;
 }
 
-.logo {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 1px;
+.brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    min-width: 0;
 }
 
-.logo span {
-    color: var(--primary);
+.brand-mark {
+    width: 44px;
+    height: 34px;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 8px 20px rgba(14, 165, 233, 0.22));
+}
+
+.brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.brand-name {
+    font-size: 1.34rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.16em;
+    line-height: 1;
+}
+
+.brand-name span {
+    color: #38bdf8;
+}
+
+.brand-tagline {
+    margin-top: 4px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(191, 219, 254, 0.88);
 }
 
 .nav-links {
@@ -466,6 +502,43 @@ tr:hover {
     text-decoration: underline;
 }
 
+.auth-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 10px 14px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(34, 211, 238, 0.08));
+}
+
+.auth-brand-mark {
+    width: 42px;
+    height: 32px;
+    flex: 0 0 auto;
+}
+
+.auth-brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.auth-brand-copy strong {
+    color: var(--dark);
+    font-size: 0.98rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.auth-brand-copy span {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
 /* Home Hero */
 .hero {
     background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
@@ -474,6 +547,13 @@ tr:hover {
     border-radius: 12px;
     text-align: center;
     margin-bottom: 30px;
+}
+
+.hero-logo {
+    width: min(100%, 360px);
+    margin: 0 auto 24px;
+    display: block;
+    filter: drop-shadow(0 24px 54px rgba(14, 165, 233, 0.18));
 }
 
 .hero h1 {
@@ -2307,8 +2387,23 @@ iframe {
         gap: 10px;
     }
 
-    .logo {
-        font-size: 1.2rem;
+    .brand-copy {
+        gap: 2px;
+    }
+
+    .brand-name {
+        font-size: 1.08rem;
+        letter-spacing: 0.12em;
+    }
+
+    .brand-tagline {
+        font-size: 0.56rem;
+        letter-spacing: 0.16em;
+    }
+
+    .brand-mark {
+        width: 38px;
+        height: 30px;
     }
 
     .nav-links {
@@ -2362,6 +2457,11 @@ iframe {
         width: min(100%, 420px);
         margin: 24px auto;
         padding: 24px 18px;
+    }
+
+    .auth-brand {
+        width: 100%;
+        justify-content: center;
     }
 
     .grid-2,
