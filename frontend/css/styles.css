@@ -640,8 +640,11 @@ tr:hover {
 }
 
 .home-page {
-    display: grid;
     gap: 24px;
+}
+
+.page.active.home-page {
+    display: grid;
 }
 
 .home-page .hero {
@@ -740,23 +743,10 @@ tr:hover {
     align-items: center;
 }
 
-.hero-primary-action,
-.hero-secondary-action {
+.hero-primary-action {
     min-width: 170px;
     padding: 14px 24px;
     font-size: 1rem;
-}
-
-.hero-secondary-action {
-    background: rgba(15, 23, 42, 0.22);
-    color: #eff6ff;
-    border-color: rgba(191, 219, 254, 0.24);
-    backdrop-filter: blur(18px);
-}
-
-.hero-secondary-action:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(191, 219, 254, 0.34);
 }
 
 .hero-proof {
@@ -3055,8 +3045,7 @@ iframe {
         justify-content: center;
     }
 
-    .hero-primary-action,
-    .hero-secondary-action {
+    .hero-primary-action {
         width: 100%;
     }
 
