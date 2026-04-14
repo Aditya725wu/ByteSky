@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // ByteSky Cloud Platform - Frontend JavaScript (FINAL CORRECTED)
 // ============================================
 
@@ -23,46 +23,6 @@ const API_URL = (() => {
 
     return `${origin}/api`;
 })();
-
-function getExternalServiceHost() {
-    return window.location.hostname || 'localhost';
-}
-
-function buildExternalServiceUrl(port, options = {}) {
-    const protocol = options.protocol || (port === 443 ? 'https:' : 'http:');
-    const host = options.host || getExternalServiceHost();
-    const includePort = port && !(
-        (protocol === 'http:' && Number(port) === 80)
-        || (protocol === 'https:' && Number(port) === 443)
-    );
-
-    return `${protocol}//${host}${includePort ? `:${port}` : ''}`;
-}
-
-function normalizeMarketplacePath(pathValue) {
-    const trimmed = String(pathValue || '/').trim();
-
-    if (!trimmed || trimmed === '/') {
-        return '/';
-    }
-
-    const cleaned = trimmed.replace(/^\/+|\/+$/g, '');
-    return `/${cleaned}/`;
-}
-
-function shouldUseMarketplacePaths() {
-    const hostname = window.location.hostname || '';
-    return hostname !== 'localhost' && hostname !== '127.0.0.1';
-}
-
-function buildMarketplaceServiceUrl(port, pathValue, options = {}) {
-    if (shouldUseMarketplacePaths() && pathValue) {
-        return `${window.location.origin}${normalizeMarketplacePath(pathValue)}`;
-    }
-
-    return buildExternalServiceUrl(port, options);
-}
-
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51T5lPlFRBdmpZ6N0v3l17Z2O7yYFCCSSGIxoDDCkRPauDlYffZjX3So5KiQaqKk9njO3iS63un695KIwVVJlJ5C600Xzo5DnTN';
 const DEFAULT_GOOGLE_CLIENT_ID = '54516308982-1q21ghba191vu089q332jvrqdvaasj1q.apps.googleusercontent.com';
 const PUBLIC_PAGES = new Set(['home', 'login', 'register']);
@@ -84,6 +44,8 @@ let googleInitAttempts = 0;
 let clientConfigPromise = null;
 let saasStatusRefreshInterval = null;
 let selectedSaaSApp = null;
+let billing = JSON.parse(localStorage.getItem('bytesky_billing') || '[]');
+let saasIntegrations = JSON.parse(localStorage.getItem('bytesky_saas_integrations') || '[]');
 let marketplaceServices = [];
 let activeMarketplaceSessions = [];
 
@@ -93,704 +55,22 @@ let storageView = 'list';
 let selectedStorageIds = [];
 let activeMonitoringMetric = 'cpu';
 const THEME_STORAGE_KEY = 'bytesky_theme';
-const PROFILE_STORAGE_KEY = 'bytesky_profile';
-const LANGUAGE_STORAGE_KEY = 'bytesky_language';
-const REGION_STORAGE_KEY = 'bytesky_region';
-const PROFILE_AVATAR_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
-const DEFAULT_LANGUAGE_PREFERENCE = 'en-US';
-const DEFAULT_REGION_PREFERENCE = 'US';
+const SIDEBAR_COLLAPSE_STORAGE_KEY = 'bytesky_sidebar_collapsed';
 const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
 
-const UI_TRANSLATIONS = {
-    'en-US': {
-        'meta.title': 'ByteSky | Build Faster in the Cloud',
-        'nav.home': 'Home',
-        'nav.login': 'Login',
-        'nav.register': 'Register',
-        'nav.logout': 'Logout',
-        'sidebar.console': 'Console',
-        'sidebar.dashboard': 'Dashboard',
-        'sidebar.iaas': 'Compute (IaaS)',
-        'sidebar.network': 'Network & VPC',
-        'sidebar.saas': 'Marketplace (SaaS)',
-        'sidebar.monitoring': 'Monitoring',
-        'sidebar.storage': 'Storage',
-        'sidebar.support': 'Support',
-        'sidebar.iam': 'IAM',
-        'sidebar.billing': 'Billing',
-        'sidebar.profile': 'Profile',
-        'home.heroTitle': 'Build Faster on ByteSky',
-        'home.heroSubtitle': 'Deploy virtual machines, managed databases, and serverless functions in seconds.',
-        'home.startFreeTrial': 'Start Free Trial',
-        'profile.accountSettings': 'Account Settings',
-        'profile.editProfile': 'Edit Profile',
-        'profile.personal': 'Personal',
-        'profile.security': 'Security',
-        'profile.preferences': 'Preferences',
-        'profile.usage': 'Usage',
-        'profile.sshKeys': 'SSH Keys',
-        'profile.personalInformation': 'Personal Information',
-        'profile.fullName': 'Full Name',
-        'profile.emailAddress': 'Email Address',
-        'profile.phoneNumber': 'Phone Number',
-        'profile.jobTitle': 'Job Title',
-        'profile.company': 'Company',
-        'profile.timezone': 'Timezone',
-        'profile.saveChanges': 'Save Changes',
-        'profile.cancel': 'Cancel',
-        'profile.accountDetails': 'Account Details',
-        'profile.accountId': 'Account ID',
-        'profile.accountType': 'Account Type',
-        'profile.memberSince': 'Member since',
-        'profile.memberSinceTitle': 'Member Since',
-        'profile.lastLogin': 'Last Login',
-        'profile.securitySettings': 'Security Settings',
-        'profile.changePassword': 'Change Password',
-        'profile.currentPassword': 'Current Password',
-        'profile.newPassword': 'New Password',
-        'profile.confirmNewPassword': 'Confirm New Password',
-        'profile.updatePassword': 'Update Password',
-        'profile.twoFactorAuthentication': 'Two-Factor Authentication',
-        'profile.twoFactorDescription': 'Add an extra layer of security to your account',
-        'profile.activeSessions': 'Active Sessions',
-        'profile.preferencesTitle': 'Preferences',
-        'profile.notificationPreferences': 'Notification Preferences',
-        'profile.notificationBilling': 'Email notifications for billing alerts',
-        'profile.notificationSecurity': 'Email notifications for security alerts',
-        'profile.notificationSms': 'SMS notifications for critical events',
-        'profile.notificationMarketing': 'Marketing emails and product updates',
-        'profile.appearance': 'Appearance',
-        'profile.lightMode': 'Light Mode',
-        'profile.darkMode': 'Dark Mode',
-        'profile.systemDefault': 'System Default',
-        'profile.languageRegion': 'Language & Region',
-        'profile.language': 'Language',
-        'profile.region': 'Region',
-        'toast.languageUpdated': 'Language updated',
-        'toast.profileUpdated': 'Profile updated successfully!',
-        'toast.profileUpdateError': 'Error updating profile'
-    },
-    'en-GB': {
-        'meta.title': 'ByteSky | Build Faster in the Cloud',
-        'nav.home': 'Home',
-        'nav.login': 'Log in',
-        'nav.register': 'Register',
-        'nav.logout': 'Log out',
-        'sidebar.console': 'Console',
-        'sidebar.dashboard': 'Dashboard',
-        'sidebar.iaas': 'Compute (IaaS)',
-        'sidebar.network': 'Network & VPC',
-        'sidebar.saas': 'Marketplace (SaaS)',
-        'sidebar.monitoring': 'Monitoring',
-        'sidebar.storage': 'Storage',
-        'sidebar.support': 'Support',
-        'sidebar.iam': 'IAM',
-        'sidebar.billing': 'Billing',
-        'sidebar.profile': 'Profile',
-        'home.heroTitle': 'Build Faster on ByteSky',
-        'home.heroSubtitle': 'Deploy virtual machines, managed databases, and serverless functions in seconds.',
-        'home.startFreeTrial': 'Start Free Trial',
-        'profile.accountSettings': 'Account Settings',
-        'profile.editProfile': 'Edit Profile',
-        'profile.personal': 'Personal',
-        'profile.security': 'Security',
-        'profile.preferences': 'Preferences',
-        'profile.usage': 'Usage',
-        'profile.sshKeys': 'SSH Keys',
-        'profile.personalInformation': 'Personal Information',
-        'profile.fullName': 'Full Name',
-        'profile.emailAddress': 'Email Address',
-        'profile.phoneNumber': 'Phone Number',
-        'profile.jobTitle': 'Job Title',
-        'profile.company': 'Organisation',
-        'profile.timezone': 'Time Zone',
-        'profile.saveChanges': 'Save Changes',
-        'profile.cancel': 'Cancel',
-        'profile.accountDetails': 'Account Details',
-        'profile.accountId': 'Account ID',
-        'profile.accountType': 'Account Type',
-        'profile.memberSince': 'Member since',
-        'profile.memberSinceTitle': 'Member Since',
-        'profile.lastLogin': 'Last Login',
-        'profile.securitySettings': 'Security Settings',
-        'profile.changePassword': 'Change Password',
-        'profile.currentPassword': 'Current Password',
-        'profile.newPassword': 'New Password',
-        'profile.confirmNewPassword': 'Confirm New Password',
-        'profile.updatePassword': 'Update Password',
-        'profile.twoFactorAuthentication': 'Two-Factor Authentication',
-        'profile.twoFactorDescription': 'Add an extra layer of security to your account',
-        'profile.activeSessions': 'Active Sessions',
-        'profile.preferencesTitle': 'Preferences',
-        'profile.notificationPreferences': 'Notification Preferences',
-        'profile.notificationBilling': 'Email notifications for billing alerts',
-        'profile.notificationSecurity': 'Email notifications for security alerts',
-        'profile.notificationSms': 'SMS notifications for critical events',
-        'profile.notificationMarketing': 'Marketing emails and product updates',
-        'profile.appearance': 'Appearance',
-        'profile.lightMode': 'Light Mode',
-        'profile.darkMode': 'Dark Mode',
-        'profile.systemDefault': 'System Default',
-        'profile.languageRegion': 'Language & Region',
-        'profile.language': 'Language',
-        'profile.region': 'Region',
-        'toast.languageUpdated': 'Language updated',
-        'toast.profileUpdated': 'Profile updated successfully!',
-        'toast.profileUpdateError': 'Error updating profile'
-    },
-    es: {
-        'meta.title': 'ByteSky | Build Faster in the Cloud',
-        'nav.home': 'Inicio',
-        'nav.login': 'Iniciar sesión',
-        'nav.register': 'Registrarse',
-        'nav.logout': 'Cerrar sesión',
-        'sidebar.console': 'Consola',
-        'sidebar.dashboard': 'Panel',
-        'sidebar.iaas': 'Cómputo (IaaS)',
-        'sidebar.network': 'Red y VPC',
-        'sidebar.saas': 'Marketplace (SaaS)',
-        'sidebar.monitoring': 'Monitoreo',
-        'sidebar.storage': 'Almacenamiento',
-        'sidebar.support': 'Soporte',
-        'sidebar.iam': 'IAM',
-        'sidebar.billing': 'Facturación',
-        'sidebar.profile': 'Perfil',
-        'home.heroTitle': 'Construye más rápido con ByteSky',
-        'home.heroSubtitle': 'Implementa máquinas virtuales, bases de datos administradas y funciones serverless en segundos.',
-        'home.startFreeTrial': 'Comenzar prueba gratis',
-        'profile.accountSettings': 'Configuración de la cuenta',
-        'profile.editProfile': 'Editar perfil',
-        'profile.personal': 'Personal',
-        'profile.security': 'Seguridad',
-        'profile.preferences': 'Preferencias',
-        'profile.usage': 'Uso',
-        'profile.sshKeys': 'Claves SSH',
-        'profile.personalInformation': 'Información personal',
-        'profile.fullName': 'Nombre completo',
-        'profile.emailAddress': 'Correo electrónico',
-        'profile.phoneNumber': 'Número de teléfono',
-        'profile.jobTitle': 'Cargo',
-        'profile.company': 'Empresa',
-        'profile.timezone': 'Zona horaria',
-        'profile.saveChanges': 'Guardar cambios',
-        'profile.cancel': 'Cancelar',
-        'profile.accountDetails': 'Detalles de la cuenta',
-        'profile.accountId': 'ID de cuenta',
-        'profile.accountType': 'Tipo de cuenta',
-        'profile.memberSince': 'Miembro desde',
-        'profile.memberSinceTitle': 'Miembro desde',
-        'profile.lastLogin': 'Último acceso',
-        'profile.securitySettings': 'Configuración de seguridad',
-        'profile.changePassword': 'Cambiar contraseña',
-        'profile.currentPassword': 'Contraseña actual',
-        'profile.newPassword': 'Nueva contraseña',
-        'profile.confirmNewPassword': 'Confirmar nueva contraseña',
-        'profile.updatePassword': 'Actualizar contraseña',
-        'profile.twoFactorAuthentication': 'Autenticación de dos factores',
-        'profile.twoFactorDescription': 'Agrega una capa adicional de seguridad a tu cuenta',
-        'profile.activeSessions': 'Sesiones activas',
-        'profile.preferencesTitle': 'Preferencias',
-        'profile.notificationPreferences': 'Preferencias de notificación',
-        'profile.notificationBilling': 'Correos para alertas de facturación',
-        'profile.notificationSecurity': 'Correos para alertas de seguridad',
-        'profile.notificationSms': 'SMS para eventos críticos',
-        'profile.notificationMarketing': 'Correos de marketing y novedades',
-        'profile.appearance': 'Apariencia',
-        'profile.lightMode': 'Modo claro',
-        'profile.darkMode': 'Modo oscuro',
-        'profile.systemDefault': 'Predeterminado del sistema',
-        'profile.languageRegion': 'Idioma y región',
-        'profile.language': 'Idioma',
-        'profile.region': 'Región',
-        'toast.languageUpdated': 'Idioma actualizado',
-        'toast.profileUpdated': 'Perfil actualizado correctamente',
-        'toast.profileUpdateError': 'Error al actualizar el perfil'
-    },
-    fr: {
-        'meta.title': 'ByteSky | Build Faster in the Cloud',
-        'nav.home': 'Accueil',
-        'nav.login': 'Connexion',
-        'nav.register': 'Créer un compte',
-        'nav.logout': 'Déconnexion',
-        'sidebar.console': 'Console',
-        'sidebar.dashboard': 'Tableau de bord',
-        'sidebar.iaas': 'Calcul (IaaS)',
-        'sidebar.network': 'Réseau et VPC',
-        'sidebar.saas': 'Marketplace (SaaS)',
-        'sidebar.monitoring': 'Surveillance',
-        'sidebar.storage': 'Stockage',
-        'sidebar.support': 'Support',
-        'sidebar.iam': 'IAM',
-        'sidebar.billing': 'Facturation',
-        'sidebar.profile': 'Profil',
-        'home.heroTitle': 'Créez plus vite avec ByteSky',
-        'home.heroSubtitle': 'Déployez des machines virtuelles, des bases de données gérées et des fonctions serverless en quelques secondes.',
-        'home.startFreeTrial': 'Essai gratuit',
-        'profile.accountSettings': 'Paramètres du compte',
-        'profile.editProfile': 'Modifier le profil',
-        'profile.personal': 'Personnel',
-        'profile.security': 'Sécurité',
-        'profile.preferences': 'Préférences',
-        'profile.usage': 'Utilisation',
-        'profile.sshKeys': 'Clés SSH',
-        'profile.personalInformation': 'Informations personnelles',
-        'profile.fullName': 'Nom complet',
-        'profile.emailAddress': 'Adresse e-mail',
-        'profile.phoneNumber': 'Numéro de téléphone',
-        'profile.jobTitle': 'Poste',
-        'profile.company': 'Entreprise',
-        'profile.timezone': 'Fuseau horaire',
-        'profile.saveChanges': 'Enregistrer',
-        'profile.cancel': 'Annuler',
-        'profile.accountDetails': 'Détails du compte',
-        'profile.accountId': 'ID du compte',
-        'profile.accountType': 'Type de compte',
-        'profile.memberSince': 'Membre depuis',
-        'profile.memberSinceTitle': 'Membre depuis',
-        'profile.lastLogin': 'Dernière connexion',
-        'profile.securitySettings': 'Paramètres de sécurité',
-        'profile.changePassword': 'Changer le mot de passe',
-        'profile.currentPassword': 'Mot de passe actuel',
-        'profile.newPassword': 'Nouveau mot de passe',
-        'profile.confirmNewPassword': 'Confirmer le nouveau mot de passe',
-        'profile.updatePassword': 'Mettre à jour le mot de passe',
-        'profile.twoFactorAuthentication': 'Authentification à deux facteurs',
-        'profile.twoFactorDescription': 'Ajoutez une couche de sécurité supplémentaire à votre compte',
-        'profile.activeSessions': 'Sessions actives',
-        'profile.preferencesTitle': 'Préférences',
-        'profile.notificationPreferences': 'Préférences de notification',
-        'profile.notificationBilling': 'E-mails pour les alertes de facturation',
-        'profile.notificationSecurity': 'E-mails pour les alertes de sécurité',
-        'profile.notificationSms': 'SMS pour les événements critiques',
-        'profile.notificationMarketing': 'E-mails marketing et nouveautés',
-        'profile.appearance': 'Apparence',
-        'profile.lightMode': 'Mode clair',
-        'profile.darkMode': 'Mode sombre',
-        'profile.systemDefault': 'Système',
-        'profile.languageRegion': 'Langue et région',
-        'profile.language': 'Langue',
-        'profile.region': 'Région',
-        'toast.languageUpdated': 'Langue mise à jour',
-        'toast.profileUpdated': 'Profil mis à jour avec succès',
-        'toast.profileUpdateError': 'Erreur lors de la mise à jour du profil'
-    },
-    de: {
-        'meta.title': 'ByteSky | Build Faster in the Cloud',
-        'nav.home': 'Startseite',
-        'nav.login': 'Anmelden',
-        'nav.register': 'Registrieren',
-        'nav.logout': 'Abmelden',
-        'sidebar.console': 'Konsole',
-        'sidebar.dashboard': 'Dashboard',
-        'sidebar.iaas': 'Compute (IaaS)',
-        'sidebar.network': 'Netzwerk & VPC',
-        'sidebar.saas': 'Marketplace (SaaS)',
-        'sidebar.monitoring': 'Monitoring',
-        'sidebar.storage': 'Speicher',
-        'sidebar.support': 'Support',
-        'sidebar.iam': 'IAM',
-        'sidebar.billing': 'Abrechnung',
-        'sidebar.profile': 'Profil',
-        'home.heroTitle': 'Schneller bauen mit ByteSky',
-        'home.heroSubtitle': 'Stellen Sie virtuelle Maschinen, verwaltete Datenbanken und serverlose Funktionen in Sekunden bereit.',
-        'home.startFreeTrial': 'Kostenlos testen',
-        'profile.accountSettings': 'Kontoeinstellungen',
-        'profile.editProfile': 'Profil bearbeiten',
-        'profile.personal': 'Persönlich',
-        'profile.security': 'Sicherheit',
-        'profile.preferences': 'Einstellungen',
-        'profile.usage': 'Nutzung',
-        'profile.sshKeys': 'SSH-Schlüssel',
-        'profile.personalInformation': 'Persönliche Informationen',
-        'profile.fullName': 'Vollständiger Name',
-        'profile.emailAddress': 'E-Mail-Adresse',
-        'profile.phoneNumber': 'Telefonnummer',
-        'profile.jobTitle': 'Berufsbezeichnung',
-        'profile.company': 'Unternehmen',
-        'profile.timezone': 'Zeitzone',
-        'profile.saveChanges': 'Änderungen speichern',
-        'profile.cancel': 'Abbrechen',
-        'profile.accountDetails': 'Kontodetails',
-        'profile.accountId': 'Konto-ID',
-        'profile.accountType': 'Kontotyp',
-        'profile.memberSince': 'Mitglied seit',
-        'profile.memberSinceTitle': 'Mitglied seit',
-        'profile.lastLogin': 'Letzte Anmeldung',
-        'profile.securitySettings': 'Sicherheitseinstellungen',
-        'profile.changePassword': 'Passwort ändern',
-        'profile.currentPassword': 'Aktuelles Passwort',
-        'profile.newPassword': 'Neues Passwort',
-        'profile.confirmNewPassword': 'Neues Passwort bestätigen',
-        'profile.updatePassword': 'Passwort aktualisieren',
-        'profile.twoFactorAuthentication': 'Zwei-Faktor-Authentifizierung',
-        'profile.twoFactorDescription': 'Fügen Sie Ihrem Konto eine zusätzliche Sicherheitsebene hinzu',
-        'profile.activeSessions': 'Aktive Sitzungen',
-        'profile.preferencesTitle': 'Einstellungen',
-        'profile.notificationPreferences': 'Benachrichtigungseinstellungen',
-        'profile.notificationBilling': 'E-Mails für Rechnungswarnungen',
-        'profile.notificationSecurity': 'E-Mails für Sicherheitswarnungen',
-        'profile.notificationSms': 'SMS für kritische Ereignisse',
-        'profile.notificationMarketing': 'Marketing-E-Mails und Produktupdates',
-        'profile.appearance': 'Darstellung',
-        'profile.lightMode': 'Heller Modus',
-        'profile.darkMode': 'Dunkler Modus',
-        'profile.systemDefault': 'Systemstandard',
-        'profile.languageRegion': 'Sprache & Region',
-        'profile.language': 'Sprache',
-        'profile.region': 'Region',
-        'toast.languageUpdated': 'Sprache aktualisiert',
-        'toast.profileUpdated': 'Profil erfolgreich aktualisiert',
-        'toast.profileUpdateError': 'Fehler beim Aktualisieren des Profils'
-    }
-};
-
-const UI_TEXT_TARGETS = [
-    { selector: '.sidebar-header', key: 'sidebar.console' },
-    { selector: `.sidebar a[onclick="router('dashboard')"]`, key: 'sidebar.dashboard' },
-    { selector: `.sidebar a[onclick="router('iaas')"]`, key: 'sidebar.iaas' },
-    { selector: `.sidebar a[onclick="router('network')"]`, key: 'sidebar.network' },
-    { selector: `.sidebar a[onclick="router('saas')"]`, key: 'sidebar.saas' },
-    { selector: `.sidebar a[onclick="router('monitoring')"]`, key: 'sidebar.monitoring' },
-    { selector: `.sidebar a[onclick="router('storage')"]`, key: 'sidebar.storage' },
-    { selector: `.sidebar a[onclick="router('support')"]`, key: 'sidebar.support' },
-    { selector: `.sidebar a[onclick="router('iam')"]`, key: 'sidebar.iam' },
-    { selector: `.sidebar a[onclick="router('billing')"]`, key: 'sidebar.billing' },
-    { selector: `.sidebar a[onclick="router('profile')"]`, key: 'sidebar.profile' },
-    { selector: '#home .hero h1', key: 'home.heroTitle' },
-    { selector: '#home .hero p', key: 'home.heroSubtitle' },
-    { selector: '#home .hero .btn-primary', key: 'home.startFreeTrial' },
-    { selector: '#profile-settings-title', key: 'profile.accountSettings' },
-    { selector: '#profile-edit-btn', key: 'profile.editProfile' },
-    { selector: '#profile-tab-personal-btn', key: 'profile.personal' },
-    { selector: '#profile-tab-security-btn', key: 'profile.security' },
-    { selector: '#profile-tab-preferences-btn', key: 'profile.preferences' },
-    { selector: '#profile-tab-usage-btn', key: 'profile.usage' },
-    { selector: '#profile-tab-ssh-btn', key: 'profile.sshKeys' },
-    { selector: '#profile-personal-title', key: 'profile.personalInformation' },
-    { selector: '#profile-label-fullname', key: 'profile.fullName' },
-    { selector: '#profile-label-email', key: 'profile.emailAddress' },
-    { selector: '#profile-label-phone', key: 'profile.phoneNumber' },
-    { selector: '#profile-label-job', key: 'profile.jobTitle' },
-    { selector: '#profile-label-company', key: 'profile.company' },
-    { selector: '#profile-label-timezone', key: 'profile.timezone' },
-    { selector: '#profile-save-btn', key: 'profile.saveChanges' },
-    { selector: '#profile-cancel-btn', key: 'profile.cancel' },
-    { selector: '#profile-account-details-title', key: 'profile.accountDetails' },
-    { selector: '#profile-account-id-label', key: 'profile.accountId' },
-    { selector: '#profile-account-type-label', key: 'profile.accountType' },
-    { selector: '#profile-member-since-label', key: 'profile.memberSince' },
-    { selector: '#profile-joined-label', key: 'profile.memberSinceTitle' },
-    { selector: '#profile-last-login-label', key: 'profile.lastLogin' },
-    { selector: '#profile-security-title', key: 'profile.securitySettings' },
-    { selector: '#profile-change-password-title', key: 'profile.changePassword' },
-    { selector: '#profile-update-password-btn', key: 'profile.updatePassword' },
-    { selector: '#profile-2fa-title', key: 'profile.twoFactorAuthentication' },
-    { selector: '#profile-2fa-description', key: 'profile.twoFactorDescription' },
-    { selector: '#profile-active-sessions-title', key: 'profile.activeSessions' },
-    { selector: '#profile-preferences-title', key: 'profile.preferencesTitle' },
-    { selector: '#profile-notification-preferences-title', key: 'profile.notificationPreferences' },
-    { selector: '#profile-notification-billing-label', key: 'profile.notificationBilling' },
-    { selector: '#profile-notification-security-label', key: 'profile.notificationSecurity' },
-    { selector: '#profile-notification-sms-label', key: 'profile.notificationSms' },
-    { selector: '#profile-notification-marketing-label', key: 'profile.notificationMarketing' },
-    { selector: '#profile-appearance-title', key: 'profile.appearance' },
-    { selector: '#theme-light-btn', key: 'profile.lightMode' },
-    { selector: '#theme-dark-btn', key: 'profile.darkMode' },
-    { selector: '#theme-system-btn', key: 'profile.systemDefault' },
-    { selector: '#profile-language-region-title', key: 'profile.languageRegion' },
-    { selector: '#profile-language-label', key: 'profile.language' },
-    { selector: '#profile-region-label', key: 'profile.region' }
-];
-
-const UI_PLACEHOLDER_TARGETS = [
-    { selector: '#current-password', key: 'profile.currentPassword' },
-    { selector: '#new-password', key: 'profile.newPassword' },
-    { selector: '#confirm-password', key: 'profile.confirmNewPassword' }
-];
-
-function readJsonFromStorage(key, fallback) {
-    const rawValue = localStorage.getItem(key);
-
-    if (!rawValue) {
-        return fallback;
-    }
-
-    try {
-        return JSON.parse(rawValue);
-    } catch (error) {
-        console.warn(`[Storage] Ignoring invalid JSON for ${key}`, error);
-        localStorage.removeItem(key);
-        return fallback;
-    }
-}
-
-function getStoredProfilePreferences() {
-    return readJsonFromStorage(PROFILE_STORAGE_KEY, {}) || {};
-}
-
-function getSavedLanguagePreference() {
-    return localStorage.getItem(LANGUAGE_STORAGE_KEY)
-        || getStoredProfilePreferences().language
-        || DEFAULT_LANGUAGE_PREFERENCE;
-}
-
-function getSavedRegionPreference() {
-    return localStorage.getItem(REGION_STORAGE_KEY)
-        || getStoredProfilePreferences().region
-        || DEFAULT_REGION_PREFERENCE;
-}
-
-function getActiveLocale(language = getSavedLanguagePreference(), region = getSavedRegionPreference()) {
-    switch (language) {
-        case 'en-GB':
-            return 'en-GB';
-        case 'es':
-            return region === 'US' ? 'es-US' : 'es-ES';
-        case 'fr':
-            return 'fr-FR';
-        case 'de':
-            return 'de-DE';
-        default:
-            return region === 'GB' ? 'en-GB' : 'en-US';
-    }
-}
-
-function getTranslationDictionary(language = getSavedLanguagePreference()) {
-    return UI_TRANSLATIONS[language] || UI_TRANSLATIONS[DEFAULT_LANGUAGE_PREFERENCE];
-}
-
-function t(key) {
-    const dictionary = getTranslationDictionary();
-    return dictionary[key]
-        || UI_TRANSLATIONS[DEFAULT_LANGUAGE_PREFERENCE][key]
-        || key;
-}
-
-function syncLanguageSelectors() {
-    const languageSelect = document.getElementById('profile-language');
-    const regionSelect = document.getElementById('profile-region');
-
-    if (languageSelect) {
-        languageSelect.value = getSavedLanguagePreference();
-    }
-
-    if (regionSelect) {
-        regionSelect.value = getSavedRegionPreference();
-    }
-}
-
-function applyStaticTranslations() {
-    document.documentElement.lang = getSavedLanguagePreference().split('-')[0];
-    document.title = t('meta.title');
-
-    UI_TEXT_TARGETS.forEach(({ selector, key }) => {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.textContent = t(key);
-        }
-    });
-
-    UI_PLACEHOLDER_TARGETS.forEach(({ selector, key }) => {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.placeholder = t(key);
-        }
-    });
-
-    syncLanguageSelectors();
-}
-
-function persistProfilePreferences(updates = {}, options = {}) {
-    const { announce = false } = options;
-    const nextProfile = {
-        ...getStoredProfilePreferences(),
-        ...updates
-    };
-
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
-
-    if (nextProfile.language) {
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, nextProfile.language);
-    }
-
-    if (nextProfile.region) {
-        localStorage.setItem(REGION_STORAGE_KEY, nextProfile.region);
-    }
-
-    applyStaticTranslations();
-    updateNav();
-
-    if (typeof syncProfileMetaDates === 'function') {
-        syncProfileMetaDates();
-    }
-
-    if (announce) {
-        showToast(t('toast.languageUpdated'));
-    }
-
-    return nextProfile;
-}
-
-function getCurrentUserDisplayName() {
-    return currentUser?.name?.trim() || currentUser?.email?.split('@')[0] || 'User';
-}
-
-function getProfileAvatarDataUrl() {
-    return getStoredProfilePreferences().avatarDataUrl || '';
-}
-
-function syncProfileAvatarUI() {
-    const avatarShell = document.getElementById('profile-avatar-large');
-    const avatarImage = document.getElementById('profile-avatar-image');
-    const avatarFallback = document.getElementById('profile-avatar-fallback');
-    const removeButton = document.getElementById('profile-avatar-remove-btn');
-    const avatarInput = document.getElementById('profileAvatarInput');
-    const avatarDataUrl = getProfileAvatarDataUrl();
-    const displayInitial = getCurrentUserDisplayName().charAt(0).toUpperCase();
-
-    if (avatarShell) {
-        avatarShell.classList.toggle('has-image', Boolean(avatarDataUrl));
-    }
-
-    if (avatarFallback) {
-        avatarFallback.textContent = displayInitial;
-        avatarFallback.hidden = Boolean(avatarDataUrl);
-    }
-
-    if (avatarImage) {
-        if (avatarDataUrl) {
-            avatarImage.src = avatarDataUrl;
-            avatarImage.alt = `${getCurrentUserDisplayName()} profile picture`;
-            avatarImage.hidden = false;
-        } else {
-            avatarImage.hidden = true;
-            avatarImage.removeAttribute('src');
-        }
-    }
-
-    if (removeButton) {
-        removeButton.hidden = !avatarDataUrl;
-    }
-
-    if (avatarInput) {
-        avatarInput.value = '';
-    }
-}
-
-function handleProfileAvatarChange(event) {
-    const file = event?.target?.files?.[0];
-
-    if (!file) {
-        return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-        showToast('Please choose an image file');
-        event.target.value = '';
-        return;
-    }
-
-    if (file.size > PROFILE_AVATAR_MAX_FILE_SIZE_BYTES) {
-        showToast('Choose an image smaller than 2 MB');
-        event.target.value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-        try {
-            persistProfilePreferences({ avatarDataUrl: String(reader.result || '') });
-            syncProfileAvatarUI();
-            showToast('Profile photo updated');
-        } catch (error) {
-            console.error('Avatar save failed:', error);
-            showToast('Could not save image. Try a smaller photo.');
-        }
-    };
-    reader.onerror = () => {
-        showToast('Could not read selected image');
-    };
-    reader.readAsDataURL(file);
-}
-
-function removeProfileAvatar() {
-    try {
-        persistProfilePreferences({ avatarDataUrl: '' });
-        syncProfileAvatarUI();
-        showToast('Profile photo removed');
-    } catch (error) {
-        console.error('Avatar removal failed:', error);
-        showToast('Could not remove profile photo');
-    }
-}
-
-function handleLanguagePreferenceChange() {
-    const language = document.getElementById('profile-language')?.value || DEFAULT_LANGUAGE_PREFERENCE;
-    const region = document.getElementById('profile-region')?.value || DEFAULT_REGION_PREFERENCE;
-    persistProfilePreferences({ language, region }, { announce: true });
-}
-
-function formatLocalizedDate(value, options = {}) {
-    const parsedDate = value instanceof Date ? value : new Date(value);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return '';
-    }
-
-    return parsedDate.toLocaleDateString(getActiveLocale(), options);
-}
-
-function formatLocalizedDateTime(value, options = {}) {
-    const parsedDate = value instanceof Date ? value : new Date(value);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return '';
-    }
-
-    return parsedDate.toLocaleString(getActiveLocale(), options);
-}
-
-function syncProfileMetaDates() {
-    const referenceDate = currentUser?.createdAt || currentUser?.created_at || localStorage.getItem('bytesky_created_at') || new Date().toISOString();
-    const lastLoginDate = currentUser?.lastLoginAt || currentUser?.last_login_at || new Date().toISOString();
-
-    localStorage.setItem('bytesky_created_at', referenceDate);
-
-    const memberSince = document.getElementById('profile-member-since');
-    const joined = document.getElementById('profile-joined');
-    const lastLogin = document.getElementById('profile-last-login');
-
-    const memberSinceText = formatLocalizedDate(referenceDate, { month: 'short', year: 'numeric' }) || 'Jan 2026';
-    const joinedText = formatLocalizedDate(referenceDate, { month: 'long', year: 'numeric' }) || 'March 2026';
-    const lastLoginText = formatLocalizedDateTime(lastLoginDate, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }) || 'Just now';
-
-    if (memberSince) {
-        memberSince.textContent = memberSinceText;
-    }
-
-    if (joined) {
-        joined.textContent = joinedText;
-    }
-
-    if (lastLogin) {
-        lastLogin.textContent = lastLoginText;
-    }
-}
-
-let billing = readJsonFromStorage('bytesky_billing', []);
-let saasIntegrations = readJsonFromStorage('bytesky_saas_integrations', []);
-
 function isCompactSidebarLayout() {
     return window.innerWidth <= SIDEBAR_DISMISS_BREAKPOINT;
+}
+
+function getSavedSidebarCollapsed() {
+    return localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY) === 'true';
+}
+
+function setSidebarCollapsed(isCollapsed) {
+    document.body.classList.toggle('sidebar-collapsed', Boolean(currentUser) && Boolean(isCollapsed) && !isCompactSidebarLayout());
 }
 
 function setSidebarOpen(isOpen) {
@@ -801,14 +81,16 @@ function setSidebarOpen(isOpen) {
         return;
     }
 
-    const nextState = Boolean(isOpen && currentUser);
+    const nextState = Boolean(isOpen && currentUser && isCompactSidebarLayout());
     sidebar.classList.toggle('active', nextState);
 
     if (consoleToggle) {
         consoleToggle.classList.toggle('active', nextState);
-        consoleToggle.setAttribute('aria-expanded', String(nextState));
-        consoleToggle.setAttribute('title', nextState ? 'Close menu' : 'Open menu');
-        consoleToggle.setAttribute('aria-label', nextState ? 'Close navigation menu' : 'Open navigation menu');
+        if (isCompactSidebarLayout()) {
+            consoleToggle.setAttribute('aria-expanded', String(nextState));
+            consoleToggle.setAttribute('title', nextState ? 'Close menu' : 'Open menu');
+            consoleToggle.setAttribute('aria-label', nextState ? 'Close navigation menu' : 'Open navigation menu');
+        }
     }
 }
 
@@ -819,7 +101,22 @@ function toggleSidebar() {
         return;
     }
 
-    setSidebarOpen(!sidebar.classList.contains('active'));
+    if (isCompactSidebarLayout()) {
+        setSidebarOpen(!sidebar.classList.contains('active'));
+        return;
+    }
+
+    const nextCollapsed = !document.body.classList.contains('sidebar-collapsed');
+    localStorage.setItem(SIDEBAR_COLLAPSE_STORAGE_KEY, String(nextCollapsed));
+    setSidebarCollapsed(nextCollapsed);
+
+    const consoleToggle = document.getElementById('consoleToggle');
+    if (consoleToggle) {
+        consoleToggle.classList.toggle('active', !nextCollapsed);
+        consoleToggle.setAttribute('aria-expanded', String(!nextCollapsed));
+        consoleToggle.setAttribute('title', nextCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        consoleToggle.setAttribute('aria-label', nextCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    }
 }
 
 function handleSidebarDismiss(event) {
@@ -836,6 +133,22 @@ function handleSidebarDismiss(event) {
     if (!clickedInsideSidebar && !clickedConsoleToggle) {
         setSidebarOpen(false);
     }
+}
+
+function syncSidebarLayout() {
+    if (!currentUser) {
+        return;
+    }
+
+    if (isCompactSidebarLayout()) {
+        setSidebarCollapsed(false);
+        setSidebarOpen(false);
+    } else {
+        setSidebarOpen(false);
+        setSidebarCollapsed(getSavedSidebarCollapsed());
+    }
+
+    updateNav();
 }
 
 function showToast(message) {
@@ -1197,39 +510,39 @@ function updateNav() {
     const sidebar = document.getElementById('sidebar');
     const adminLink = document.getElementById('adminLink');
     const consoleToggle = document.getElementById('consoleToggle');
-    const sidebarWasOpen = sidebar?.classList.contains('active');
 
     if (currentUser) {
-        const displayName = getCurrentUserDisplayName();
-        const emailAddress = currentUser.email || 'user@example.com';
-        const displayInitial = displayName.charAt(0).toUpperCase();
-        const avatarDataUrl = getProfileAvatarDataUrl();
         nav.innerHTML = `
-            <div class="nav-account">
-                <span class="nav-user-badge${avatarDataUrl ? ' has-image' : ''}">
-                    ${avatarDataUrl
-                        ? `<img class="nav-user-avatar-image" src="${avatarDataUrl}" alt="${displayName} profile picture">`
-                        : `<span class="nav-user-badge-fallback" aria-hidden="true">${displayInitial}</span>`}
-                </span>
-                <div class="nav-user-meta">
-                    <span class="nav-user-name">${displayName}</span>
-                    <span class="nav-user-email">${emailAddress}</span>
-                </div>
-                <button class="btn-logout nav-account-logout" onclick="logout()">${t('nav.logout')}</button>
-            </div>
+            <span class="nav-user-email">${currentUser.email}</span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
         `;
+        document.body.classList.add('sidebar-visible');
         if (consoleToggle) {
             consoleToggle.hidden = false;
         }
-        setSidebarOpen(sidebarWasOpen);
+        const collapsed = getSavedSidebarCollapsed();
+        setSidebarCollapsed(collapsed);
+        setSidebarOpen(false);
+        if (consoleToggle) {
+            const expanded = isCompactSidebarLayout() ? sidebar?.classList.contains('active') : !document.body.classList.contains('sidebar-collapsed');
+            consoleToggle.classList.toggle('active', expanded);
+            consoleToggle.setAttribute('aria-expanded', String(expanded));
+            consoleToggle.setAttribute('title', isCompactSidebarLayout()
+                ? (expanded ? 'Close menu' : 'Open menu')
+                : (expanded ? 'Collapse sidebar' : 'Expand sidebar'));
+            consoleToggle.setAttribute('aria-label', isCompactSidebarLayout()
+                ? (expanded ? 'Close navigation menu' : 'Open navigation menu')
+                : (expanded ? 'Collapse sidebar' : 'Expand sidebar'));
+        }
         if (adminLink) {
-            adminLink.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+            adminLink.style.display = currentUser.role === 'admin' ? 'flex' : 'none';
         }
     } else {
+        document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
         nav.innerHTML = `
-            <a onclick="router('home')">${t('nav.home')}</a>
-            <a onclick="router('login')">${t('nav.login')}</a>
-            <a onclick="router('register')">${t('nav.register')}</a>
+            <a onclick="router('home')">Home</a>
+            <a onclick="router('login')">Login</a>
+            <a onclick="router('register')">Register</a>
         `;
         if (consoleToggle) {
             consoleToggle.hidden = true;
@@ -1237,32 +550,31 @@ function updateNav() {
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
-
-    applyStaticTranslations();
 }
 
 // ============================================
 // PROFILE PAGE FUNCTIONS
 // ============================================
 
-function showProfileTab(tabName) {
-    // Hide all tabs
+function showProfileTab(tabName, clickedBtn) {
     document.querySelectorAll('.profile-tab').forEach(tab => {
         tab.style.display = 'none';
     });
 
-    // Show selected tab
-    document.getElementById(`profile-${tabName}`).style.display = 'block';
+    const selectedTab = document.getElementById(`profile-${tabName}`);
+    if (selectedTab) selectedTab.style.display = 'block';
 
-    // Update button styles
-    document.querySelectorAll('[onclick^="showProfileTab"]').forEach(btn => {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-outline');
+    document.querySelectorAll('.profile-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
     });
-    event.target.classList.remove('btn-outline');
-    event.target.classList.add('btn-primary');
-}
 
+    if (clickedBtn) {
+        clickedBtn.classList.add('active');
+    } else {
+        const navBtn = document.querySelector(`.profile-tab-btn[onclick*="'${tabName}'"]`);
+        if (navBtn) navBtn.classList.add('active');
+    }
+}
 function editProfile() {
     const inputs = document.querySelectorAll('#profile-personal input');
     inputs.forEach(input => {
@@ -1279,8 +591,6 @@ async function saveProfile() {
     const job = document.getElementById('profile-job').value;
     const company = document.getElementById('profile-company').value;
     const timezone = document.getElementById('profile-timezone').value;
-    const language = document.getElementById('profile-language')?.value || getSavedLanguagePreference();
-    const region = document.getElementById('profile-region')?.value || getSavedRegionPreference();
 
     if (!fullName || !email) {
         showToast('Name and email are required');
@@ -1298,9 +608,7 @@ async function saveProfile() {
         phone,
         job,
         company,
-        timezone,
-        language,
-        region
+        timezone
     };
 
     try {
@@ -1321,12 +629,12 @@ async function saveProfile() {
 
         currentUser = data.user;
         localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
-        persistProfilePreferences(profileData);
+        localStorage.setItem('bytesky_profile', JSON.stringify(profileData));
 
         updateNav();
         loadProfileData();
     } catch (err) {
-        showToast(t('toast.profileUpdateError'));
+        showToast('Error updating profile');
         return;
     }
 
@@ -1337,7 +645,7 @@ async function saveProfile() {
         input.setAttribute('readonly', 'readonly');
     });
 
-    showToast(t('toast.profileUpdated'));
+    showToast('Profile updated successfully!');
 }
 
 function cancelEdit() {
@@ -1433,10 +741,10 @@ function setTheme(theme) {
     showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} mode activated`);
 }
 
-let sshKeys = readJsonFromStorage('bytesky_ssh_keys', []);
+let sshKeys = JSON.parse(localStorage.getItem('bytesky_ssh_keys') || '[]');
 
 function getStoredSSHKeys() {
-    sshKeys = readJsonFromStorage('bytesky_ssh_keys', []);
+    sshKeys = JSON.parse(localStorage.getItem('bytesky_ssh_keys') || '[]');
     return sshKeys;
 }
 
@@ -1548,17 +856,17 @@ function loadProfileData() {
     if (!currentUser) return;
 
     // Set basic info
-    const displayName = getCurrentUserDisplayName();
-    document.getElementById('profile-name-display').innerText = displayName;
+    document.getElementById('profile-name-display').innerText = currentUser.name;
     document.getElementById('profile-email-display').innerText = currentUser.email;
     document.getElementById('profile-role-display').innerText = currentUser.role?.toUpperCase() || 'USER';
+    document.getElementById('profile-avatar-large').innerText = currentUser.name.charAt(0).toUpperCase();
     const fullNameInput = document.getElementById('profile-fullname');
     const emailInput = document.getElementById('profile-email-input');
-    if (fullNameInput) fullNameInput.value = displayName;
+    if (fullNameInput) fullNameInput.value = currentUser.name || '';
     if (emailInput) emailInput.value = currentUser.email || '';
 
     // Load saved profile data
-    const savedProfile = readJsonFromStorage(PROFILE_STORAGE_KEY, null);
+    const savedProfile = JSON.parse(localStorage.getItem('bytesky_profile'));
     if (savedProfile) {
         document.getElementById('profile-phone').value = savedProfile.phone || '';
         document.getElementById('profile-job').value = savedProfile.job || '';
@@ -1566,17 +874,11 @@ function loadProfileData() {
         document.getElementById('profile-timezone').value = savedProfile.timezone || 'UTC';
     }
 
-    syncProfileAvatarUI();
-
     // Generate account ID
     const accountId = localStorage.getItem('bytesky_account_id')
         || `acc_${Math.random().toString(36).slice(2, 12)}`;
     localStorage.setItem('bytesky_account_id', accountId);
     document.getElementById('profile-account-id').innerText = accountId;
-
-    syncLanguageSelectors();
-    applyStaticTranslations();
-    syncProfileMetaDates();
 
     // Load SSH keys
     loadSSHKeys();
@@ -1687,26 +989,26 @@ function openModal(modalId) {
 // VM CONSOLE
 // ============================================
 
-function openVMConsole(vmId, vmName) {
-    if (!currentUser) {
-        showToast('Please login first');
-        router('login');
+const osConsoleMap = {
+    'Windows Server': 'https://copy.sh/v86/?profile=windows2000',
+    'Debian 11': 'https://distrosea.com/start/debian-11.0.0-standard/',
+    'CentOS 9': 'https://distrosea.com/start/centosstream-10-minimal/',
+    'Ubuntu 22.04': 'https://distrosea.com/start/ubuntu-25.10-default/'
+};
+
+function handleConsoleClick(os) {
+    const url = osConsoleMap[os];
+
+    if (url) {
+        window.open(url, '_blank');
         return;
     }
-    const modal = document.getElementById('vmConsoleModal');
-    if (modal) {
-        document.getElementById('consoleTitle').innerText = `Console - ${vmName}`;
-        modal.style.display = 'flex';
-        const output = document.getElementById('consoleOutput');
-        if (output) {
-            output.innerHTML = `
-                <div>ByteSky VM Console v1.0</div>
-                <div>Connecting to instance...</div>
-                <div>Welcome to Ubuntu 22.04</div>
-                <div>user@vm:~$ </div>
-            `;
-        }
-    }
+
+    alert('Console not available for this OS');
+}
+
+function openVMConsole(os) {
+    handleConsoleClick(os);
 }
 
 function closeVMConsole() {
@@ -1828,7 +1130,7 @@ async function loadVMs() {
                     <td>$${(vm.hourlyRate || 0.0068).toFixed(4)}/hr</td>
                     <td>
                         ${vm.status === 'running' ?
-                    `<button class="btn btn-outline" style="font-size:0.7rem; margin-right:5px;" onclick="openVMConsole('${vm._id}', '${vm.name}')">>_ Console</button>` : ''}
+                    `<button class="btn btn-outline" style="font-size:0.7rem; margin-right:5px;" onclick="openVMConsole('${escapeJsString(vm.os || '')}')" title="Open Console">Console</button>` : ''}
                         <button class="btn btn-danger" style="font-size:0.7rem;" onclick="deleteVM('${vm._id}')">X Terminate</button>
                     </td>
                 </tr>
@@ -1839,8 +1141,50 @@ async function loadVMs() {
     }
 }
 
-async function deleteVM(id) {
-    if (!confirm('Terminate instance? This cannot be undone.')) return;
+let pendingDeleteVM = null;
+
+function toggleInstanceActionMenu(event, id) {
+    event.stopPropagation();
+    const targetMenuId = `instance-action-${id}`;
+    document.querySelectorAll('.instance-action-menu-list').forEach((menu) => {
+        if (menu.id === targetMenuId) {
+            menu.classList.toggle('show');
+        } else {
+            menu.classList.remove('show');
+        }
+    });
+}
+
+function promptDeleteVM(id, name = 'this instance') {
+    pendingDeleteVM = { id, name };
+    const nameEl = document.getElementById('deleteVmName');
+    const bodyEl = document.getElementById('deleteVmMessage');
+    if (nameEl) nameEl.textContent = name;
+    if (bodyEl) bodyEl.textContent = `This will permanently delete ${name}. This action cannot be undone.`;
+    openModal('deleteVmModal');
+    document.querySelectorAll('.instance-action-menu-list').forEach((menu) => menu.classList.remove('show'));
+}
+
+function cancelDeleteVM() {
+    pendingDeleteVM = null;
+    closeModal('deleteVmModal');
+}
+
+async function confirmDeleteVM() {
+    if (!pendingDeleteVM?.id) {
+        closeModal('deleteVmModal');
+        return;
+    }
+
+    const { id } = pendingDeleteVM;
+    pendingDeleteVM = null;
+    closeModal('deleteVmModal');
+    await deleteVM(id, { skipConfirm: true });
+}
+
+async function deleteVM(id, options = {}) {
+    const { skipConfirm = false } = options;
+    if (!skipConfirm && !confirm('Terminate instance? This cannot be undone.')) return;
 
     try {
         const res = await fetch(`${API_URL}/instances/${id}`, {
@@ -1956,23 +1300,157 @@ function renderInstances(vms) {
                 <td>$${(vm.hourlyRate || 0.0068).toFixed(4)}/hr</td>
                 <td>${uptime}</td>
                 <td>
-                    <div class="action-buttons">
-                        ${vm.status === 'running' ? `
-                            <button class="action-btn" onclick="openVMConsole('${vm._id}', '${vm.name}')" title="Console">>_</button>
-                            <button class="action-btn" onclick="stopInstance('${vm._id}')" title="Stop">[]</button>
-                            <button class="action-btn" onclick="rebootInstance('${vm._id}')" title="Reboot">R</button>
-                        ` : vm.status === 'stopped' ? `
-                            <button class="action-btn primary" onclick="startInstance('${vm._id}')" title="Start">></button>
-                        ` : ''}
-                        <button class="action-btn" onclick="viewInstanceDetails('${vm._id}')" title="Details">i</button>
-                        <button class="action-btn" onclick="viewInstanceLogs('${vm._id}')" title="Logs">L</button>
-                        <button class="action-btn" onclick="showResourceUtilization('${vm._id}')" title="Metrics">%</button>
-                        <button class="action-btn danger" onclick="deleteVM('${vm._id}')" title="Terminate">X</button>
-                    </div>
+                    ${renderInstanceActions(vm)}
                 </td>
             </tr>
         `;
     });
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function escapeJsString(value) {
+    return String(value ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '')
+        .replace(/\n/g, '\\n');
+}
+
+function getInstanceActionIcon(icon) {
+    const icons = {
+        terminal: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.22 5.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06L5.28 12.78a.75.75 0 0 1-1.06-1.06L6.94 9 4.22 6.28a.75.75 0 0 1 0-1.06ZM9.75 12a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Z"/></svg>',
+        restart: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.25A6.75 6.75 0 1 0 16.75 10a.75.75 0 0 0-1.5 0A5.25 5.25 0 1 1 10 4.75h2.19l-1.22 1.22a.75.75 0 1 0 1.06 1.06l2.5-2.5a.75.75 0 0 0 0-1.06l-2.5-2.5a.75.75 0 1 0-1.06 1.06l1.22 1.22H10Z"/></svg>',
+        start: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.5 4.75c0-1.15 1.25-1.87 2.25-1.3l6 3.5c1 .58 1 2.02 0 2.6l-6 3.5c-1 .57-2.25-.15-2.25-1.3v-7Z"/></svg>',
+        stop: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.75 4A1.75 1.75 0 0 0 4 5.75v8.5C4 15.216 4.784 16 5.75 16h8.5A1.75 1.75 0 0 0 16 14.25v-8.5A1.75 1.75 0 0 0 14.25 4h-8.5Z"/></svg>',
+        details: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm-1.25 4.25A.75.75 0 0 1 9.5 7.5h.5a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-4.25H9.5a.75.75 0 0 1-.75-.75Z"/></svg>',
+        logs: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4.75A1.75 1.75 0 0 1 6.75 3h6.5A1.75 1.75 0 0 1 15 4.75v10.5A1.75 1.75 0 0 1 13.25 17h-6.5A1.75 1.75 0 0 1 5 15.25V4.75Zm2 1a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H7Zm0 3.5a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H7Zm0 3.5a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5H7Z"/></svg>',
+        metrics: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.75 15A1.75 1.75 0 0 1 3 13.25v-6.5C3 5.784 3.784 5 4.75 5h10.5c.966 0 1.75.784 1.75 1.75v6.5A1.75 1.75 0 0 1 15.25 15H4.75Zm1.5-2.25a.75.75 0 0 0 1.5 0V9.5a.75.75 0 0 0-1.5 0v3.25Zm3 0a.75.75 0 0 0 1.5 0V7.25a.75.75 0 0 0-1.5 0v5.5Zm3 0a.75.75 0 0 0 1.5 0V10.5a.75.75 0 0 0-1.5 0v2.25Z"/></svg>',
+        menu: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"/></svg>',
+        trash: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.75 3.5A1.75 1.75 0 0 1 10.5 1.75h1A1.75 1.75 0 0 1 13.25 3.5V4H16a.75.75 0 0 1 0 1.5h-.56l-.72 9.02A2 2 0 0 1 12.73 16.5H7.27a2 2 0 0 1-1.99-1.98L4.56 5.5H4a.75.75 0 0 1 0-1.5h2.75v-.5ZM9.5 4h3v-.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25V4Zm-1 3a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 8.5 7Zm3 0a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 11.5 7Z"/></svg>'
+    };
+
+    return icons[icon] || icons.details;
+}
+
+function renderInstanceActionButton({ title, icon, variant = 'neutral', action, label }) {
+    const safeTitle = escapeHtml(title);
+    const safeLabel = escapeHtml(label || title);
+    return `
+        <button
+            type="button"
+            class="instance-action-btn ${variant === 'danger' ? 'danger' : variant === 'primary' ? 'primary' : ''}"
+            onclick="${action}"
+            title="${safeTitle}"
+            aria-label="${safeLabel}"
+            data-tooltip="${safeTitle}">
+            ${getInstanceActionIcon(icon)}
+        </button>
+    `;
+}
+
+function renderInstanceActions(vm) {
+    const safeVmId = escapeJsString(vm._id);
+    const safeVmName = escapeJsString(vm.name || 'Instance');
+    const primaryActions = [];
+    const menuActions = [];
+
+    if (vm.status === 'running') {
+        primaryActions.push(renderInstanceActionButton({
+            title: 'Open Console',
+            icon: 'terminal',
+            variant: 'primary',
+            action: `openVMConsole('${escapeJsString(vm.os || '')}')`,
+            label: `Open console for ${vm.name || 'instance'}`
+        }));
+        primaryActions.push(renderInstanceActionButton({
+            title: 'Restart',
+            icon: 'restart',
+            action: `rebootInstance('${safeVmId}')`,
+            label: `Restart ${vm.name || 'instance'}`
+        }));
+        menuActions.push(`
+            <button type="button" onclick="stopInstance('${safeVmId}')">
+                <span class="instance-action-menu-icon">${getInstanceActionIcon('stop')}</span>
+                <span>Stop instance</span>
+            </button>
+        `);
+    } else if (vm.status === 'stopped') {
+        primaryActions.push(renderInstanceActionButton({
+            title: 'Start',
+            icon: 'start',
+            variant: 'primary',
+            action: `startInstance('${safeVmId}')`,
+            label: `Start ${vm.name || 'instance'}`
+        }));
+        primaryActions.push(renderInstanceActionButton({
+            title: 'View Details',
+            icon: 'details',
+            action: `viewInstanceDetails('${safeVmId}')`,
+            label: `View details for ${vm.name || 'instance'}`
+        }));
+    } else {
+        primaryActions.push(renderInstanceActionButton({
+            title: 'View Details',
+            icon: 'details',
+            action: `viewInstanceDetails('${safeVmId}')`,
+            label: `View details for ${vm.name || 'instance'}`
+        }));
+    }
+
+    menuActions.push(`
+        <button type="button" onclick="viewInstanceDetails('${safeVmId}')">
+            <span class="instance-action-menu-icon">${getInstanceActionIcon('details')}</span>
+            <span>View details</span>
+        </button>
+    `);
+    menuActions.push(`
+        <button type="button" onclick="viewInstanceLogs('${safeVmId}')">
+            <span class="instance-action-menu-icon">${getInstanceActionIcon('logs')}</span>
+            <span>View logs</span>
+        </button>
+    `);
+    menuActions.push(`
+        <button type="button" onclick="showResourceUtilization('${safeVmId}')">
+            <span class="instance-action-menu-icon">${getInstanceActionIcon('metrics')}</span>
+            <span>View metrics</span>
+        </button>
+    `);
+    menuActions.push(`
+        <button type="button" class="danger" onclick="promptDeleteVM('${safeVmId}', '${safeVmName}')">
+            <span class="instance-action-menu-icon">${getInstanceActionIcon('trash')}</span>
+            <span>Delete instance</span>
+        </button>
+    `);
+
+    return `
+        <div class="instance-actions" aria-label="Instance actions">
+            <div class="instance-actions-primary">
+                ${primaryActions.join('')}
+            </div>
+            <div class="instance-action-menu">
+                <button
+                    type="button"
+                    class="instance-action-btn instance-action-menu-trigger"
+                    onclick="toggleInstanceActionMenu(event, '${safeVmId}')"
+                    title="More actions"
+                    aria-label="More actions"
+                    data-tooltip="More actions">
+                    ${getInstanceActionIcon('menu')}
+                </button>
+                <div class="instance-action-menu-list" id="instance-action-${safeVmId}">
+                    ${menuActions.join('')}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function calculateUptime(createdAt) {
@@ -2072,7 +1550,7 @@ async function bulkTerminate() {
     if (!confirm(`Terminate ${selectedInstances.length} instance(s)? This cannot be undone.`)) return;
 
     for (const id of selectedInstances) {
-        await deleteVM(id);
+        await deleteVM(id, { skipConfirm: true });
     }
     closeBulkActions();
     loadVMs();
@@ -2460,6 +1938,43 @@ function getNetworkStatusClass(status) {
     }
 }
 
+function getNetworkBadgeClass(status) {
+    switch (String(status || '').toLowerCase()) {
+        case 'available':
+        case 'active':
+        case 'healthy':
+        case 'running':
+            return 'network-pill network-pill-available';
+        case 'public':
+            return 'network-pill network-pill-public';
+        case 'main':
+            return 'network-pill network-pill-main';
+        case 'failed':
+        case 'unhealthy':
+            return 'network-pill network-pill-warning';
+        default:
+            return 'network-pill network-pill-neutral';
+    }
+}
+
+function getNetworkEmptyStateMarkup({ icon = 'layers', title, description, actionLabel, actionHandler }) {
+    const icons = {
+        loadBalancer: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.75 4A1.75 1.75 0 0 0 3 5.75v2.5C3 9.216 3.784 10 4.75 10h2.19a3.251 3.251 0 0 0 6.12 0h2.19A1.75 1.75 0 0 0 17 8.25v-2.5A1.75 1.75 0 0 0 15.25 4H4.75Zm0 1.5h10.5a.25.25 0 0 1 .25.25v2.5a.25.25 0 0 1-.25.25h-2.19a3.251 3.251 0 0 0-6.12 0H4.75a.25.25 0 0 1-.25-.25v-2.5a.25.25 0 0 1 .25-.25ZM10 9a1.75 1.75 0 1 1 0 3.5A1.75 1.75 0 0 1 10 9Zm-5.25 4A1.75 1.75 0 0 0 3 14.75v.5C3 16.216 3.784 17 4.75 17h10.5A1.75 1.75 0 0 0 17 15.25v-.5A1.75 1.75 0 0 0 15.25 13h-2.19a3.251 3.251 0 0 1-6.12 0H4.75Z"/></svg>',
+        subnets: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.75 3h10.5A1.75 1.75 0 0 1 17 4.75v2.5A1.75 1.75 0 0 1 15.25 9H4.75A1.75 1.75 0 0 1 3 7.25v-2.5A1.75 1.75 0 0 1 4.75 3Zm0 8h10.5A1.75 1.75 0 0 1 17 12.75v2.5A1.75 1.75 0 0 1 15.25 17H4.75A1.75 1.75 0 0 1 3 15.25v-2.5A1.75 1.75 0 0 1 4.75 11Z"/></svg>',
+        routeTable: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5.75A1.75 1.75 0 0 1 5.75 4h8.5A1.75 1.75 0 0 1 16 5.75v1.5A1.75 1.75 0 0 1 14.25 9h-8.5A1.75 1.75 0 0 1 4 7.25v-1.5Zm1.75-.25a.25.25 0 0 0-.25.25v1.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-8.5ZM4 12.75A1.75 1.75 0 0 1 5.75 11h8.5A1.75 1.75 0 0 1 16 12.75v1.5A1.75 1.75 0 0 1 14.25 16h-8.5A1.75 1.75 0 0 1 4 14.25v-1.5Z"/></svg>',
+        layers: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.75 3 6.5l7 3.75 7-3.75-7-3.75Zm-5.78 6.3L3 9.75 10 13.5l7-3.75-1.22-.7L10 12.25 4.22 9.05Zm0 3.25L3 13l7 3.75L17 13l-1.22-.7L10 15.5l-5.78-3.2Z"/></svg>'
+    };
+
+    return `
+        <div class="network-empty-state">
+            <div class="network-empty-icon">${icons[icon] || icons.layers}</div>
+            <h4>${title}</h4>
+            <p>${description}</p>
+            ${actionLabel && actionHandler ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
+        </div>
+    `;
+}
+
 function getNetworkSummaryTotals(vpcs = [], routeTables = [], loadBalancers = [], instanceTargets = []) {
     return {
         vpcs: vpcs.length,
@@ -2633,14 +2148,22 @@ function renderVPCs(vpcs = []) {
     if (!container) return;
 
     if (!vpcs.length) {
-        container.innerHTML = '<p style="color:#64748b; padding:20px; text-align:center;">No VPCs found. Create one to model your network topology.</p>';
+        container.innerHTML = getNetworkEmptyStateMarkup({
+            icon: 'layers',
+            title: 'No VPCs yet',
+            description: 'Create a VPC to start structuring subnets, routing, and regional traffic isolation.',
+            actionLabel: 'Create VPC',
+            actionHandler: 'openVPCModal()'
+        });
         return;
     }
 
+    container.className = 'network-stack';
     container.innerHTML = vpcs.map(vpc => {
         const publicCount = (vpc.subnets || []).filter(subnet => subnet.type === 'public').length;
         const privateCount = (vpc.subnets || []).filter(subnet => subnet.type === 'private').length;
-        const routeTableCount = getRouteTableCountForVpc(vpc._id);
+        const routeTablesForVpc = networkRouteTableCache.filter(routeTable => routeTable.vpc?._id === vpc._id);
+        const routeTableCount = routeTablesForVpc.length;
         const subnetMarkup = (vpc.subnets || []).length
             ? vpc.subnets.map(subnet => {
                 const routeTable = findRouteTableForSubnet(subnet._id);
@@ -2649,59 +2172,128 @@ function renderVPCs(vpcs = []) {
                     : 'Unassigned';
 
                 return `
-                    <div style="padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                        <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+                    <div class="network-list-card">
+                        <div class="network-list-head">
                             <div style="flex:1;">
                                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                    <strong style="color:var(--dark);">${subnet.name}</strong>
-                                    <span class="badge ${subnet.type === 'public' ? 'bg-running' : 'bg-provisioning'}">${subnet.type}</span>
+                                    <div class="network-list-title">${subnet.name}</div>
+                                    <span class="${subnet.type === 'public' ? getNetworkBadgeClass('public') : getNetworkBadgeClass('private')}">${subnet.type}</span>
                                 </div>
-                                <div style="font-size:0.84rem; color:#64748b; margin-top:6px;">
-                                    ${subnet.cidr} | ${subnet.type} | AZ ${String(subnet.availabilityZone || 'a').toUpperCase()}
-                                </div>
-                                <div style="font-size:0.8rem; color:#475569; margin-top:6px;">
-                                    Route Table: ${routeTableLabel}
-                                </div>
+                                <div class="network-list-meta">${subnet.cidr} | AZ ${String(subnet.availabilityZone || 'a').toUpperCase()}</div>
+                                <div class="network-list-note">Route Table: ${routeTableLabel}</div>
                             </div>
-                            <button class="btn btn-danger" style="font-size:0.72rem;" onclick="deleteSubnet('${vpc._id}', '${subnet._id}')">Delete</button>
+                            <button class="btn btn-outline" style="font-size:0.72rem;" onclick="deleteSubnet('${vpc._id}', '${subnet._id}')">Delete</button>
                         </div>
                     </div>
                 `;
             }).join('')
-            : '<div style="padding:12px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; color:#64748b;">No subnets yet.</div>';
+            : getNetworkEmptyStateMarkup({
+                icon: 'subnets',
+                title: 'No subnets configured',
+                description: 'Add a public or private subnet to start placing workloads inside this VPC.',
+                actionLabel: 'Add Subnet',
+                actionHandler: `openSubnetModal('${vpc._id}')`
+            });
+
+        const routeTableMarkup = routeTablesForVpc.length
+            ? routeTablesForVpc.map(routeTable => `
+                <div class="network-list-card">
+                    <div class="network-list-head">
+                        <div style="flex:1;">
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <div class="network-list-title">${routeTable.name}</div>
+                                <span class="${routeTable.isMain ? getNetworkBadgeClass('main') : getNetworkBadgeClass(routeTable.status)}">
+                                    ${routeTable.isMain ? 'MAIN' : String(routeTable.status || 'draft').toUpperCase()}
+                                </span>
+                            </div>
+                            <div class="network-list-meta">${(routeTable.routes || []).length} route${(routeTable.routes || []).length === 1 ? '' : 's'} configured</div>
+                            <div class="network-list-note">${((routeTable.associatedSubnets || []).map(association => association.subnetName).join(', ')) || 'No associated subnets'}</div>
+                        </div>
+                        ${routeTable.isMain
+                    ? '<button class="btn btn-outline" style="font-size:0.72rem;" disabled>Main</button>'
+                    : `<button class="btn btn-outline" style="font-size:0.72rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
+                    </div>
+                </div>
+            `).join('')
+            : getNetworkEmptyStateMarkup({
+                icon: 'routeTable',
+                title: 'No custom route tables',
+                description: 'Create a route table when you need dedicated traffic rules for selected subnets.',
+                actionLabel: 'Add Route Table',
+                actionHandler: `openRouteTableModal('${vpc._id}')`
+            });
 
         return `
-            <div class="card" style="padding:16px; margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div class="network-vpc-cluster">
+                <div class="network-vpc-head">
                     <div>
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <div class="network-kicker">Virtual Private Cloud</div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px;">
                             <strong style="font-size:1.1rem;">${vpc.name}</strong>
-                            <span class="badge ${getNetworkStatusClass(vpc.status)}">${vpc.status}</span>
+                            <span class="${getNetworkBadgeClass(vpc.status)}">${String(vpc.status || 'available').toUpperCase()}</span>
                         </div>
-                        <div style="color:#64748b; margin:6px 0 0; font-size:0.9rem;">${vpc.cidr} | ${vpc.region}</div>
+                        <div style="color:#64748b; margin-top:6px; font-size:0.9rem;">${vpc.cidr} | ${vpc.region}</div>
                     </div>
-                    <button class="btn btn-danger" style="font-size:0.75rem;" onclick="deleteVpc('${vpc._id}')">Delete</button>
+                    <button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteVpc('${vpc._id}')">Delete</button>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; margin-top:14px;">
-                    <div style="padding:10px; border-radius:10px; background:#eff6ff;">
-                        <div style="font-size:0.75rem; color:#64748b;">Subnets</div>
-                        <div style="font-size:1.1rem; font-weight:700; color:var(--dark);">${vpc.subnets?.length || 0}</div>
+                <div class="network-vpc-split">
+                    <div class="network-surface-card">
+                        <div class="network-surface-head">
+                            <div>
+                                <div class="network-kicker">VPC Overview</div>
+                                <h4>${vpc.name}</h4>
+                            </div>
+                            <span class="${getNetworkBadgeClass(vpc.status)}">${String(vpc.status || 'available').toUpperCase()}</span>
+                        </div>
+                        <div class="network-meta">
+                            <div class="network-meta-row">
+                                <span class="network-meta-label">CIDR</span>
+                                <span class="network-meta-value">${vpc.cidr}</span>
+                            </div>
+                            <div class="network-meta-row">
+                                <span class="network-meta-label">Region</span>
+                                <span class="network-meta-value">${vpc.region}</span>
+                            </div>
+                        </div>
+                        <div class="network-metrics-row">
+                            <div class="network-metric">
+                                <div class="network-metric-label">Subnets</div>
+                                <div class="network-metric-value">${vpc.subnets?.length || 0}</div>
+                            </div>
+                            <div class="network-metric">
+                                <div class="network-metric-label">Public / Private</div>
+                                <div class="network-metric-value">${publicCount} / ${privateCount}</div>
+                            </div>
+                            <div class="network-metric">
+                                <div class="network-metric-label">Route Tables</div>
+                                <div class="network-metric-value">${routeTableCount}</div>
+                            </div>
+                        </div>
+                        <div class="network-action-row">
+                            <button class="btn btn-primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
+                            <button class="btn btn-outline" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
+                        </div>
                     </div>
-                    <div style="padding:10px; border-radius:10px; background:#f8fafc;">
-                        <div style="font-size:0.75rem; color:#64748b;">Public / Private</div>
-                        <div style="font-size:1.1rem; font-weight:700; color:var(--dark);">${publicCount} / ${privateCount}</div>
+                    <div class="network-surface-card">
+                        <div class="network-surface-head">
+                            <div>
+                                <div class="network-kicker">Subnets</div>
+                                <h4>Attached Subnets</h4>
+                            </div>
+                            <span class="${getNetworkBadgeClass('public')}">${publicCount} public</span>
+                        </div>
+                        <div class="network-list">${subnetMarkup}</div>
                     </div>
-                    <div style="padding:10px; border-radius:10px; background:#f8fafc;">
-                        <div style="font-size:0.75rem; color:#64748b;">Route Tables</div>
-                        <div style="font-size:1.1rem; font-weight:700; color:var(--dark);">${routeTableCount}</div>
+                    <div class="network-surface-card">
+                        <div class="network-surface-head">
+                            <div>
+                                <div class="network-kicker">Route Tables</div>
+                                <h4>Traffic Policies</h4>
+                            </div>
+                            <span class="${routeTableCount ? getNetworkBadgeClass('main') : getNetworkBadgeClass('available')}">${routeTableCount} total</span>
+                        </div>
+                        <div class="network-list">${routeTableMarkup}</div>
                     </div>
-                </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
-                    <button class="btn btn-outline" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
-                    <button class="btn btn-primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
-                </div>
-                <div style="display:grid; gap:10px; margin-top:14px;">
-                    ${subnetMarkup}
                 </div>
             </div>
         `;
@@ -2713,50 +2305,56 @@ function renderRouteTables(routeTables = []) {
     if (!container) return;
 
     if (!routeTables.length) {
-        container.innerHTML = '<p style="color:#64748b; padding:20px; text-align:center;">No route tables yet. Create one to manage subnet traffic.</p>';
+        container.innerHTML = getNetworkEmptyStateMarkup({
+            icon: 'routeTable',
+            title: 'No route tables yet',
+            description: 'Create a route table to define where subnet traffic should flow.',
+            actionLabel: 'Add Route Table',
+            actionHandler: 'openRouteTableModal()'
+        });
         return;
     }
 
+    container.className = 'network-stack';
     container.innerHTML = routeTables.map(routeTable => {
         const routeMarkup = (routeTable.routes || []).map(route => `
-            <div style="padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                <div style="font-size:0.78rem; color:#64748b;">Destination</div>
-                <div style="font-weight:600; color:var(--dark); margin-top:4px;">${route.destination}</div>
-                <div style="font-size:0.8rem; color:#475569; margin-top:6px;">${route.targetType} -> ${route.target}</div>
+            <div class="network-list-card">
+                <div class="network-kicker">Destination</div>
+                <div class="network-list-title" style="margin-top:4px;">${route.destination}</div>
+                <div class="network-list-note">${route.targetType} -> ${route.target}</div>
             </div>
         `).join('');
         const associatedSubnetMarkup = (routeTable.associatedSubnets || []).length
             ? routeTable.associatedSubnets.map(subnet => `
-                <span style="display:inline-flex; padding:6px 10px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:0.78rem; font-weight:600;">
+                <span class="${getNetworkBadgeClass('public')}">
                     ${subnet.subnetName}
                 </span>
             `).join('')
             : '<span style="font-size:0.84rem; color:#64748b;">No subnets associated.</span>';
 
         return `
-            <div class="card" style="padding:16px; margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div class="network-surface-card">
+                <div class="network-surface-head">
                     <div>
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <div class="network-kicker">Route Table</div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px;">
                             <strong style="font-size:1.05rem;">${routeTable.name}</strong>
-                            <span class="badge ${routeTable.isMain ? 'bg-running' : getNetworkStatusClass(routeTable.status)}">
+                            <span class="${routeTable.isMain ? getNetworkBadgeClass('main') : getNetworkBadgeClass(routeTable.status)}">
                                 ${routeTable.isMain ? 'MAIN' : routeTable.status.toUpperCase()}
                             </span>
                         </div>
-                        <div style="color:#64748b; margin-top:6px; font-size:0.88rem;">
+                        <div class="network-list-meta">
                             ${(routeTable.vpc?.name || 'Unknown VPC')} | ${(routeTable.vpc?.region || 'N/A')}
                         </div>
                     </div>
                     ${routeTable.isMain
-                        ? '<button class="btn btn-outline" style="font-size:0.75rem;" disabled>Main</button>'
-                        : `<button class="btn btn-danger" style="font-size:0.75rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
+                ? '<button class="btn btn-outline" style="font-size:0.75rem;" disabled>Main</button>'
+                : `<button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
                 </div>
-                <div style="display:grid; gap:8px; margin-top:14px;">
-                    ${routeMarkup}
-                </div>
-                <div style="margin-top:14px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                    <div style="font-size:0.78rem; color:#64748b; margin-bottom:8px;">Associated Subnets</div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">${associatedSubnetMarkup}</div>
+                <div class="network-list">${routeMarkup}</div>
+                <div class="network-list-card">
+                    <div class="network-kicker" style="margin-bottom:8px;">Associated Subnets</div>
+                    <div class="network-inline-pills">${associatedSubnetMarkup}</div>
                 </div>
             </div>
         `;
@@ -2768,56 +2366,74 @@ function renderLoadBalancers(loadBalancers = []) {
     if (!container) return;
 
     if (!loadBalancers.length) {
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">No load balancers found. Attach one to a VPC and route traffic to your instances.</div>';
+        container.innerHTML = getNetworkEmptyStateMarkup({
+            icon: 'loadBalancer',
+            title: 'No load balancers yet',
+            description: 'Route traffic across healthy targets by creating a load balancer for one of your VPCs.',
+            actionLabel: 'Create Load Balancer',
+            actionHandler: 'openLBModal()'
+        });
         return;
     }
 
+    container.className = 'network-stack';
     container.innerHTML = loadBalancers.map(loadBalancer => {
         const targetMarkup = (loadBalancer.targets || []).length
             ? loadBalancer.targets.map(target => `
-                <div style="padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+                <div class="network-list-card">
+                    <div class="network-list-head">
                         <div>
-                            <div style="font-weight:600; color:var(--dark);">${target.instance?.name || 'Detached target'}</div>
-                            <div style="font-size:0.82rem; color:#64748b; margin-top:4px;">
+                            <div class="network-list-title">${target.instance?.name || 'Detached target'}</div>
+                            <div class="network-list-meta">
                                 ${(target.instance?.region || 'Unknown region')} | ${(target.instance?.subnetName || 'Unknown subnet')} | ${(target.instance?.privateIp || target.instance?.publicIp || target.instance?.ip || 'IP pending')} | Port ${target.port || loadBalancer.listener?.port || 'N/A'}
                             </div>
                         </div>
-                        <span class="badge ${getNetworkStatusClass(target.healthStatus)}">${target.healthStatus}</span>
+                        <span class="${getNetworkBadgeClass(target.healthStatus)}">${String(target.healthStatus || 'unknown').toUpperCase()}</span>
                     </div>
                 </div>
             `).join('')
-            : '<div style="padding:12px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; color:#64748b;">No targets attached yet. This load balancer is waiting for compute instances.</div>';
+            : getNetworkEmptyStateMarkup({
+                icon: 'loadBalancer',
+                title: 'No targets attached',
+                description: 'Attach running compute instances to begin routing traffic through this load balancer.',
+                actionLabel: 'Create Load Balancer',
+                actionHandler: 'openLBModal()'
+            });
 
         return `
-            <div class="card" style="padding:16px; margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div class="network-surface-card">
+                <div class="network-surface-head">
                     <div style="flex: 1;">
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <div class="network-kicker">Load Balancer</div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px;">
                             <strong style="font-size:1.1rem;">${loadBalancer.name}</strong>
-                            <span class="badge ${getNetworkStatusClass(loadBalancer.status)}">${loadBalancer.status}</span>
+                            <span class="${getNetworkBadgeClass(loadBalancer.status)}">${String(loadBalancer.status || 'available').toUpperCase()}</span>
                         </div>
-                        <div style="color:#64748b; margin-top:6px; font-size:0.9rem;">${loadBalancer.dnsName || 'DNS pending'}</div>
-                        <div style="font-size:0.84rem; color:#475569; margin-top:6px;">
+                        <div class="network-list-meta">${loadBalancer.dnsName || 'DNS pending'}</div>
+                        <div class="network-list-note">
                             ${loadBalancer.type} | ${loadBalancer.region} | ${loadBalancer.listener?.protocol || 'HTTP'}:${loadBalancer.listener?.port || 80}
                         </div>
-                        <div style="font-size:0.84rem; color:#64748b; margin-top:6px;">
+                        <div class="network-list-meta">
                             VPC: ${loadBalancer.vpc?.name || 'Not attached'}
                         </div>
                     </div>
-                    <button class="btn btn-danger" style="font-size:0.75rem;" onclick="deleteLB('${loadBalancer._id}')">Delete</button>
+                    <button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteLB('${loadBalancer._id}')">Delete</button>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:14px;">
-                    <div style="padding:10px; border-radius:10px; background:#eff6ff;">
-                        <div style="font-size:0.75rem; color:#64748b;">Healthy Targets</div>
-                        <div style="font-size:1.1rem; font-weight:700; color:var(--dark);">${loadBalancer.healthyTargetCount || 0}</div>
+                <div class="network-metrics-row">
+                    <div class="network-metric">
+                        <div class="network-metric-label">Healthy Targets</div>
+                        <div class="network-metric-value">${loadBalancer.healthyTargetCount || 0}</div>
                     </div>
-                    <div style="padding:10px; border-radius:10px; background:#f8fafc;">
-                        <div style="font-size:0.75rem; color:#64748b;">Total Targets</div>
-                        <div style="font-size:1.1rem; font-weight:700; color:var(--dark);">${loadBalancer.totalTargetCount || 0}</div>
+                    <div class="network-metric">
+                        <div class="network-metric-label">Total Targets</div>
+                        <div class="network-metric-value">${loadBalancer.totalTargetCount || 0}</div>
+                    </div>
+                    <div class="network-metric">
+                        <div class="network-metric-label">Protocol</div>
+                        <div class="network-metric-value">${loadBalancer.listener?.protocol || 'HTTP'}</div>
                     </div>
                 </div>
-                <div style="display:grid; gap:10px; margin-top:14px;">${targetMarkup}</div>
+                <div class="network-list">${targetMarkup}</div>
             </div>
         `;
     }).join('');
@@ -3550,7 +3166,7 @@ function applyMonitoringMetricVisibility(metricType = activeMonitoringMetric) {
 function setAlertThreshold(instanceId) {
     const cpuThreshold = prompt('Set CPU alert threshold (%):', '80');
     if (cpuThreshold) {
-        const thresholds = readJsonFromStorage('bytesky_alert_thresholds', {});
+        const thresholds = JSON.parse(localStorage.getItem('bytesky_alert_thresholds') || '{}');
         thresholds[instanceId] = { cpu: Number(cpuThreshold) };
         localStorage.setItem('bytesky_alert_thresholds', JSON.stringify(thresholds));
         showToast(`Alert set: CPU > ${cpuThreshold}% for instance ${instanceId}`);
@@ -3574,7 +3190,7 @@ function formatMonitoringLabel(value, timeRange) {
             ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
             : { hour: '2-digit', minute: '2-digit', hour12: true };
 
-    return parsedDate.toLocaleString(getActiveLocale(), options);
+    return parsedDate.toLocaleString('en-US', options);
 }
 
 function formatMonitoringTooltipLabel(value) {
@@ -3583,7 +3199,7 @@ function formatMonitoringTooltipLabel(value) {
         return typeof value === 'string' && value.trim() ? value : 'Unknown time';
     }
 
-    return parsedDate.toLocaleString(getActiveLocale(), {
+    return parsedDate.toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -3995,8 +3611,8 @@ async function loadContainerSessions() {
     }
 
     try {
-        console.log('[VM] Loading Ubuntu VM status from', `${API_URL}/docker/containers`);
-        const res = await fetch(`${API_URL}/docker/containers`, {
+        console.log('[VM] Loading active sessions from', `${API_URL}/vm/active`);
+        const res = await fetch(`${API_URL}/vm/active`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -4006,13 +3622,8 @@ async function loadContainerSessions() {
         }
 
         const data = await res.json();
-        const vmService = getVmServiceFromDockerPayload(data);
-        const sessions = vmService?.running
-            ? [{
-                ...vmService,
-                hostPort: vmService.hostPort || vmService.port,
-                accessUrl: vmService.url
-            }]
+        const sessions = Array.isArray(data.vms)
+            ? data.vms.map(vm => ({ ...vm, hostPort: vm.port }))
             : [];
         renderContainerSessions(sessions);
         return sessions;
@@ -4035,21 +3646,19 @@ function renderContainerSessions(sessions) {
     listEl.innerHTML = '';
 
     if (!sessions.length) {
-        stateEl.innerHTML = 'No active Ubuntu desktop VM.';
+        stateEl.innerHTML = 'No active browser VM session.';
         if (stopBtn) stopBtn.style.display = 'none';
         return;
     }
 
     if (stopBtn) stopBtn.style.display = 'inline-flex';
 
-    const currentVm = sessions[0];
-    stateEl.innerHTML = currentVm.url
-        ? `Ubuntu desktop VM is running. <a href="${currentVm.url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Desktop</a>`
-        : 'Ubuntu desktop VM is running.';
+    const nextExpiry = new Date(sessions[0].expiresAt).toLocaleTimeString();
+    stateEl.innerHTML = `Active browser VM ready. Auto-cleanup at ${nextExpiry}.`;
 
     sessions.forEach(session => {
         const openAction = session.url
-            ? `<a class="btn btn-primary" href="${session.url}" target="_blank" rel="noopener noreferrer">Open Desktop</a>`
+            ? `<a class="btn btn-primary" href="${session.url}" target="_blank" rel="noopener noreferrer">Open Your VM</a>`
             : '';
 
         listEl.innerHTML += `
@@ -4058,9 +3667,8 @@ function renderContainerSessions(sessions) {
                     <div>
                         <div style="font-weight:700; color:#0f172a;">${session.containerName}</div>
                         <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Container ${session.containerId}</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Ubuntu desktop container with browser-based LXDE access</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort}` : 'Port unavailable'}</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.url || 'URL unavailable'}</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Browser-accessible sandbox container with live development tooling</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort} • ` : ''}Expires ${new Date(session.expiresAt).toLocaleString()}</div>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         ${openAction}
@@ -4076,7 +3684,7 @@ function setVmLaunchButtonState(isLoading) {
     const btn = document.getElementById('launchVmBtn');
     if (btn) {
         btn.disabled = isLoading;
-        btn.innerText = isLoading ? 'Starting Ubuntu VM...' : 'Start Ubuntu VM';
+        btn.innerText = isLoading ? 'Provisioning Sandbox...' : 'Launch VM';
     }
 }
 
@@ -4087,8 +3695,8 @@ function renderVmLaunchResult(session, url) {
     if (!stateEl || !listEl || !session) return;
 
     stateEl.innerHTML = `
-        Ubuntu desktop VM started successfully.
-        ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Desktop</a>` : ''}
+        Browser VM started successfully.
+        ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-left:8px; font-weight:600;">Open Your VM</a>` : ''}
     `;
 
     listEl.innerHTML = `
@@ -4097,12 +3705,12 @@ function renderVmLaunchResult(session, url) {
                 <div>
                     <div style="font-weight:700; color:#0f172a;">${session.containerName || session.containerId}</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Container ${session.containerId}</div>
-                    <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Ubuntu desktop container with browser-based LXDE access</div>
+                    <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Node.js sandbox container with browser-ready status page</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort || session.port ? `Port ${session.hostPort || session.port}` : 'Port pending'}</div>
                     <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${url || 'URL unavailable'}</div>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    ${url ? `<a class="btn btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Open Desktop</a>` : ''}
+                    ${url ? `<a class="btn btn-primary" href="${url}" target="_blank" rel="noopener noreferrer">Open Your VM</a>` : ''}
                     <button class="btn btn-outline" type="button" onclick="stopBrowserVm('${session.containerId}')">Stop VM</button>
                 </div>
             </div>
@@ -4113,8 +3721,8 @@ function renderVmLaunchResult(session, url) {
 async function launchVM() {
     console.log('[VM] Launch VM invoked', {
         hasToken: Boolean(token),
-        endpoint: `${API_URL}/docker/run-vm`,
-        image: 'dorowu/ubuntu-desktop-lxde-vnc'
+        endpoint: `${API_URL}/vm/create`,
+        image: 'node:18'
     });
 
     if (vmLaunchInProgress) {
@@ -4132,12 +3740,14 @@ async function launchVM() {
     setVmLaunchButtonState(true);
 
     try {
-        console.log('[VM] Sending POST request to start Ubuntu VM');
-        const res = await fetch(`${API_URL}/docker/run-vm`, {
+        console.log('[VM] Sending POST request to create VM');
+        const res = await fetch(`${API_URL}/vm/create`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            body: JSON.stringify({ image: 'node:18' })
         });
 
         console.log('[VM] Response received', { status: res.status, ok: res.ok });
@@ -4145,22 +3755,22 @@ async function launchVM() {
         console.log('[VM] Response payload', data);
 
         if (!res.ok) {
-            showToast(data.message || data.msg || 'Unable to start Ubuntu VM');
+            showToast(data.message || data.msg || 'Unable to launch browser VM');
             return;
         }
 
-        const service = data.service || {};
-        const session = {
-            containerId: service.containerId || data.containerId,
-            containerName: service.containerName || service.name || 'vm',
-            hostPort: service.hostPort || service.port,
-            port: service.port,
-            url: service.url || data.url
+        const session = data.vm || {
+            containerId: data.containerId,
+            containerName: data.containerId,
+            hostPort: data.port,
+            port: data.port,
+            url: data.url
         };
-        const url = session.url;
+        session.hostPort = session.hostPort || session.port;
+        const url = data.accessUrl || data.url || session.url;
 
         renderVmLaunchResult(session, url);
-        showToast('Ubuntu desktop VM launched successfully');
+        showToast('Browser VM launched successfully');
         await loadContainerSessions();
 
         if (url) {
@@ -4168,7 +3778,7 @@ async function launchVM() {
         }
     } catch (err) {
         console.error('[VM] Launch Browser VM Error:', err);
-        showToast('Unable to reach the Ubuntu VM launch API');
+        showToast('Unable to reach the VM launch API');
     } finally {
         vmLaunchInProgress = false;
         setVmLaunchButtonState(false);
@@ -4187,9 +3797,10 @@ async function stopBrowserVm(containerId) {
     }
 
     try {
-        const res = await fetch(`${API_URL}/docker/stop/${targetContainerId}`, {
-            method: 'POST',
+        const res = await fetch(`${API_URL}/vm/${targetContainerId}`, {
+            method: 'DELETE',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
@@ -4200,7 +3811,7 @@ async function stopBrowserVm(containerId) {
             return;
         }
 
-        showToast('Ubuntu desktop VM stopped');
+        showToast('Browser VM stopped');
         await loadContainerSessions();
     } catch (err) {
         console.error('Stop Browser VM Error:', err);
@@ -4286,12 +3897,12 @@ function createCostChart(invoices) {
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        last7Days.push(d.toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }));
+        last7Days.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
     }
 
     const dailyCosts = last7Days.map(date => {
         return invoices
-            .filter(inv => new Date(inv.createdAt).toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }) === date)
+            .filter(inv => new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date)
             .reduce((sum, inv) => sum + inv.amount, 0);
     });
 
@@ -4515,7 +4126,7 @@ function createAdminTicketsChart(ticketsPerDay) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
-        labels.push(d.toLocaleDateString(getActiveLocale(), { month: 'short', day: 'numeric' }));
+        labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         values.push(map.get(key) || 0);
     }
 
@@ -4825,6 +4436,8 @@ function toggleAdminRowMenu(event, userId) {
 
 document.addEventListener('click', () => {
     document.querySelectorAll('.admin-row-menu-list').forEach(menu => menu.classList.remove('show'));
+    document.querySelectorAll('.instance-action-menu-list').forEach(menu => menu.classList.remove('show'));
+    closeStorageShareMenus();
 });
 
 async function updateAdminUserRole(userId, newRole) {
@@ -5123,12 +4736,7 @@ function renderStorage(files) {
                 <td>${fileType}</td>
                 <td>${new Date(f.createdAt).toLocaleDateString()}</td>
                 <td>
-                    <div class="storage-actions">
-                        <button class="storage-action-btn" onclick="previewFile('${f._id}')" title="Preview">View</button>
-                        <button class="storage-action-btn" onclick="downloadFile('${f._id}')" title="Download">Get</button>
-                        <button class="storage-action-btn storage-action-btn--whatsapp" onclick="shareFile('${f._id}')" title="Share on WhatsApp">WhatsApp</button>
-                        <button class="storage-action-btn" style="color: var(--danger);" onclick="deleteFile('${f._id}')" title="Delete">Delete</button>
-                    </div>
+                    ${renderStorageActions(f, { compact: true })}
                 </td>
             </tr>
         `;
@@ -5140,10 +4748,8 @@ function renderStorage(files) {
                     <div class="storage-grid-icon">${fileIcon}</div>
                     <div class="storage-grid-name">${f.fileName}</div>
                     <div class="storage-grid-size">${formatFileSize(f.fileSize)} • ${f.bucket}</div>
-                    <div class="storage-actions" style="margin-top: 15px; justify-content: center;">
-                        <button class="storage-action-btn" type="button" onclick="previewFile('${f._id}')" title="Preview">View</button>
-                        <button class="storage-action-btn" type="button" onclick="downloadFile('${f._id}', { silent: true })" title="Download">Get</button>
-                        <button class="storage-action-btn storage-action-btn--whatsapp" type="button" onclick="shareFile('${f._id}')" title="Share on WhatsApp">WhatsApp</button>
+                    <div style="margin-top: 15px; display:flex; justify-content:center;">
+                        ${renderStorageActions(f)}
                     </div>
                 </div>
             `;
@@ -5156,6 +4762,63 @@ function renderStorage(files) {
     }
 
     updateStorageBulkActions();
+}
+
+function getStorageActionIcon(icon) {
+    const icons = {
+        preview: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4c3.66 0 6.72 2.16 8.27 5.3a1.6 1.6 0 0 1 0 1.4C16.72 13.84 13.66 16 10 16s-6.72-2.16-8.27-5.3a1.6 1.6 0 0 1 0-1.4C3.28 6.16 6.34 4 10 4Zm0 1.5c-2.94 0-5.43 1.68-6.82 4.5 1.39 2.82 3.88 4.5 6.82 4.5s5.43-1.68 6.82-4.5c-1.39-2.82-3.88-4.5-6.82-4.5Zm0 1.75a2.75 2.75 0 1 1 0 5.5 2.75 2.75 0 0 1 0-5.5Z"/></svg>',
+        download: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.75a.75.75 0 0 1 .75.75v6.69l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V3.5A.75.75 0 0 1 10 2.75ZM4.5 13.75a.75.75 0 0 1 .75.75v.75c0 .138.112.25.25.25h9a.25.25 0 0 0 .25-.25v-.75a.75.75 0 0 1 1.5 0v.75A1.75 1.75 0 0 1 14.5 17h-9A1.75 1.75 0 0 1 3.75 15.25v-.75a.75.75 0 0 1 .75-.75Z"/></svg>',
+        share: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.25 4a2.75 2.75 0 1 1 .95 2.08l-4.14 2.4a2.76 2.76 0 0 1 0 3.04l4.14 2.4A2.75 2.75 0 1 1 12.25 15a2.8 2.8 0 0 1 .07-.62l-4.22-2.45a2.75 2.75 0 1 1 0-3.86l4.22-2.45A2.8 2.8 0 0 1 12.25 4Z"/></svg>',
+        whatsapp: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a7 7 0 0 0-5.94 10.7L3 17l3.43-.99A7 7 0 1 0 10 3Zm0 12.5a5.48 5.48 0 0 1-2.8-.77l-.2-.12-2.04.59.62-1.98-.13-.2A5.5 5.5 0 1 1 10 15.5Zm3.15-4.16c-.17-.08-1.03-.51-1.2-.56-.16-.06-.28-.08-.4.08s-.45.56-.55.68c-.1.11-.2.13-.37.05-.17-.08-.72-.26-1.37-.83a5.17 5.17 0 0 1-.95-1.18c-.1-.17-.01-.27.07-.35.07-.07.17-.2.25-.3.08-.1.1-.17.16-.29.05-.11.03-.21-.01-.29-.05-.08-.4-.97-.55-1.34-.14-.33-.28-.29-.39-.29h-.33c-.11 0-.29.04-.44.21-.15.17-.57.56-.57 1.37 0 .81.59 1.6.67 1.71.08.11 1.16 1.77 2.8 2.49.39.17.69.27.92.34.39.12.74.1 1.02.06.31-.05 1.03-.42 1.18-.82.15-.4.15-.74.1-.82-.04-.08-.16-.12-.33-.21Z"/></svg>',
+        copy: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.75 2A1.75 1.75 0 0 0 5 3.75v7.5C5 12.216 5.784 13 6.75 13h7.5A1.75 1.75 0 0 0 16 11.25v-7.5A1.75 1.75 0 0 0 14.25 2h-7.5Zm-.25 1.75c0-.138.112-.25.25-.25h7.5c.138 0 .25.112.25.25v7.5a.25.25 0 0 1-.25.25h-7.5a.25.25 0 0 1-.25-.25v-7.5ZM3.75 6A.75.75 0 0 1 4.5 6.75v8.5c0 .138.112.25.25.25h8.5a.75.75 0 0 1 0 1.5h-8.5A1.75 1.75 0 0 1 3 15.25v-8.5A.75.75 0 0 1 3.75 6Z"/></svg>',
+        email: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.75 4A1.75 1.75 0 0 0 2 5.75v8.5C2 15.216 2.784 16 3.75 16h12.5A1.75 1.75 0 0 0 18 14.25v-8.5A1.75 1.75 0 0 0 16.25 4H3.75Zm0 1.5h12.5a.25.25 0 0 1 .25.25v.38l-6.1 4.06a.75.75 0 0 1-.83 0L3.5 6.13v-.38a.25.25 0 0 1 .25-.25Zm-.25 2.44 5.27 3.5a2.25 2.25 0 0 0 2.46 0l5.27-3.5v6.31a.25.25 0 0 1-.25.25H3.75a.25.25 0 0 1-.25-.25V7.94Z"/></svg>',
+        delete: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.75 3.5A1.75 1.75 0 0 1 10.5 1.75h1A1.75 1.75 0 0 1 13.25 3.5V4H16a.75.75 0 0 1 0 1.5h-.56l-.72 9.02A2 2 0 0 1 12.73 16.5H7.27a2 2 0 0 1-1.99-1.98L4.56 5.5H4a.75.75 0 0 1 0-1.5h2.75v-.5ZM9.5 4h3v-.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25V4Zm-1 3a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 8.5 7Zm3 0a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 11.5 7Z"/></svg>',
+        more: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"/></svg>'
+    };
+
+    return icons[icon] || icons.more;
+}
+
+function renderStorageActionButton({ label, icon, action, variant = 'neutral', type = 'button' }) {
+    return `
+        <button class="storage-action-btn ${variant === 'danger' ? 'storage-action-btn--danger' : ''}" type="${type}" onclick="${action}" title="${label}" aria-label="${label}">
+            <span class="storage-action-btn__icon">${getStorageActionIcon(icon)}</span>
+            <span>${label}</span>
+        </button>
+    `;
+}
+
+function renderStorageActions(file, options = {}) {
+    const { compact = false } = options;
+    const downloadAction = compact ? `downloadFile('${file._id}')` : `downloadFile('${file._id}', { silent: true })`;
+
+    return `
+        <div class="storage-actions ${compact ? 'storage-actions--compact' : ''}">
+            ${renderStorageActionButton({ label: 'Preview', icon: 'preview', action: `previewFile('${file._id}')` })}
+            ${renderStorageActionButton({ label: 'Download', icon: 'download', action: downloadAction })}
+            <div class="storage-share-menu">
+                <button class="storage-action-btn" type="button" onclick="toggleStorageShareMenu(event, '${file._id}')" title="Share" aria-label="Share">
+                    <span class="storage-action-btn__icon">${getStorageActionIcon('share')}</span>
+                    <span>Share</span>
+                </button>
+                <div class="storage-share-menu-list" id="storage-share-${file._id}">
+                    <button type="button" onclick="shareFileToWhatsApp('${file._id}')">
+                        <span class="storage-action-btn__icon">${getStorageActionIcon('whatsapp')}</span>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button type="button" onclick="handleCopyLink('${file._id}')">
+                        <span class="storage-action-btn__icon">${getStorageActionIcon('copy')}</span>
+                        <span>Copy Link</span>
+                    </button>
+                    <button type="button" onclick="shareFileByEmail('${file._id}')">
+                        <span class="storage-action-btn__icon">${getStorageActionIcon('email')}</span>
+                        <span>Email</span>
+                    </button>
+                </div>
+            </div>
+            ${compact ? renderStorageActionButton({ label: 'Delete', icon: 'delete', action: `deleteFile('${file._id}')`, variant: 'danger' }) : ''}
+        </div>
+    `;
 }
 
 function updateStorageStats() {
@@ -5224,13 +4887,12 @@ async function previewFile(fileId) {
     if (!content) return;
 
     document.getElementById('previewFileName').innerText = file.fileName;
+    const fileUrl = getStorageFileUrl(fileId);
 
     if (fileType === 'image') {
-        content.innerHTML = `<div style="font-size: 5rem;"></div><p>Image preview not available in demo</p>`;
-    } else if (fileType === 'document') {
-        content.innerHTML = `<div style="font-size: 5rem;"></div><p>Document preview not available in demo</p>`;
+        content.innerHTML = `<img src="${fileUrl}" alt="${file.fileName}" class="preview-image" onerror="this.parentElement.innerHTML='&lt;div class=&quot;preview-fallback&quot;&gt;&lt;div class=&quot;preview-fallback-icon&quot;&gt;IMG&lt;/div&gt;&lt;p&gt;No preview available&lt;/p&gt;&lt;/div&gt;'">`;
     } else {
-        content.innerHTML = `<div style="font-size: 5rem;">${getFileIcon(fileType)}</div><p>Preview not available for this file type</p>`;
+        content.innerHTML = `<div class="preview-fallback"><div class="preview-fallback-icon">${getFileIcon(fileType)}</div><p>No preview available</p></div>`;
     }
 
     if (metadata) {
@@ -5257,6 +4919,10 @@ async function previewFile(fileId) {
     }
 
     openModal('filePreviewModal');
+}
+
+function getStorageFileUrl(fileId) {
+    return new URL(`/api/storage/share/${fileId}`, API_URL).href;
 }
 
 async function downloadFile(fileId, options = {}) {
@@ -5291,18 +4957,65 @@ async function downloadFile(fileId, options = {}) {
     }
 }
 
-function shareFile(fileId) {
+function getStorageShareMessage(file) {
+    const fileUrl = getStorageFileUrl(file._id);
+    return {
+        fileUrl,
+        shareMessage: `Item: ${file.fileName}\nFile: ${fileUrl}`
+    };
+}
+
+function toggleStorageShareMenu(event, fileId) {
+    event.stopPropagation();
+    const targetId = `storage-share-${fileId}`;
+    document.querySelectorAll('.storage-share-menu-list').forEach((menu) => {
+        if (menu.id === targetId) {
+            menu.classList.toggle('show');
+        } else {
+            menu.classList.remove('show');
+        }
+    });
+}
+
+function shareFileToWhatsApp(fileId) {
     const file = allStorageFiles.find(f => f._id === fileId);
     if (!file) return;
 
-    const fileUrl = new URL(`/api/storage/share/${fileId}`, API_URL).href;
-    const shareMessage = `Item: ${file.fileName}\nFile: ${fileUrl}`;
+    const { shareMessage } = getStorageShareMessage(file);
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
     const whatsappTab = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    closeStorageShareMenus();
 
     if (!whatsappTab) {
         showToast('Please allow pop-ups to open WhatsApp');
     }
+}
+
+async function handleCopyLink(fileId) {
+    const file = allStorageFiles.find(f => f._id === fileId);
+    if (!file) return;
+
+    try {
+        await navigator.clipboard.writeText(getStorageFileUrl(fileId));
+        showToast('Link copied!');
+    } catch (_error) {
+        alert('Link copied!');
+    } finally {
+        closeStorageShareMenus();
+    }
+}
+
+function shareFileByEmail(fileId) {
+    const file = allStorageFiles.find(f => f._id === fileId);
+    if (!file) return;
+
+    const { fileUrl } = getStorageShareMessage(file);
+    window.location.href = `mailto:?subject=${encodeURIComponent(`Shared file: ${file.fileName}`)}&body=${encodeURIComponent(`Here is the file link:\n${fileUrl}`)}`;
+    closeStorageShareMenus();
+}
+
+function closeStorageShareMenus() {
+    document.querySelectorAll('.storage-share-menu-list').forEach((menu) => menu.classList.remove('show'));
 }
 
 async function deleteFile(id, options = {}) {
@@ -6460,7 +6173,7 @@ function showSaaSTab(tabName) {
     if (tabName === 'marketplace') {
         marketplaceServices = mergeMarketplaceServices(marketplaceServices);
         loadSaaSMarketplace();
-        fetchMarketplaceCatalog().catch(() => {});
+        fetchMarketplaceCatalog().catch(() => { });
     } else if (tabName === 'subscriptions') {
         loadSaaSSubscriptions();
     } else if (tabName === 'integrations') {
@@ -6479,7 +6192,7 @@ function startSaaSStatusAutoRefresh() {
             return;
         }
 
-        refreshDockerServices().catch(() => {});
+        refreshDockerServices().catch(() => { });
     }, 15000);
 }
 
@@ -6494,7 +6207,7 @@ function createDefaultApacheService(overrides = {}) {
         icon: 'AP',
         containerId: '',
         containerName: 'bytesky-apache',
-        url: buildMarketplaceServiceUrl(8080, '/apache/'),
+        url: 'http://localhost:8080',
         hostPort: 8080,
         containerPort: 80,
         status: 'Stopped',
@@ -6532,7 +6245,7 @@ function createDefaultJenkinsService(overrides = {}) {
         port: 8081,
         hostPort: 8081,
         containerPort: 8080,
-        url: buildMarketplaceServiceUrl(8081, '/jenkins/'),
+        url: 'http://localhost:8081',
         jobName: 'bytesky-node-app',
         status: 'stopped',
         running: false,
@@ -6560,7 +6273,7 @@ function createDefaultPostgresService(overrides = {}) {
         status: 'stopped',
         running: false,
         connection: {
-            host: getExternalServiceHost(),
+            host: 'localhost',
             port: 5432,
             user: 'admin',
             password: 'admin123',
@@ -6584,7 +6297,7 @@ function createDefaultMetabaseService(overrides = {}) {
         port: 3005,
         hostPort: 3005,
         containerPort: 3000,
-        url: buildMarketplaceServiceUrl(3005, '/metabase/'),
+        url: 'http://localhost:3005',
         status: 'stopped',
         running: false,
         ...overrides
@@ -6608,7 +6321,7 @@ function createDefaultRedisService(overrides = {}) {
         status: 'stopped',
         running: false,
         connection: {
-            host: getExternalServiceHost(),
+            host: 'localhost',
             port: 6379
         },
         ...overrides
@@ -6629,7 +6342,7 @@ function createDefaultVmService(overrides = {}) {
         port: 6080,
         hostPort: 6080,
         containerPort: 80,
-        url: buildMarketplaceServiceUrl(6080, '/vm/'),
+        url: 'http://localhost:6080',
         status: 'stopped',
         running: false,
         stateMessage: 'No active VM',
@@ -6948,8 +6661,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     applyTheme();
-    applyStaticTranslations();
-    updateNav();
     syncMonitoringMetricButtons();
     window.launchVM = launchVM;
     window.launchBrowserVm = launchVM;
@@ -6983,9 +6694,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const home = document.getElementById('home');
         if (home) home.classList.add('active');
     }
-
-    applyStaticTranslations();
 });
+
+window.addEventListener('resize', syncSidebarLayout);
 
 if (SYSTEM_THEME_QUERY) {
     const handleSystemThemeChange = () => {
@@ -7009,12 +6720,12 @@ function filterSaaSApps() {
 function openSaaSDetails(appId) {
     const app = marketplaceServices.find(a => a.id === appId);
     if (!app) return;
-    
+
     selectedSaaSApp = app;
-    
+
     document.getElementById('saasModalTitle').innerText = `${app.icon} ${app.name}`;
     document.getElementById('saasModalDesc').innerText = app.description;
-    
+
     const pricingContainer = document.getElementById('saasModalPricing');
     pricingContainer.innerHTML = `
         <div class="saas-pricing-card">
@@ -7034,7 +6745,7 @@ function openSaaSDetails(appId) {
             <div class="saas-price-period">Creates a Docker container on demand</div>
         </div>
     `;
-    
+
     const featuresContainer = document.getElementById('saasModalFeatures');
     featuresContainer.innerHTML = [
         `Service name: ${app.name}`,
@@ -7043,7 +6754,7 @@ function openSaaSDetails(appId) {
         'Managed by the ByteSky Docker control plane',
         'Appears in My Subscriptions after launch'
     ].map(f => `<li style="padding: 5px 0;">${f}</li>`).join('');
-    
+
     openModal('saasDetailsModal');
 }
 
@@ -7476,7 +7187,7 @@ function openVmService() {
         return;
     }
 
-    window.open(service.url || buildMarketplaceServiceUrl(6080, '/vm/'), '_blank', 'noopener');
+    window.open(service.url || 'http://localhost:6080', '_blank', 'noopener');
 }
 
 async function refreshVmStatus(showResult = false) {
@@ -7555,7 +7266,7 @@ function openMetabaseService() {
         return;
     }
 
-    window.open(service.url || buildMarketplaceServiceUrl(3005, '/metabase/'), '_blank', 'noopener');
+    window.open(service.url || 'http://localhost:3005', '_blank', 'noopener');
 }
 
 async function refreshMetabaseStatus(showResult = false) {
@@ -7715,7 +7426,7 @@ async function loadSaaSSubscriptions() {
     activeMarketplaceSessions = services.filter(service => service.running);
 
     const mySubscriptions = activeMarketplaceSessions;
-    
+
     if (mySubscriptions.length === 0) {
         if (errors.length) {
             container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 40px;">${errors.join(' | ')}</p>`;
@@ -7724,7 +7435,7 @@ async function loadSaaSSubscriptions() {
         container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 40px;">No running services yet. Launch one from the marketplace to get started.</p>';
         return;
     }
-    
+
     container.innerHTML = mySubscriptions.map(sub => `
         <div class="saas-subscription-item">
             <div class="saas-subscription-info">
@@ -7733,21 +7444,21 @@ async function loadSaaSSubscriptions() {
                     Image: <strong>${sub.image}</strong> |
                     Container: ${sub.containerName || 'Not assigned'} |
                     ${sub.type === 'postgres'
-                        ? `Host: ${sub.connection.host} | Port: ${sub.connection.port} | DB: ${sub.connection.database}`
-                        : sub.type === 'jenkins'
-                            ? `URL: ${sub.url} | Job: ${sub.jobName} | Build: ${sub.build?.label || 'Not built yet'}`
-                            : sub.type === 'redis'
-                                ? `Host: ${sub.connection.host} | Port: ${sub.connection.port}`
-                                : sub.type === 'vm'
-                                    ? `URL: ${sub.url} | Container: ${sub.containerName || 'vm'}`
-                            : sub.type === 'metabase'
-                                ? `URL: ${sub.url} | Container: ${sub.containerName || 'metabase'}`
+            ? `Host: ${sub.connection.host} | Port: ${sub.connection.port} | DB: ${sub.connection.database}`
+            : sub.type === 'jenkins'
+                ? `URL: ${sub.url} | Job: ${sub.jobName} | Build: ${sub.build?.label || 'Not built yet'}`
+                : sub.type === 'redis'
+                    ? `Host: ${sub.connection.host} | Port: ${sub.connection.port}`
+                    : sub.type === 'vm'
+                        ? `URL: ${sub.url} | Container: ${sub.containerName || 'vm'}`
+                        : sub.type === 'metabase'
+                            ? `URL: ${sub.url} | Container: ${sub.containerName || 'metabase'}`
                             : `URL: ${sub.url}`}
                 </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <div style="text-align: right;">
-                    <div style="font-weight: 600; color: var(--primary);">${sub.type === 'postgres' || sub.type === 'redis' ? `${sub.connection.host}:${sub.connection.port}` : `<a href="${sub.url}" target="_blank" rel="noopener">Open</a>`}</div>
+                    <div style="font-weight: 600; color: var(--primary);">${sub.type === 'postgres' || sub.type === 'redis' ? `localhost:${sub.connection.port}` : `<a href="${sub.url}" target="_blank" rel="noopener">Open</a>`}</div>
                     <div style="font-size: 0.85rem; color: #10b981;">${sub.type === 'jenkins' ? `${sub.status} | ${sub.build?.label || 'Not built yet'}` : sub.status}</div>
                 </div>
                 <button class="btn btn-outline" style="font-size: 0.75rem;" onclick="manageSubscription('${sub.id}')">${sub.type === 'postgres' || sub.type === 'redis' ? 'Refresh' : 'Open'}</button>
@@ -7760,7 +7471,7 @@ async function loadSaaSSubscriptions() {
 function manageSubscription(subId) {
     const sub = activeMarketplaceSessions.find(s => s.id === subId);
     if (!sub) return;
-    
+
     if (sub.type === 'postgres') {
         refreshDockerServices();
         return;
@@ -7829,7 +7540,7 @@ async function cancelSubscription(subId) {
     }
 
     if (!confirm('Stop Apache Server? The Docker container will be terminated.')) return;
-    
+
     try {
         const res = await fetch(`${API_URL}/container/apache/stop`, {
             method: 'POST',
@@ -7854,12 +7565,12 @@ async function cancelSubscription(subId) {
 function loadSaaSIntegrations() {
     const container = document.getElementById('saas-integrations-list');
     const myIntegrations = saasIntegrations.filter(i => i.owner === currentUser?.email);
-    
+
     if (myIntegrations.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 40px;">No integrations configured.</p>';
         return;
     }
-    
+
     container.innerHTML = myIntegrations.map(int => `
         <div class="saas-integration-item">
             <div>
@@ -7898,10 +7609,10 @@ function configureIntegration(intId) {
 
 function disconnectIntegration(intId) {
     if (!confirm('Disconnect this integration?')) return;
-    
+
     saasIntegrations = saasIntegrations.filter(i => i.id !== intId);
     localStorage.setItem('bytesky_saas_integrations', JSON.stringify(saasIntegrations));
-    
+
     showToast('Integration disconnected');
     loadSaaSIntegrations();
 }
