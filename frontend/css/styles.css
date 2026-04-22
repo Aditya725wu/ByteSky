@@ -33,14 +33,14 @@ body {
 nav {
     background: var(--dark);
     color: white;
-    padding: 0.78rem 1.45rem;
+    padding: 0.62rem 1.2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
     z-index: 100;
     border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
 }
 
 .nav-brand {
@@ -61,10 +61,10 @@ nav {
 
 .logo img {
     display: block;
-    height: 34px;
+    height: 30px;
     width: auto;
     flex: 0 0 auto;
-    filter: drop-shadow(0 10px 20px rgba(2, 6, 23, 0.2));
+    filter: drop-shadow(0 8px 16px rgba(2, 6, 23, 0.18));
 }
 
 .nav-links {
@@ -72,14 +72,15 @@ nav {
     align-items: center;
     justify-content: flex-end;
     flex: 1;
-    gap: 14px;
+    gap: 12px;
     min-width: 0;
 }
 
 .nav-user-email {
-    font-size: 0.9rem;
+    font-size: 0.84rem;
     font-weight: 600;
     color: rgba(226, 232, 240, 0.88);
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -100,11 +101,11 @@ nav {
 .btn-logout {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(148, 163, 184, 0.24);
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.88rem;
     color: white;
     cursor: pointer;
-    border-radius: 10px;
-    font-size: 0.88rem;
+    border-radius: 9px;
+    font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.01em;
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
@@ -2550,9 +2551,9 @@ body {
 
 nav {
     background: linear-gradient(100deg, #0b1220 0%, #111c32 55%, #0f1a2e 100%);
-    padding: 0.9rem 2rem;
+    padding: 0.62rem 1.2rem;
     border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.24);
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.2);
 }
 
 .sidebar {
@@ -3067,9 +3068,13 @@ iframe {
 
 @media (max-width: 1024px) {
     nav {
-        padding: 0.85rem 1.25rem;
-        gap: 16px;
+        padding: 0.58rem 1rem;
+        gap: 12px;
         flex-wrap: wrap;
+    }
+
+    .logo img {
+        height: 28px;
     }
 
     .nav-links {
@@ -3088,7 +3093,7 @@ iframe {
 
     .sidebar {
         position: fixed;
-        top: 73px;
+        top: 58px;
         left: 0;
         bottom: 0;
         min-height: auto;
@@ -3213,7 +3218,7 @@ iframe {
 
 @media (max-width: 768px) {
     nav {
-        padding: 0.75rem 1rem;
+        padding: 0.52rem 0.85rem;
     }
 
     .nav-brand {
@@ -3221,17 +3226,17 @@ iframe {
     }
 
     .logo img {
-        height: 28px;
+        height: 24px;
     }
 
     .nav-links {
         width: 100%;
-        gap: 10px;
+        gap: 8px;
     }
 
     .nav-links span {
         width: 100%;
-        font-size: 0.82rem;
+        font-size: 0.76rem;
     }
 
     .main-content {
