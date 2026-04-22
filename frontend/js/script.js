@@ -75,7 +75,6 @@ function setSidebarCollapsed(isCollapsed) {
 
 function setSidebarOpen(isOpen) {
     const sidebar = document.getElementById('sidebar');
-    const consoleToggle = document.getElementById('consoleToggle');
 
     if (!sidebar) {
         return;
@@ -83,15 +82,6 @@ function setSidebarOpen(isOpen) {
 
     const nextState = Boolean(isOpen && currentUser && isCompactSidebarLayout());
     sidebar.classList.toggle('active', nextState);
-
-    if (consoleToggle) {
-        consoleToggle.classList.toggle('active', nextState);
-        if (isCompactSidebarLayout()) {
-            consoleToggle.setAttribute('aria-expanded', String(nextState));
-            consoleToggle.setAttribute('title', nextState ? 'Close menu' : 'Open menu');
-            consoleToggle.setAttribute('aria-label', nextState ? 'Close navigation menu' : 'Open navigation menu');
-        }
-    }
 }
 
 function toggleSidebar() {
@@ -110,27 +100,18 @@ function toggleSidebar() {
     localStorage.setItem(SIDEBAR_COLLAPSE_STORAGE_KEY, String(nextCollapsed));
     setSidebarCollapsed(nextCollapsed);
 
-    const consoleToggle = document.getElementById('consoleToggle');
-    if (consoleToggle) {
-        consoleToggle.classList.toggle('active', !nextCollapsed);
-        consoleToggle.setAttribute('aria-expanded', String(!nextCollapsed));
-        consoleToggle.setAttribute('title', nextCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
-        consoleToggle.setAttribute('aria-label', nextCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
-    }
 }
 
 function handleSidebarDismiss(event) {
     const sidebar = document.getElementById('sidebar');
-    const consoleToggle = document.getElementById('consoleToggle');
 
     if (!sidebar || !sidebar.classList.contains('active') || !isCompactSidebarLayout()) {
         return;
     }
 
     const clickedInsideSidebar = sidebar.contains(event.target);
-    const clickedConsoleToggle = consoleToggle?.contains(event.target);
 
-    if (!clickedInsideSidebar && !clickedConsoleToggle) {
+    if (!clickedInsideSidebar) {
         setSidebarOpen(false);
     }
 }
@@ -507,9 +488,7 @@ async function checkSession() {
 
 function updateNav() {
     const nav = document.getElementById('navLinks');
-    const sidebar = document.getElementById('sidebar');
     const adminLink = document.getElementById('adminLink');
-    const consoleToggle = document.getElementById('consoleToggle');
 
     if (currentUser) {
         nav.innerHTML = `
@@ -517,23 +496,9 @@ function updateNav() {
             <button class="btn-logout" onclick="logout()">Logout</button>
         `;
         document.body.classList.add('sidebar-visible');
-        if (consoleToggle) {
-            consoleToggle.hidden = false;
-        }
         const collapsed = getSavedSidebarCollapsed();
         setSidebarCollapsed(collapsed);
         setSidebarOpen(false);
-        if (consoleToggle) {
-            const expanded = isCompactSidebarLayout() ? sidebar?.classList.contains('active') : !document.body.classList.contains('sidebar-collapsed');
-            consoleToggle.classList.toggle('active', expanded);
-            consoleToggle.setAttribute('aria-expanded', String(expanded));
-            consoleToggle.setAttribute('title', isCompactSidebarLayout()
-                ? (expanded ? 'Close menu' : 'Open menu')
-                : (expanded ? 'Collapse sidebar' : 'Expand sidebar'));
-            consoleToggle.setAttribute('aria-label', isCompactSidebarLayout()
-                ? (expanded ? 'Close navigation menu' : 'Open navigation menu')
-                : (expanded ? 'Collapse sidebar' : 'Expand sidebar'));
-        }
         if (adminLink) {
             adminLink.style.display = currentUser.role === 'admin' ? 'flex' : 'none';
         }
@@ -544,9 +509,6 @@ function updateNav() {
             <a onclick="router('login')">Login</a>
             <a onclick="router('register')">Register</a>
         `;
-        if (consoleToggle) {
-            consoleToggle.hidden = true;
-        }
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
