@@ -33,57 +33,38 @@ body {
 nav {
     background: var(--dark);
     color: white;
-    padding: 0.8rem 2rem;
+    padding: 0.9rem 1.6rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
     z-index: 100;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.16);
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     min-width: 0;
+    flex: 0 1 auto;
 }
 
 .logo {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
     text-decoration: none;
-    line-height: 1;
+    line-height: 0;
     min-width: 0;
 }
 
-.logo-mark {
+.logo img {
     display: block;
-    height: 34px;
+    height: 42px;
     width: auto;
     flex: 0 0 auto;
-    filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.2));
-}
-
-.logo-copy {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    gap: 1px;
-}
-
-.logo-wordmark {
-    color: #f8fafc;
-    font-size: 1rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-}
-
-.logo-caption {
-    color: rgba(191, 219, 254, 0.78);
-    font-size: 0.64rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    filter: drop-shadow(0 12px 26px rgba(2, 6, 23, 0.24));
 }
 
 .nav-links {
@@ -91,12 +72,14 @@ nav {
     align-items: center;
     justify-content: flex-end;
     flex: 1;
-    gap: 15px;
+    gap: 16px;
+    min-width: 0;
 }
 
 .nav-user-email {
-    font-size: 0.9rem;
-    opacity: 0.85;
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.96);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -179,18 +162,23 @@ nav {
 }
 
 .btn-logout {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    padding: 0.72rem 1.2rem;
     color: white;
     cursor: pointer;
-    border-radius: 4px;
-    transition: 0.2s;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-logout:hover {
     background: var(--danger);
     border-color: var(--danger);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(239, 68, 68, 0.2);
 }
 
 /* --- Layout --- */
@@ -244,9 +232,9 @@ nav {
 }
 
 .sidebar-brand-mark {
-    width: 48px;
-    height: 36px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -255,7 +243,7 @@ nav {
     box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
     flex: 0 0 auto;
     overflow: hidden;
-    padding: 2px 4px;
+    padding: 6px;
 }
 
 .sidebar-brand-mark img {
@@ -273,17 +261,17 @@ nav {
 
 .sidebar-brand-copy strong {
     color: #0f172a;
-    font-size: 0.98rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
     white-space: nowrap;
 }
 
 .sidebar-eyebrow {
     color: #64748b;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .sidebar-collapse-btn {
@@ -650,43 +638,15 @@ tr:hover {
 }
 
 .auth-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
+    display: flex;
+    justify-content: center;
     margin-bottom: 24px;
-    padding: 10px 14px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(34, 211, 238, 0.08));
-    border: 1px solid rgba(191, 219, 254, 0.7);
 }
 
 .auth-brand img {
     display: block;
-    width: 42px;
+    width: min(210px, 100%);
     height: auto;
-    flex: 0 0 auto;
-}
-
-.auth-brand-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.auth-brand-copy strong {
-    color: var(--dark);
-    font-size: 0.92rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.auth-brand-copy span {
-    color: #64748b;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
 }
 
 .auth-box h2 {
@@ -3338,8 +3298,8 @@ iframe {
         gap: 10px;
     }
 
-    .logo {
-        font-size: 1.2rem;
+    .logo img {
+        height: 32px;
     }
 
     .nav-links {
@@ -3393,6 +3353,10 @@ iframe {
         width: min(100%, 420px);
         margin: 24px auto;
         padding: 24px 18px;
+    }
+
+    .auth-brand img {
+        width: min(180px, 100%);
     }
 
     .grid-2,

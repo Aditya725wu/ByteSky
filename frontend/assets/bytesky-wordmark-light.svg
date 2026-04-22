@@ -1,0 +1,30 @@
+<svg width="320" height="72" viewBox="0 0 320 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="byteskyWordmarkLightGradient" x1="10" y1="10" x2="88" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="0.55" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(2 6) scale(0.56)">
+    <path
+      d="M18 58C18 45.85 27.85 36 40 36C46.82 36 52.91 39.11 56.94 44C58.9 29.86 71.05 19 85.72 19C101.76 19 114.89 31.52 115.88 47.3C117.41 46.46 119.16 46 121 46C126.52 46 131 50.48 131 56C131 61.52 126.52 66 121 66H105.5"
+      transform="translate(-6 -2)"
+      stroke="url(#byteskyWordmarkLightGradient)"
+      stroke-width="12"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M22 54C29.23 45.41 38.26 41.11 49.08 41.11C58.2 41.11 65.17 44.49 69.98 51.26C74.3 57.24 78.64 60.22 82.99 60.22C88.97 60.22 92.95 56.93 94.95 50.35C95.99 46.87 97.97 44.07 100.9 41.96C103.82 39.85 107.04 38.8 110.56 38.8C116.05 38.8 120.53 40.74 124 44.63"
+      transform="translate(-10 6)"
+      stroke="url(#byteskyWordmarkLightGradient)"
+      stroke-width="12"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <text x="90" y="44" font-family="Plus Jakarta Sans, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="0.04em" fill="#F8FAFC">
+    BYTE<tspan fill="#60A5FA">SKY</tspan>
+  </text>
+</svg>
