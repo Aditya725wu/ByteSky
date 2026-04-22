@@ -32,7 +32,11 @@
                 </span>
             </button>
             <a class="logo" href="#" onclick="router('home'); return false;" aria-label="ByteSky home">
-                <img src="assets/bytesky-logo.svg" alt="ByteSky">
+                <img class="logo-mark" src="assets/bytesky-mark.svg" alt="ByteSky">
+                <span class="logo-copy">
+                    <span class="logo-wordmark">ByteSky</span>
+                    <span class="logo-caption">Cloud Console</span>
+                </span>
             </a>
         </div>
         <div class="nav-links" id="navLinks"></div>
@@ -208,7 +212,11 @@
             <div id="login" class="page">
                 <div class="auth-box">
                     <div class="auth-brand">
-                        <img src="assets/bytesky-logo.svg" alt="ByteSky">
+                        <img src="assets/bytesky-mark.svg" alt="ByteSky">
+                        <div class="auth-brand-copy">
+                            <strong>ByteSky</strong>
+                            <span>Cloud Console</span>
+                        </div>
                     </div>
                     <h2 style="margin-bottom:20px; color:var(--dark);">Welcome Back</h2>
                     <form onsubmit="handleLogin(event)">
@@ -233,7 +241,11 @@
             <div id="register" class="page">
                 <div class="auth-box">
                     <div class="auth-brand">
-                        <img src="assets/bytesky-logo.svg" alt="ByteSky">
+                        <img src="assets/bytesky-mark.svg" alt="ByteSky">
+                        <div class="auth-brand-copy">
+                            <strong>ByteSky</strong>
+                            <span>Cloud Console</span>
+                        </div>
                     </div>
                     <h2 style="margin-bottom:20px; color:var(--dark);">Create Account</h2>
                     <form onsubmit="handleRegister(event)">
