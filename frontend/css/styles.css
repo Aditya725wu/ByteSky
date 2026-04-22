@@ -48,14 +48,17 @@ nav {
 }
 
 .logo {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    line-height: 0;
 }
 
-.logo span {
-    color: var(--primary);
+.logo img {
+    display: block;
+    height: 44px;
+    width: auto;
+    filter: drop-shadow(0 12px 24px rgba(15, 23, 42, 0.28));
 }
 
 .nav-links {
@@ -216,18 +219,24 @@ nav {
 }
 
 .sidebar-brand-mark {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
+    width: 48px;
+    height: 36px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: 800;
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.96) 0%, rgba(219, 234, 254, 0.88) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.14);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
     flex: 0 0 auto;
+    overflow: hidden;
+    padding: 2px 4px;
+}
+
+.sidebar-brand-mark img {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 .sidebar-brand-copy {
@@ -613,6 +622,18 @@ tr:hover {
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
+}
+
+.auth-brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.auth-brand img {
+    display: block;
+    width: min(220px, 100%);
+    height: auto;
 }
 
 .auth-box h2 {

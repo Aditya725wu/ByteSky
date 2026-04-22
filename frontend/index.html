@@ -13,8 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://js.stripe.com/v3/" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f172a'/%3E%3Ctext x='50%25' y='52%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial' font-size='30' fill='%23ffffff'%3EB%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="assets/bytesky-mark.svg">
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/script.js" defer></script>
 </head>
@@ -32,7 +31,9 @@
                     <span class="console-toggle-line"></span>
                 </span>
             </button>
-            <div class="logo">BYTE<span>SKY</span></div>
+            <a class="logo" href="#" onclick="router('home'); return false;" aria-label="ByteSky home">
+                <img src="assets/bytesky-logo.svg" alt="ByteSky">
+            </a>
         </div>
         <div class="nav-links" id="navLinks"></div>
     </nav>
@@ -42,7 +43,9 @@
         <aside class="sidebar" id="sidebar" aria-label="Primary">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <div class="sidebar-brand-mark">B</div>
+                    <div class="sidebar-brand-mark">
+                        <img src="assets/bytesky-mark.svg" alt="ByteSky mark">
+                    </div>
                     <div class="sidebar-brand-copy">
                         <span class="sidebar-eyebrow">Workspace</span>
                         <strong>ByteSky Console</strong>
@@ -204,6 +207,9 @@
             <!-- LOGIN PAGE -->
             <div id="login" class="page">
                 <div class="auth-box">
+                    <div class="auth-brand">
+                        <img src="assets/bytesky-logo.svg" alt="ByteSky">
+                    </div>
                     <h2 style="margin-bottom:20px; color:var(--dark);">Welcome Back</h2>
                     <form onsubmit="handleLogin(event)">
                         <label style="font-size:0.8rem; font-weight:bold; color:#64748b;">EMAIL ADDRESS</label>
@@ -226,6 +232,9 @@
             <!-- REGISTER PAGE -->
             <div id="register" class="page">
                 <div class="auth-box">
+                    <div class="auth-brand">
+                        <img src="assets/bytesky-logo.svg" alt="ByteSky">
+                    </div>
                     <h2 style="margin-bottom:20px; color:var(--dark);">Create Account</h2>
                     <form onsubmit="handleRegister(event)">
                         <label style="font-size:0.8rem; font-weight:bold; color:#64748b;">FULL NAME</label>
