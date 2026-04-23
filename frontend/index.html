@@ -797,33 +797,33 @@
                 </div>
                 <div class="grid-4 network-summary-grid" id="network-summary"></div>
                 <div class="network-layout-grid">
-                    <section class="card network-section-card">
+                    <section class="card network-section-card network-section-vpc">
                         <div class="network-section-header">
                             <div>
                                 <h3>VPCs</h3>
                                 <p>Organize your private network, subnets, and route design.</p>
                             </div>
-                            <button class="btn btn-primary" onclick="openVPCModal()">Create VPC</button>
+                            <button class="network-action-btn network-action-btn--primary" onclick="openVPCModal()">Create VPC</button>
                         </div>
                         <div id="vpc-list"></div>
                     </section>
-                    <section class="card network-section-card">
+                    <section class="card network-section-card network-section-route">
                         <div class="network-section-header">
                             <div>
                                 <h3>Route Tables</h3>
                                 <p>Review traffic policies and subnet associations at a glance.</p>
                             </div>
-                            <button class="btn btn-outline" onclick="openRouteTableModal()">Add Route Table</button>
+                            <button class="network-action-btn network-action-btn--secondary" onclick="openRouteTableModal()">Add Route Table</button>
                         </div>
                         <div id="route-table-list"></div>
                     </section>
-                    <section class="card network-section-card">
+                    <section class="card network-section-card network-section-lb">
                         <div class="network-section-header">
                             <div>
                                 <h3>Load Balancers</h3>
                                 <p>Distribute traffic to healthy compute targets across your VPCs.</p>
                             </div>
-                            <button class="btn btn-outline" onclick="openLBModal()">Create Load Balancer</button>
+                            <button class="network-action-btn network-action-btn--ghost" onclick="openLBModal()">Create Load Balancer</button>
                         </div>
                         <div id="lb-list"></div>
                     </section>

@@ -2416,7 +2416,7 @@ function renderVPCs(vpcs = []) {
                     : 'Unassigned';
 
                 return `
-                    <div class="network-list-card">
+                    <div class="network-list-card network-vpc-subnet-card">
                         <div class="network-list-head">
                             <div style="flex:1;">
                                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -2434,110 +2434,52 @@ function renderVPCs(vpcs = []) {
             : getNetworkEmptyStateMarkup({
                 icon: 'subnets',
                 title: 'No subnets configured',
-                description: 'Add a public or private subnet to start placing workloads inside this VPC.',
+                description: 'Add a public or private subnet to place workloads inside this VPC.',
                 actionLabel: 'Add Subnet',
                 actionHandler: `openSubnetModal('${vpc._id}')`
             });
 
-        const routeTableMarkup = routeTablesForVpc.length
-            ? routeTablesForVpc.map(routeTable => `
-                <div class="network-list-card">
-                    <div class="network-list-head">
-                        <div style="flex:1;">
-                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <div class="network-list-title">${routeTable.name}</div>
-                                <span class="${routeTable.isMain ? getNetworkBadgeClass('main') : getNetworkBadgeClass(routeTable.status)}">
-                                    ${routeTable.isMain ? 'MAIN' : String(routeTable.status || 'draft').toUpperCase()}
-                                </span>
-                            </div>
-                            <div class="network-list-meta">${(routeTable.routes || []).length} route${(routeTable.routes || []).length === 1 ? '' : 's'} configured</div>
-                            <div class="network-list-note">${((routeTable.associatedSubnets || []).map(association => association.subnetName).join(', ')) || 'No associated subnets'}</div>
-                        </div>
-                        ${routeTable.isMain
-                    ? '<button class="network-action-btn network-action-btn--ghost" style="font-size:0.72rem;" disabled>Main</button>'
-                    : `<button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.72rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
-                    </div>
-                </div>
-            `).join('')
-            : getNetworkEmptyStateMarkup({
-                icon: 'routeTable',
-                title: 'No custom route tables',
-                description: 'Create a route table when you need dedicated traffic rules for selected subnets.',
-                actionLabel: 'Add Route Table',
-                actionHandler: `openRouteTableModal('${vpc._id}')`
-            });
-
         return `
-            <div class="network-vpc-cluster">
+            <div class="network-vpc-card">
                 <div class="network-vpc-head">
-                    <div>
+                    <div style="flex:1;">
                         <div class="network-kicker">Virtual Private Cloud</div>
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px;">
-                            <strong style="font-size:1.1rem;">${vpc.name}</strong>
+                            <strong style="font-size:1.08rem;">${vpc.name}</strong>
                             <span class="${getNetworkBadgeClass(vpc.status)}">${String(vpc.status || 'available').toUpperCase()}</span>
                         </div>
-                        <div style="color:#64748b; margin-top:6px; font-size:0.9rem;">${vpc.cidr} | ${vpc.region}</div>
+                        <div class="network-list-meta">${vpc.cidr} | ${vpc.region}</div>
                     </div>
                     <button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.75rem;" onclick="deleteVpc('${vpc._id}')">Delete</button>
                 </div>
-                <div class="network-vpc-split">
-                    <div class="network-surface-card">
-                        <div class="network-surface-head">
-                            <div>
-                                <div class="network-kicker">VPC Overview</div>
-                                <h4>${vpc.name}</h4>
-                            </div>
-                            <span class="${getNetworkBadgeClass(vpc.status)}">${String(vpc.status || 'available').toUpperCase()}</span>
-                        </div>
-                        <div class="network-meta">
-                            <div class="network-meta-row">
-                                <span class="network-meta-label">CIDR</span>
-                                <span class="network-meta-value">${vpc.cidr}</span>
-                            </div>
-                            <div class="network-meta-row">
-                                <span class="network-meta-label">Region</span>
-                                <span class="network-meta-value">${vpc.region}</span>
-                            </div>
-                        </div>
-                        <div class="network-metrics-row">
-                            <div class="network-metric">
-                                <div class="network-metric-label">Subnets</div>
-                                <div class="network-metric-value">${vpc.subnets?.length || 0}</div>
-                            </div>
-                            <div class="network-metric">
-                                <div class="network-metric-label">Public / Private</div>
-                                <div class="network-metric-value">${publicCount} / ${privateCount}</div>
-                            </div>
-                            <div class="network-metric">
-                                <div class="network-metric-label">Route Tables</div>
-                                <div class="network-metric-value">${routeTableCount}</div>
-                            </div>
-                        </div>
-                        <div class="network-action-row">
-                            <button class="network-action-btn network-action-btn--primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
-                            <button class="network-action-btn network-action-btn--secondary" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
-                        </div>
+                <div class="network-meta">
+                    <div class="network-meta-row">
+                        <span class="network-meta-label">CIDR</span>
+                        <span class="network-meta-value">${vpc.cidr}</span>
                     </div>
-                    <div class="network-surface-card">
-                        <div class="network-surface-head">
-                            <div>
-                                <div class="network-kicker">Subnets</div>
-                                <h4>Attached Subnets</h4>
-                            </div>
-                            <span class="${getNetworkBadgeClass('public')}">${publicCount} public</span>
-                        </div>
-                        <div class="network-list">${subnetMarkup}</div>
+                    <div class="network-meta-row">
+                        <span class="network-meta-label">Region</span>
+                        <span class="network-meta-value">${vpc.region}</span>
                     </div>
-                    <div class="network-surface-card">
-                        <div class="network-surface-head">
-                            <div>
-                                <div class="network-kicker">Route Tables</div>
-                                <h4>Traffic Policies</h4>
-                            </div>
-                            <span class="${routeTableCount ? getNetworkBadgeClass('main') : getNetworkBadgeClass('available')}">${routeTableCount} total</span>
-                        </div>
-                        <div class="network-list">${routeTableMarkup}</div>
+                </div>
+                <div class="network-metrics-row">
+                    <div class="network-metric">
+                        <div class="network-metric-label">Subnets</div>
+                        <div class="network-metric-value">${vpc.subnets?.length || 0}</div>
                     </div>
+                    <div class="network-metric">
+                        <div class="network-metric-label">Public / Private</div>
+                        <div class="network-metric-value">${publicCount} / ${privateCount}</div>
+                    </div>
+                    <div class="network-metric">
+                        <div class="network-metric-label">Route Tables</div>
+                        <div class="network-metric-value">${routeTableCount}</div>
+                    </div>
+                </div>
+                <div class="network-list">${subnetMarkup}</div>
+                <div class="network-action-row">
+                    <button class="network-action-btn network-action-btn--primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
+                    <button class="network-action-btn network-action-btn--secondary" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
                 </div>
             </div>
         `;
@@ -2577,7 +2519,7 @@ function renderRouteTables(routeTables = []) {
             : '<span style="font-size:0.84rem; color:#64748b;">No subnets associated.</span>';
 
         return `
-            <div class="network-surface-card">
+            <div class="network-route-table-card">
                 <div class="network-surface-head">
                     <div>
                         <div class="network-kicker">Route Table</div>
@@ -2645,7 +2587,7 @@ function renderLoadBalancers(loadBalancers = []) {
             });
 
         return `
-            <div class="network-surface-card">
+            <div class="network-load-balancer-card">
                 <div class="network-surface-head">
                     <div style="flex: 1;">
                         <div class="network-kicker">Load Balancer</div>

@@ -1437,6 +1437,30 @@ tr:hover {
     opacity: 0.85;
 }
 
+.network-section-vpc::before {
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.98), rgba(59, 130, 246, 0.38), rgba(96, 165, 250, 0.16));
+}
+
+.network-section-route::before {
+    background: linear-gradient(90deg, rgba(109, 40, 217, 0.98), rgba(168, 85, 247, 0.34), rgba(196, 181, 253, 0.16));
+}
+
+.network-section-lb::before {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.98), rgba(34, 197, 94, 0.32), rgba(110, 231, 183, 0.16));
+}
+
+.network-section-vpc {
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.network-section-route {
+    background: linear-gradient(180deg, rgba(250, 247, 255, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.network-section-lb {
+    background: linear-gradient(180deg, rgba(245, 255, 250, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
 .network-section-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 22px 40px rgba(15, 23, 42, 0.1);
@@ -1497,6 +1521,87 @@ tr:hover {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: 16px;
     min-width: 0;
+}
+
+.network-vpc-card,
+.network-route-table-card,
+.network-load-balancer-card {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 1) 100%);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    min-width: 0;
+}
+
+.network-vpc-card {
+    border-color: rgba(37, 99, 235, 0.16);
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.96) 0%, rgba(255, 255, 255, 0.99) 100%);
+}
+
+.network-route-table-card {
+    border-color: rgba(109, 40, 217, 0.16);
+    background: linear-gradient(180deg, rgba(245, 243, 255, 0.96) 0%, rgba(255, 255, 255, 0.99) 100%);
+}
+
+.network-load-balancer-card {
+    border-color: rgba(16, 185, 129, 0.16);
+    background: linear-gradient(180deg, rgba(236, 253, 245, 0.96) 0%, rgba(255, 255, 255, 0.99) 100%);
+}
+
+.network-vpc-card:hover,
+.network-route-table-card:hover,
+.network-load-balancer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
+}
+
+.network-vpc-card .network-vpc-head,
+.network-route-table-card .network-surface-head,
+.network-load-balancer-card .network-surface-head {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.network-vpc-card .network-kicker {
+    color: #2563eb;
+}
+
+.network-route-table-card .network-kicker {
+    color: #6d28d9;
+}
+
+.network-load-balancer-card .network-kicker {
+    color: #059669;
+}
+
+.network-vpc-card .network-meta,
+.network-route-table-card .network-list-card,
+.network-load-balancer-card .network-list-card {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.network-vpc-card .network-meta {
+    border-color: rgba(191, 219, 254, 0.9);
+    background: #f8fbff;
+}
+
+.network-vpc-subnet-card {
+    border-color: rgba(191, 219, 254, 0.9);
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.network-route-table-card .network-list-card {
+    border-color: rgba(221, 214, 254, 0.95);
+    background: linear-gradient(180deg, rgba(250, 247, 255, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+}
+
+.network-load-balancer-card .network-list-card {
+    border-color: rgba(167, 243, 208, 0.95);
+    background: linear-gradient(180deg, rgba(244, 253, 247, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
 }
 
 .network-surface-card {
@@ -3800,6 +3905,18 @@ body[data-theme="dark"] .network-section-card {
     box-shadow: 0 20px 40px rgba(2, 6, 23, 0.34);
 }
 
+body[data-theme="dark"] .network-section-vpc {
+    background: linear-gradient(180deg, rgba(10, 18, 36, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
+body[data-theme="dark"] .network-section-route {
+    background: linear-gradient(180deg, rgba(17, 14, 42, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
+body[data-theme="dark"] .network-section-lb {
+    background: linear-gradient(180deg, rgba(8, 30, 25, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
 body[data-theme="dark"] .network-section-card:hover {
     box-shadow: 0 24px 44px rgba(2, 6, 23, 0.42);
     border-color: rgba(96, 165, 250, 0.22);
@@ -3819,6 +3936,22 @@ body[data-theme="dark"] .network-empty-state {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+body[data-theme="dark"] .network-vpc-card {
+    background: linear-gradient(180deg, rgba(10, 18, 36, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: rgba(96, 165, 250, 0.26);
+    box-shadow: 0 14px 28px rgba(2, 6, 23, 0.26);
+}
+
+body[data-theme="dark"] .network-route-table-card {
+    background: linear-gradient(180deg, rgba(23, 16, 51, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: rgba(168, 85, 247, 0.24);
+}
+
+body[data-theme="dark"] .network-load-balancer-card {
+    background: linear-gradient(180deg, rgba(8, 30, 25, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: rgba(52, 211, 153, 0.24);
+}
+
 body[data-theme="dark"] .network-vpc-cluster,
 body[data-theme="dark"] .network-surface-card {
     box-shadow: 0 14px 28px rgba(2, 6, 23, 0.26);
@@ -3828,6 +3961,18 @@ body[data-theme="dark"] .network-vpc-cluster:hover,
 body[data-theme="dark"] .network-surface-card:hover {
     box-shadow: 0 20px 34px rgba(2, 6, 23, 0.32);
     border-color: rgba(96, 165, 250, 0.24);
+}
+
+body[data-theme="dark"] .network-vpc-card .network-kicker {
+    color: #93c5fd;
+}
+
+body[data-theme="dark"] .network-route-table-card .network-kicker {
+    color: #c4b5fd;
+}
+
+body[data-theme="dark"] .network-load-balancer-card .network-kicker {
+    color: #6ee7b7;
 }
 
 body[data-theme="dark"] .network-empty-icon {
@@ -3863,6 +4008,26 @@ body[data-theme="dark"] .network-list-card,
 body[data-theme="dark"] .network-metric {
     background: rgba(17, 24, 39, 0.72);
     border-color: #334155;
+}
+
+body[data-theme="dark"] .network-vpc-card .network-meta {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(96, 165, 250, 0.18);
+}
+
+body[data-theme="dark"] .network-vpc-subnet-card {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(96, 165, 250, 0.18);
+}
+
+body[data-theme="dark"] .network-route-table-card .network-list-card {
+    background: rgba(23, 16, 51, 0.72);
+    border-color: rgba(168, 85, 247, 0.18);
+}
+
+body[data-theme="dark"] .network-load-balancer-card .network-list-card {
+    background: rgba(8, 30, 25, 0.72);
+    border-color: rgba(52, 211, 153, 0.18);
 }
 
 body[data-theme="dark"] .network-list-card:hover {
