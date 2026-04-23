@@ -111,7 +111,13 @@ const env = {
   jenkinsJobName: process.env.JENKINS_JOB_NAME || 'bytesky-node-app',
   jenkinsBuildToken: process.env.JENKINS_BUILD_TOKEN || 'bytesky-build-token',
   jenkinsGitRepoUrl: process.env.JENKINS_GIT_REPO_URL || '',
-  jenkinsGitBranch: process.env.JENKINS_GIT_BRANCH || 'main'
+  jenkinsGitBranch: process.env.JENKINS_GIT_BRANCH || 'main',
+  smtpHost: process.env.SMTP_HOST || '',
+  smtpPort: parseNumber(process.env.SMTP_PORT, 587),
+  smtpSecure: parseBoolean(process.env.SMTP_SECURE, false),
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  mailFrom: process.env.MAIL_FROM || 'ByteSky Cloud <no-reply@bytesky.cloud>'
 };
 
 const requiredKeys = ['MONGO_URI', 'JWT_SECRET'];

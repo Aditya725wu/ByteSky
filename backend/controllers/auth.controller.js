@@ -54,11 +54,31 @@ async function getCurrentUser(req, res, next) {
   }
 }
 
+async function getLoginAlertPreferences(req, res, next) {
+  try {
+    const payload = await authService.getLoginAlertPreferences(req.user.id);
+    return res.json(payload);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function updateLoginAlertPreferences(req, res, next) {
+  try {
+    const payload = await authService.updateLoginAlertPreferences(req.user.id, req.body, req);
+    return res.json(payload);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   changePassword,
   getCurrentUser,
+  getLoginAlertPreferences,
   googleLogin,
   login,
   register,
+  updateLoginAlertPreferences,
   updateProfile
 };

@@ -21,7 +21,19 @@ const UserSchema = new mongoose.Schema({
   policies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Policy' }],
   twoFAEnabled: { type: Boolean, default: false },
   twoFASecret: { type: String },
-  lastLogin: { type: Date }
+  lastLogin: { type: Date },
+  loginAlerts: {
+    emailOnNewDevice: { type: Boolean, default: true },
+    emailOnFailedLogin: { type: Boolean, default: false }
+  },
+  knownLoginDevices: [{
+    fingerprint: { type: String, required: true },
+    deviceId: { type: String },
+    userAgent: { type: String },
+    ipAddress: { type: String },
+    firstSeenAt: { type: Date, default: Date.now },
+    lastSeenAt: { type: Date, default: Date.now }
+  }]
 });
 
 

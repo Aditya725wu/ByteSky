@@ -55,6 +55,7 @@ let storageView = 'list';
 let selectedStorageIds = [];
 let activeMonitoringMetric = 'cpu';
 const THEME_STORAGE_KEY = 'bytesky_theme';
+const DEVICE_ID_STORAGE_KEY = 'bytesky_device_id';
 const SIDEBAR_COLLAPSE_STORAGE_KEY = 'bytesky_sidebar_collapsed';
 const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
@@ -331,6 +332,27 @@ function isStoredTokenUsable(tokenValue) {
     return (payload.exp * 1000) > (Date.now() + 5000);
 }
 
+function createFallbackDeviceId() {
+    return `dev_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+
+    if (!deviceId) {
+        deviceId = window.crypto?.randomUUID?.() || createFallbackDeviceId();
+        localStorage.setItem(DEVICE_ID_STORAGE_KEY, deviceId);
+    }
+
+    return deviceId;
+}
+
+function getDeviceHeaders() {
+    return {
+        'X-ByteSky-Device-Id': getOrCreateDeviceId()
+    };
+}
+
 async function fetchClientConfig() {
     if (!clientConfigPromise) {
         clientConfigPromise = fetch(`${API_URL}/health/client-config`)
@@ -472,7 +494,7 @@ async function handleRegister(e) {
     try {
         const res = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getDeviceHeaders() },
             body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
@@ -512,7 +534,7 @@ async function handleLogin(e) {
     try {
         const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getDeviceHeaders() },
             body: JSON.stringify({ email, password })
         });
         const data = await res.json();
@@ -783,6 +805,120 @@ async function changePassword() {
     }
 }
 
+function getDefaultLoginAlertPreferences() {
+    return {
+        emailOnNewDevice: true,
+        emailOnFailedLogin: false
+    };
+}
+
+function setLoginAlertStatus(message, isError = false) {
+    const status = document.getElementById('login-alert-status');
+    if (!status) return;
+
+    status.innerText = message;
+    status.style.color = isError ? '#991b1b' : '#64748b';
+}
+
+function setLoginAlertControlsDisabled(disabled) {
+    ['login-alert-new-device', 'login-alert-failed-login'].forEach((id) => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) checkbox.disabled = disabled;
+    });
+}
+
+function applyLoginAlertPreferences(preferences = {}) {
+    const mergedPreferences = {
+        ...getDefaultLoginAlertPreferences(),
+        ...preferences
+    };
+    const newDeviceInput = document.getElementById('login-alert-new-device');
+    const failedLoginInput = document.getElementById('login-alert-failed-login');
+
+    if (newDeviceInput) {
+        newDeviceInput.checked = mergedPreferences.emailOnNewDevice !== false;
+    }
+
+    if (failedLoginInput) {
+        failedLoginInput.checked = mergedPreferences.emailOnFailedLogin === true;
+    }
+}
+
+async function loadLoginAlertPreferences() {
+    if (!token) return;
+
+    applyLoginAlertPreferences(currentUser?.loginAlerts);
+
+    try {
+        const res = await fetch(`${API_URL}/auth/login-alerts`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            throw new Error(data.message || data.msg || 'Unable to load login alerts');
+        }
+
+        currentUser = {
+            ...currentUser,
+            loginAlerts: data.loginAlerts
+        };
+        localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        applyLoginAlertPreferences(data.loginAlerts);
+        setLoginAlertStatus('Login alert preferences are saved to your account.');
+    } catch (err) {
+        setLoginAlertStatus(err.message || 'Unable to load login alert preferences', true);
+    }
+}
+
+async function saveLoginAlertPreferences() {
+    if (!token) {
+        showToast('Please sign in to update login alerts');
+        return;
+    }
+
+    const payload = {
+        emailOnNewDevice: document.getElementById('login-alert-new-device')?.checked === true,
+        emailOnFailedLogin: document.getElementById('login-alert-failed-login')?.checked === true
+    };
+
+    setLoginAlertControlsDisabled(true);
+    setLoginAlertStatus('Saving login alert preferences...');
+
+    try {
+        const res = await fetch(`${API_URL}/auth/login-alerts`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            throw new Error(data.message || data.msg || 'Unable to save login alerts');
+        }
+
+        currentUser = data.user || {
+            ...currentUser,
+            loginAlerts: data.loginAlerts
+        };
+        localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        applyLoginAlertPreferences(data.loginAlerts || currentUser.loginAlerts);
+        setLoginAlertStatus('Login alert preferences saved.');
+        showToast('Login alerts updated');
+    } catch (err) {
+        applyLoginAlertPreferences(currentUser?.loginAlerts);
+        setLoginAlertStatus(err.message || 'Unable to save login alert preferences', true);
+        showToast(err.message || 'Unable to save login alerts');
+    } finally {
+        setLoginAlertControlsDisabled(false);
+    }
+}
+
 function toggle2FA() {
     const toggle = document.getElementById('2fa-toggle');
     const status = document.getElementById('2fa-status');
@@ -960,6 +1096,9 @@ function loadProfileData() {
 
     // Load SSH keys
     loadSSHKeys();
+
+    // Load account-backed security alert preferences
+    loadLoginAlertPreferences();
 
     // Load usage stats
     loadUsageStats();
@@ -2963,7 +3102,7 @@ async function handleGoogleCredentialResponse(response) {
         console.log('[GoogleAuth] credential received');
         const res = await fetch(`${API_URL}/auth/google`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getDeviceHeaders() },
             body: JSON.stringify({ credential: response.credential })
         });
 

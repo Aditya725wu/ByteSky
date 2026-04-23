@@ -8,8 +8,10 @@ const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
 const { signToken } = require('./token.service');
+const loginAlertService = require('./login-alert.service');
 
 const googleClient = env.googleClientId ? new OAuth2Client(env.googleClientId) : null;
+const MAX_KNOWN_LOGIN_DEVICES = 20;
 
 async function writeAuditLog(entry) {
   try {
@@ -26,8 +28,81 @@ function sanitizeUser(user) {
     email: user.email,
     role: user.role,
     authProvider: user.authProvider || 'local',
-    avatar: user.avatar || ''
+    avatar: user.avatar || '',
+    createdAt: user.createdAt,
+    lastLogin: user.lastLogin,
+    twoFAEnabled: Boolean(user.twoFAEnabled),
+    loginAlerts: sanitizeLoginAlerts(user.loginAlerts)
   };
+}
+
+function sanitizeLoginAlerts(loginAlerts = {}) {
+  return {
+    emailOnNewDevice: loginAlerts.emailOnNewDevice !== false,
+    emailOnFailedLogin: loginAlerts.emailOnFailedLogin === true
+  };
+}
+
+function getClientDeviceId(req) {
+  const rawDeviceId = req.get?.('x-bytesky-device-id') || '';
+  const deviceId = String(rawDeviceId).trim();
+
+  if (!deviceId || deviceId.length > 128) {
+    return '';
+  }
+
+  return deviceId;
+}
+
+function getIpAddress(req) {
+  const forwardedFor = req.get?.('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+
+  return req.ip || req.socket?.remoteAddress || '';
+}
+
+function getLoginDeviceSnapshot(req) {
+  const deviceId = getClientDeviceId(req);
+  const userAgent = req.get?.('user-agent') || 'Unknown';
+  const fingerprintSource = deviceId ? `device:${deviceId}` : `agent:${userAgent}`;
+  const fingerprint = crypto.createHash('sha256').update(fingerprintSource).digest('hex');
+
+  return {
+    fingerprint,
+    deviceId,
+    userAgent,
+    ipAddress: getIpAddress(req)
+  };
+}
+
+function rememberLoginDevice(user, req) {
+  const snapshot = getLoginDeviceSnapshot(req);
+  const now = new Date();
+  const knownDevices = Array.isArray(user.knownLoginDevices) ? user.knownLoginDevices : [];
+  const existingDevice = knownDevices.find((device) => device.fingerprint === snapshot.fingerprint);
+
+  if (existingDevice) {
+    existingDevice.userAgent = snapshot.userAgent;
+    existingDevice.ipAddress = snapshot.ipAddress;
+    existingDevice.lastSeenAt = now;
+    user.markModified('knownLoginDevices');
+    return { isNewDevice: false, snapshot };
+  }
+
+  knownDevices.push({
+    ...snapshot,
+    firstSeenAt: now,
+    lastSeenAt: now
+  });
+
+  user.knownLoginDevices = knownDevices
+    .sort((a, b) => new Date(a.lastSeenAt).getTime() - new Date(b.lastSeenAt).getTime())
+    .slice(-MAX_KNOWN_LOGIN_DEVICES);
+  user.markModified('knownLoginDevices');
+
+  return { isNewDevice: true, snapshot };
 }
 
 async function register(payload, req) {
@@ -45,6 +120,9 @@ async function register(payload, req) {
   }
 
   const user = await User.create({ name, email, password, role: 'user' });
+  rememberLoginDevice(user, req);
+  user.lastLogin = new Date();
+  await user.save();
 
   await writeAuditLog({
     user: user._id,
@@ -78,15 +156,21 @@ async function login(payload, req) {
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
     await writeAuditLog({
+      user: user._id,
       action: 'LOGIN_FAILED',
+      resource: 'User',
+      resourceId: user._id,
       details: { email, reason: 'Invalid password' },
       ipAddress: req.ip,
       userAgent: req.get('user-agent')
     });
 
+    await loginAlertService.notifyFailedLogin(user, req);
+
     throw new ApiError(400, 'Invalid Credentials');
   }
 
+  const { isNewDevice } = rememberLoginDevice(user, req);
   user.lastLogin = new Date();
   await user.save();
 
@@ -99,6 +183,10 @@ async function login(payload, req) {
     ipAddress: req.ip,
     userAgent: req.get('user-agent')
   });
+
+  if (isNewDevice) {
+    await loginAlertService.notifyNewDeviceLogin(user, req);
+  }
 
   return {
     token: signToken(user),
@@ -145,6 +233,8 @@ async function googleLogin(payload, req) {
       avatar: profile.picture || '',
       lastLogin: new Date()
     });
+    rememberLoginDevice(user, req);
+    await user.save();
 
     await writeAuditLog({
       user: user._id,
@@ -156,6 +246,7 @@ async function googleLogin(payload, req) {
       userAgent: req.get('user-agent')
     });
   } else {
+    const { isNewDevice } = rememberLoginDevice(user, req);
     user.lastLogin = new Date();
 
     if (!user.googleId) {
@@ -173,6 +264,10 @@ async function googleLogin(payload, req) {
     }
 
     await user.save();
+
+    if (isNewDevice) {
+      await loginAlertService.notifyNewDeviceLogin(user, req);
+    }
   }
 
   await writeAuditLog({
@@ -286,11 +381,60 @@ async function getCurrentUser(userId) {
   };
 }
 
+async function getLoginAlertPreferences(userId) {
+  const user = await User.findById(userId).select('loginAlerts');
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  return {
+    loginAlerts: sanitizeLoginAlerts(user.loginAlerts)
+  };
+}
+
+async function updateLoginAlertPreferences(userId, payload, req) {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const currentPreferences = sanitizeLoginAlerts(user.loginAlerts);
+  const nextPreferences = {
+    emailOnNewDevice: typeof payload?.emailOnNewDevice === 'boolean'
+      ? payload.emailOnNewDevice
+      : currentPreferences.emailOnNewDevice,
+    emailOnFailedLogin: typeof payload?.emailOnFailedLogin === 'boolean'
+      ? payload.emailOnFailedLogin
+      : currentPreferences.emailOnFailedLogin
+  };
+
+  user.loginAlerts = nextPreferences;
+  await user.save();
+
+  await writeAuditLog({
+    user: user._id,
+    action: 'USER_LOGIN_ALERTS_UPDATED',
+    resource: 'User',
+    resourceId: user._id,
+    details: nextPreferences,
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent')
+  });
+
+  return {
+    msg: 'Login alert preferences updated',
+    loginAlerts: sanitizeLoginAlerts(user.loginAlerts),
+    user: sanitizeUser(user)
+  };
+}
+
 module.exports = {
   changePassword,
   getCurrentUser,
+  getLoginAlertPreferences,
   googleLogin,
   login,
   register,
+  updateLoginAlertPreferences,
   updateProfile
 };

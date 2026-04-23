@@ -20,6 +20,12 @@ services:
       CONTAINER_PORT_RANGE_END: ${CONTAINER_PORT_RANGE_END:-3099}
       MAX_CONTAINERS_PER_USER: ${MAX_CONTAINERS_PER_USER:-1}
       CONTAINER_TTL_MS: ${CONTAINER_TTL_MS:-1800000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-ByteSky Cloud <no-reply@bytesky.cloud>}
     volumes:
       - ./backend:/app
       - /app/node_modules

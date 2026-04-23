@@ -1678,14 +1678,19 @@
                             <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 14px;">Get notified when a new
                                 device signs into your account</p>
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" checked style="width:auto; margin:0;">
+                                <input type="checkbox" id="login-alert-new-device" checked
+                                    onchange="saveLoginAlertPreferences()" style="width:auto; margin:0;">
                                 <span>Email me on new device login</span>
                             </label>
                             <label
                                 style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 10px;">
-                                <input type="checkbox" style="width:auto; margin:0;">
+                                <input type="checkbox" id="login-alert-failed-login"
+                                    onchange="saveLoginAlertPreferences()" style="width:auto; margin:0;">
                                 <span>Email me on failed login attempts</span>
                             </label>
+                            <div id="login-alert-status" style="font-size: 0.82rem; color: #64748b; margin-top: 10px;">
+                                Login alert preferences are saved to your account.
+                            </div>
                         </div>
 
                         <!-- Active Sessions -->

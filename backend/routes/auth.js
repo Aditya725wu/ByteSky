@@ -10,6 +10,8 @@ router.post('/register', asyncHandler(authController.register));
 router.post('/login', asyncHandler(authController.login));
 router.post('/google', asyncHandler(authController.googleLogin));
 router.get('/me', auth, asyncHandler(authController.getCurrentUser));
+router.get('/login-alerts', auth, asyncHandler(authController.getLoginAlertPreferences));
+router.patch('/login-alerts', auth, asyncHandler(authController.updateLoginAlertPreferences));
 router.patch('/profile', auth, asyncHandler(authController.updateProfile));
 router.patch('/password', auth, asyncHandler(authController.changePassword));
 
