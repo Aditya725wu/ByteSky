@@ -170,91 +170,192 @@
         <div class="main-content">
             <!-- HOME PAGE -->
             <div id="home" class="page active home-page">
-                <section class="hero hero-premium">
-                    <div class="hero-grid">
-                        <div class="hero-copy">
-                            <span class="hero-eyebrow">Purpose-built cloud infrastructure for fast-moving product teams</span>
-                            <h1>Build Faster on ByteSky</h1>
-                            <p>Launch compute, managed data, and secure networking from a polished control plane designed
-                                for modern teams that care about speed, reliability, and clean operations.</p>
-                            <div class="hero-actions">
-                                <button class="btn btn-primary hero-primary" onclick="router('register')">Start Free
-                                    Trial</button>
-                                <button class="btn btn-outline hero-secondary" onclick="router('login')">Sign In</button>
+                <div class="marketing-shell">
+                    <section class="marketing-hero reveal">
+                        <div class="marketing-grid-layer" aria-hidden="true"></div>
+                        <div class="marketing-orb marketing-orb-one" aria-hidden="true"></div>
+                        <div class="marketing-orb marketing-orb-two" aria-hidden="true"></div>
+                        <div class="marketing-particles" aria-hidden="true"></div>
+                        <div class="marketing-hero-grid">
+                            <div class="marketing-copy">
+                                <span class="marketing-eyebrow">Premium cloud infrastructure for modern teams</span>
+                                <h1>Build Faster on ByteSky</h1>
+                                <p>Launch compute, managed data, and secure networking from a polished control plane
+                                    designed for modern teams.</p>
+                                <div class="marketing-actions">
+                                    <button class="btn btn-primary marketing-primary" onclick="router('register')">Start
+                                        Free Trial</button>
+                                    <button class="btn btn-outline marketing-secondary"
+                                        onclick="router('login')">Sign In</button>
+                                </div>
+                                <div class="marketing-stats-bar">
+                                    <div class="marketing-stat-pill">
+                                        <span class="marketing-stat-icon">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                <path
+                                                    d="M10 2.75a.75.75 0 0 1 .75.75v1.08a5.5 5.5 0 0 1 4.67 4.67h1.08a.75.75 0 0 1 0 1.5h-1.08a5.5 5.5 0 0 1-4.67 4.67v1.08a.75.75 0 0 1-1.5 0v-1.08a5.5 5.5 0 0 1-4.67-4.67H3.5a.75.75 0 0 1 0-1.5h1.08A5.5 5.5 0 0 1 9.25 4.58V3.5a.75.75 0 0 1 .75-.75Zm0 3.25a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+                                            </svg>
+                                        </span>
+                                        <strong>25 Regions</strong>
+                                    </div>
+                                    <div class="marketing-stat-pill">
+                                        <span class="marketing-stat-icon">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                <path
+                                                    d="M10 3a.75.75 0 0 1 .75.75V9.5l3.65 2.19a.75.75 0 1 1-.8 1.27l-4-2.4A.75.75 0 0 1 9.25 10V3.75A.75.75 0 0 1 10 3Zm0 15a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+                                            </svg>
+                                        </span>
+                                        <strong>45 sec Provisioning</strong>
+                                    </div>
+                                    <div class="marketing-stat-pill">
+                                        <span class="marketing-stat-icon">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                <path
+                                                    d="M4.75 4A1.75 1.75 0 0 0 3 5.75v8.5C3 15.216 3.784 16 4.75 16h10.5A1.75 1.75 0 0 0 17 14.25v-8.5A1.75 1.75 0 0 0 15.25 4H4.75Zm.75 3.25a.75.75 0 0 1 1.28-.53l1.72 1.72 3.22-3.22a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0L5.72 7.78a.75.75 0 0 1-.22-.53Z" />
+                                            </svg>
+                                        </span>
+                                        <strong>99.95% Availability</strong>
+                                    </div>
+                                    <div class="marketing-stat-pill">
+                                        <span class="marketing-stat-icon">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                <path
+                                                    d="M5.75 3a1.75 1.75 0 1 0 0 3.5A1.75 1.75 0 0 0 5.75 3Zm8.5 10a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5ZM4 11.25a1.75 1.75 0 1 0 3.5 0A1.75 1.75 0 0 0 4 11.25Zm2.5-.75h4.19l1.53-4.08A.75.75 0 0 1 12.93 6h1.32a.75.75 0 0 1 0 1.5h-.8l-1.53 4.08a.75.75 0 0 1-.7.49H7.5a2.75 2.75 0 0 1-2.53 1.68A3.25 3.25 0 1 1 6.5 10.5Z" />
+                                            </svg>
+                                        </span>
+                                        <strong>Edge Ready Network</strong>
+                                    </div>
+                                    <div class="marketing-stat-pill">
+                                        <span class="marketing-stat-icon">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                                                <path
+                                                    d="M10 2.5c.19 0 .38.07.53.22l4.5 4.5c.14.14.22.33.22.53V11c0 3.41-2.32 5.92-4.76 6.73a1.64 1.64 0 0 1-.98 0C7.07 16.92 4.75 14.41 4.75 11V7.75c0-.2.08-.39.22-.53l4.5-4.5c.15-.15.34-.22.53-.22Zm0 2.03L6.25 8.28V11c0 2.73 1.8 4.7 3.74 5.35 1.94-.65 3.76-2.62 3.76-5.35V8.28L10 4.53Z" />
+                                            </svg>
+                                        </span>
+                                        <strong>Encrypted Security</strong>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="hero-proof">
-                                <div class="hero-proof-item">
-                                    <strong>25 Regions</strong>
-                                    <span>Low-latency global coverage</span>
+                            <div class="marketing-panel reveal">
+                                <div class="marketing-panel-header">
+                                    <span class="marketing-panel-label">Control Plane Snapshot</span>
+                                    <span class="marketing-panel-chip">Live</span>
                                 </div>
-                                <div class="hero-proof-item">
-                                    <strong>NVMe Compute</strong>
-                                    <span>Fast boot times and steady throughput</span>
-                                </div>
-                                <div class="hero-proof-item">
-                                    <strong>Secure By Default</strong>
-                                    <span>Encryption, firewalls, and private networking</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="hero-surface">
-                            <div class="hero-surface-card">
-                                <span class="hero-surface-label">Platform Snapshot</span>
-                                <div class="hero-surface-metrics">
-                                    <div class="hero-surface-metric">
+                                <div class="marketing-panel-metrics">
+                                    <div class="marketing-panel-metric">
                                         <span>Provisioning</span>
                                         <strong>45 sec</strong>
                                     </div>
-                                    <div class="hero-surface-metric">
+                                    <div class="marketing-panel-metric">
                                         <span>Availability</span>
                                         <strong>99.95%</strong>
                                     </div>
-                                    <div class="hero-surface-metric">
+                                    <div class="marketing-panel-metric">
                                         <span>Network</span>
                                         <strong>Edge Ready</strong>
                                     </div>
-                                    <div class="hero-surface-metric">
+                                    <div class="marketing-panel-metric">
                                         <span>Security</span>
                                         <strong>Encrypted</strong>
                                     </div>
                                 </div>
-                                <div class="hero-surface-list">
-                                    <div class="hero-surface-line">
-                                        <span class="hero-surface-dot"></span>
-                                        Private networking and firewall controls included
-                                    </div>
-                                    <div class="hero-surface-line">
-                                        <span class="hero-surface-dot"></span>
-                                        Managed services for compute, storage, and databases
-                                    </div>
-                                    <div class="hero-surface-line">
-                                        <span class="hero-surface-dot"></span>
-                                        Clean console built for operators and developers alike
-                                    </div>
+                                <div class="marketing-panel-list">
+                                    <div class="marketing-panel-line"><span></span>Private networking and firewall
+                                        controls included</div>
+                                    <div class="marketing-panel-line"><span></span>Managed services for compute, storage,
+                                        and databases</div>
+                                    <div class="marketing-panel-line"><span></span>Clean console built for operators and
+                                        developers alike</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <div class="grid-3 home-feature-grid">
-                    <div class="card home-feature-card">
-                        <span class="home-feature-kicker">Compute</span>
-                        <h3>High Performance</h3>
-                        <p>NVMe SSD storage and latest generation processors tuned for workloads that cannot afford lag.</p>
-                        <div class="home-feature-note">Optimized for quick launches, burst traffic, and steady runtime performance.</div>
-                    </div>
-                    <div class="card home-feature-card">
-                        <span class="home-feature-kicker">Network</span>
-                        <h3>Global Network</h3>
-                        <p>Low-latency connectivity with an edge-aware footprint designed for distributed apps and teams.</p>
-                        <div class="home-feature-note">Move closer to users without adding operational drag to your platform team.</div>
-                    </div>
-                    <div class="card home-feature-card">
-                        <span class="home-feature-kicker">Security</span>
-                        <h3>Enterprise Security</h3>
-                        <p>DDoS protection, firewall controls, and encrypted storage included from day one.</p>
-                        <div class="home-feature-note">Security posture that feels premium, not bolted on after launch.</div>
-                    </div>
+                    </section>
+
+                    <section class="marketing-section">
+                        <div class="marketing-section-head reveal">
+                            <span class="marketing-section-kicker">Core platform</span>
+                            <h2>Premium primitives for infrastructure teams</h2>
+                            <p>Everything your control plane needs, presented in a cleaner and more confident shell.</p>
+                        </div>
+                        <div class="marketing-feature-grid">
+                            <article id="home-compute" class="marketing-feature-card reveal">
+                                <div class="marketing-feature-top">
+                                    <div class="marketing-feature-icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M9 3h6v2h3a2 2 0 0 1 2 2v3h2v4h-2v3a2 2 0 0 1-2 2h-3v2H9v-2H6a2 2 0 0 1-2-2v-3H2v-4h2V7a2 2 0 0 1 2-2h3V3Zm-1 4v10h8V7H8Zm2 2h4v6h-4V9Z" />
+                                        </svg>
+                                    </div>
+                                    <span class="marketing-feature-badge">Compute</span>
+                                </div>
+                                <h3>High Performance</h3>
+                                <p>NVMe SSD, latest-gen processors, and fast provisioning tuned for workloads that cannot
+                                    afford drift.</p>
+                            </article>
+                            <article id="home-network" class="marketing-feature-card reveal">
+                                <div class="marketing-feature-top">
+                                    <div class="marketing-feature-icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.94 9h-3.05a15.7 15.7 0 0 0-1.26-5.01A8.03 8.03 0 0 1 18.94 11ZM12 4c.93 1.16 1.76 3.12 2.04 7H9.96C10.24 7.12 11.07 5.16 12 4ZM9.37 5.99A15.7 15.7 0 0 0 8.11 11H5.06a8.03 8.03 0 0 1 4.31-5.01ZM5.06 13h3.05c.2 1.82.66 3.54 1.26 5.01A8.03 8.03 0 0 1 5.06 13ZM12 20c-.93-1.16-1.76-3.12-2.04-7h4.08c-.28 3.88-1.11 5.84-2.04 7Zm2.63-1.99c.6-1.47 1.06-3.19 1.26-5.01h3.05a8.03 8.03 0 0 1-4.31 5.01Z" />
+                                        </svg>
+                                    </div>
+                                    <span class="marketing-feature-badge">Network</span>
+                                </div>
+                                <h3>Global Network</h3>
+                                <p>Low-latency, edge-aware, and distributed so operators can move traffic closer to users
+                                    without overcomplicating routing.</p>
+                            </article>
+                            <article id="home-security" class="marketing-feature-card reveal">
+                                <div class="marketing-feature-top">
+                                    <div class="marketing-feature-icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M12 2 5 5v6c0 5 3.4 9.74 7 11 3.6-1.26 7-6 7-11V5l-7-3Zm0 3.13 4.5 1.93V11c0 3.72-2.34 7.31-4.5 8.56C9.84 18.31 7.5 14.72 7.5 11V7.06L12 5.13Zm-.75 3.37h1.5v5h-1.5v-5Zm0 6.5h1.5v1.5h-1.5V15Z" />
+                                        </svg>
+                                    </div>
+                                    <span class="marketing-feature-badge">Security</span>
+                                </div>
+                                <h3>Enterprise Security</h3>
+                                <p>DDoS protection, firewall controls, and encrypted storage presented as first-class
+                                    defaults instead of afterthoughts.</p>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="marketing-highlights reveal">
+                        <article class="marketing-highlight">
+                            <span class="marketing-highlight-kicker">NVMe Compute</span>
+                            <p>Fast boot, steady throughput, and premium runtime consistency.</p>
+                        </article>
+                        <article class="marketing-highlight">
+                            <span class="marketing-highlight-kicker">Secure By Default</span>
+                            <p>Encryption, firewalls, and private networking without extra ceremony.</p>
+                        </article>
+                        <article class="marketing-highlight">
+                            <span class="marketing-highlight-kicker">Platform Snapshot</span>
+                            <p>Instant visibility into regions, provisioning, health, and readiness.</p>
+                        </article>
+                    </section>
+
+                    <section class="marketing-bottom-grid">
+                        <article id="home-pricing" class="marketing-info-card reveal">
+                            <span class="marketing-section-kicker">Pricing</span>
+                            <h3>Transparent plans built for teams that scale fast</h3>
+                            <p>Start with a free trial, move into predictable usage, and keep visibility across compute,
+                                storage, and managed services.</p>
+                            <button class="btn btn-outline marketing-info-action"
+                                onclick="router('register')">Start Free Trial</button>
+                        </article>
+                        <article id="home-docs" class="marketing-info-card reveal">
+                            <span class="marketing-section-kicker">Docs</span>
+                            <h3>Documentation that keeps operators moving</h3>
+                            <p>Guides for compute, networking, and security workflows from a single polished control
+                                plane.</p>
+                            <button class="btn btn-outline marketing-info-action"
+                                onclick="router('support')">Open Docs</button>
+                        </article>
+                    </section>
                 </div>
             </div>
 
