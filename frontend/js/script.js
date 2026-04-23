@@ -4946,7 +4946,7 @@ function updateStorageStats() {
 function getFileType(fileName) {
     const ext = fileName.split('.').pop().toLowerCase();
     const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
-    const docExts = ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx'];
+    const docExts = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'csv', 'json', 'md', 'xml', 'xls', 'xlsx', 'ppt', 'pptx'];
     const videoExts = ['mp4', 'avi', 'mov', 'wmv', 'flv'];
     const audioExts = ['mp3', 'wav', 'ogg', 'flac'];
     const archiveExts = ['zip', 'rar', '7z', 'tar', 'gz'];
@@ -4971,6 +4971,53 @@ function getFileIcon(type) {
     return icons[type] || '';
 }
 
+function getFileExtension(fileName = '') {
+    const parts = String(fileName).toLowerCase().split('.');
+    return parts.length > 1 ? parts.pop() : '';
+}
+
+function isPdfPreview(file) {
+    return getFileExtension(file.fileName) === 'pdf' || file.fileType === 'application/pdf';
+}
+
+function isTextPreview(file) {
+    const ext = getFileExtension(file.fileName);
+    const textExts = ['txt', 'csv', 'json', 'md', 'xml', 'html', 'css', 'js', 'ts', 'jsx', 'tsx', 'log', 'yml', 'yaml'];
+    const mime = String(file.fileType || '').toLowerCase();
+    return textExts.includes(ext) || mime.startsWith('text/') || mime.includes('json') || mime.includes('xml');
+}
+
+function isOfficePreview(file) {
+    return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(getFileExtension(file.fileName));
+}
+
+function isExternalOfficePreviewAvailable(fileUrl) {
+    try {
+        const url = new URL(fileUrl);
+        return url.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname);
+    } catch {
+        return false;
+    }
+}
+
+function renderPreviewFallback(file, message = 'Preview is not available for this file type yet.') {
+    const safeName = escapeHtml(file.fileName);
+    const fileType = getFileType(file.fileName);
+    return `
+        <div class="preview-fallback preview-fallback--document">
+            <div class="preview-fallback-icon">${getFileIcon(fileType)}</div>
+            <div>
+                <h4>${safeName}</h4>
+                <p>${escapeHtml(message)}</p>
+            </div>
+            <div class="preview-fallback-actions">
+                <button class="btn btn-primary" type="button" onclick="downloadFile('${file._id}')">Download</button>
+                <a class="btn btn-outline" href="${getStorageFileUrl(file._id)}" target="_blank" rel="noopener">Open in new tab</a>
+            </div>
+        </div>
+    `;
+}
+
 function formatFileSize(bytes) {
     if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
@@ -4992,11 +5039,66 @@ async function previewFile(fileId) {
 
     document.getElementById('previewFileName').innerText = file.fileName;
     const fileUrl = getStorageFileUrl(fileId);
+    const safeFileName = escapeHtml(file.fileName);
+    content.innerHTML = `
+        <div class="preview-loading">
+            <div class="preview-loading-spinner"></div>
+            <p>Preparing preview...</p>
+        </div>
+    `;
 
     if (fileType === 'image') {
-        content.innerHTML = `<img src="${fileUrl}" alt="${file.fileName}" class="preview-image" onerror="this.parentElement.innerHTML='&lt;div class=&quot;preview-fallback&quot;&gt;&lt;div class=&quot;preview-fallback-icon&quot;&gt;IMG&lt;/div&gt;&lt;p&gt;No preview available&lt;/p&gt;&lt;/div&gt;'">`;
+        content.innerHTML = `<img src="${fileUrl}" alt="${safeFileName}" class="preview-image" onerror="this.parentElement.innerHTML='&lt;div class=&quot;preview-fallback&quot;&gt;&lt;div class=&quot;preview-fallback-icon&quot;&gt;IMG&lt;/div&gt;&lt;p&gt;No preview available&lt;/p&gt;&lt;/div&gt;'">`;
+    } else if (isPdfPreview(file)) {
+        content.innerHTML = `
+            <div class="document-preview-shell">
+                <div class="document-preview-toolbar">
+                    <span>PDF Preview</span>
+                    <a href="${fileUrl}" target="_blank" rel="noopener">Open full screen</a>
+                </div>
+                <iframe class="document-preview-frame" src="${fileUrl}" title="${safeFileName}"></iframe>
+            </div>
+        `;
+    } else if (isTextPreview(file)) {
+        const maxInlinePreviewSize = 1024 * 1024;
+        if ((file.fileSize || 0) > maxInlinePreviewSize) {
+            content.innerHTML = renderPreviewFallback(file, 'This document is too large for inline preview. Download it to view the full content.');
+        } else {
+            try {
+                const res = await fetch(fileUrl);
+                if (!res.ok) throw new Error('Unable to load document preview');
+                const text = await res.text();
+                content.innerHTML = `
+                    <div class="document-preview-shell">
+                        <div class="document-preview-toolbar">
+                            <span>Document Preview</span>
+                            <a href="${fileUrl}" target="_blank" rel="noopener">Open raw file</a>
+                        </div>
+                        <pre class="text-document-preview">${escapeHtml(text)}</pre>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Document preview error:', err);
+                content.innerHTML = renderPreviewFallback(file, 'Could not load this document preview. You can still download or open it in a new tab.');
+            }
+        }
+    } else if (isOfficePreview(file) && isExternalOfficePreviewAvailable(fileUrl)) {
+        const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+        content.innerHTML = `
+            <div class="document-preview-shell">
+                <div class="document-preview-toolbar">
+                    <span>Office Document Preview</span>
+                    <a href="${fileUrl}" target="_blank" rel="noopener">Open original</a>
+                </div>
+                <iframe class="document-preview-frame" src="${officeViewerUrl}" title="${safeFileName}"></iframe>
+            </div>
+        `;
+    } else if (fileType === 'video') {
+        content.innerHTML = `<video src="${fileUrl}" controls playsinline></video>`;
+    } else if (fileType === 'audio') {
+        content.innerHTML = `<audio class="audio-preview" src="${fileUrl}" controls></audio>`;
     } else {
-        content.innerHTML = `<div class="preview-fallback"><div class="preview-fallback-icon">${getFileIcon(fileType)}</div><p>No preview available</p></div>`;
+        content.innerHTML = renderPreviewFallback(file);
     }
 
     if (metadata) {
@@ -5017,6 +5119,10 @@ async function previewFile(fileId) {
                 <div class="metadata-item">
                     <div class="metadata-label">Type</div>
                     <div class="metadata-value">${fileType}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Content Type</div>
+                    <div class="metadata-value">${file.fileType || 'Unknown'}</div>
                 </div>
             </div>
         `;
