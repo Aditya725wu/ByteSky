@@ -149,6 +149,25 @@ function getDeviceMetadata(req) {
   };
 }
 
+function buildSessionInsertData(userId, sessionId, req, expiresAt = null) {
+  const metadata = getDeviceMetadata(req);
+
+  return {
+    user: userId,
+    sessionId,
+    deviceLabel: metadata.deviceLabel,
+    browser: metadata.browser,
+    os: metadata.os,
+    deviceType: metadata.deviceType,
+    userAgent: metadata.userAgent,
+    ipAddress: metadata.ipAddress,
+    locationLabel: metadata.locationLabel,
+    status: 'active',
+    lastActiveAt: new Date(),
+    expiresAt: expiresAt || metadata.expiresAt
+  };
+}
+
 function getSessionIdFromToken(rawToken, decodedToken = {}) {
   if (decodedToken?.jti) {
     return String(decodedToken.jti);
@@ -183,23 +202,30 @@ function sanitizeAuthSession(session, currentSessionId = null) {
 
 async function createAuthSession(userId, req, options = {}) {
   const sessionId = options.sessionId || crypto.randomUUID();
-  const metadata = getDeviceMetadata(req);
-  const expiresAt = options.expiresAt || metadata.expiresAt;
+  return AuthSession.create(buildSessionInsertData(userId, sessionId, req, options.expiresAt));
+}
 
-  return AuthSession.create({
-    user: userId,
-    sessionId,
-    deviceLabel: metadata.deviceLabel,
-    browser: metadata.browser,
-    os: metadata.os,
-    deviceType: metadata.deviceType,
-    userAgent: metadata.userAgent,
-    ipAddress: metadata.ipAddress,
-    locationLabel: metadata.locationLabel,
-    status: 'active',
-    lastActiveAt: new Date(),
-    expiresAt
-  });
+async function ensureAuthSession(userId, req, options = {}) {
+  const sessionId = options.sessionId || crypto.randomUUID();
+  const insertData = buildSessionInsertData(userId, sessionId, req, options.expiresAt);
+
+  try {
+    return await AuthSession.findOneAndUpdate(
+      { user: userId, sessionId },
+      { $setOnInsert: insertData },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true
+      }
+    );
+  } catch (error) {
+    if (error?.code === 11000) {
+      return AuthSession.findOne({ user: userId, sessionId });
+    }
+
+    throw error;
+  }
 }
 
 async function issueAuthSession(user, req) {
@@ -253,7 +279,7 @@ async function resolveAuthSession({ userId, rawToken, decodedToken, req }) {
   let session = await AuthSession.findOne({ user: userId, sessionId });
 
   if (!session && isLegacyToken) {
-    session = await createAuthSession(userId, req, { sessionId });
+    session = await ensureAuthSession(userId, req, { sessionId });
   }
 
   if (!session) {

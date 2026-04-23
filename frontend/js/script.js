@@ -72,8 +72,793 @@ const MARKETING_SECTION_IDS = new Set([
     'home-pricing',
     'home-docs'
 ]);
+const LANGUAGE_STORAGE_KEY = 'bytesky_language';
+const REGION_STORAGE_KEY = 'bytesky_region';
+const DEFAULT_LOCALE = 'en-US';
+const DEFAULT_REGION = 'us';
+const EN_US_STRINGS = {
+    'general.unknown': 'Unknown',
+    'general.unknownTime': 'Unknown time',
+    'general.justNow': 'Just now',
+    'general.inMoment': 'In a moment',
+    'general.enabled': 'enabled',
+    'general.disabled': 'disabled',
+    'nav.section.core': 'Core',
+    'nav.section.management': 'Management',
+    'nav.section.settings': 'Settings',
+    'nav.dashboard': 'Dashboard',
+    'nav.compute': 'Compute',
+    'nav.network': 'Network & VPC',
+    'nav.storage': 'Storage',
+    'nav.monitoring': 'Monitoring',
+    'nav.support': 'Support',
+    'nav.billing': 'Billing',
+    'nav.marketplace': 'Marketplace',
+    'nav.iam': 'IAM',
+    'nav.profile': 'Profile',
+    'nav.admin': 'Admin Panel',
+    'profile.accountSettings': 'Account Settings',
+    'profile.editProfile': 'Edit Profile',
+    'profile.personalInformation': 'Personal Information',
+    'profile.fullName': 'Full Name',
+    'profile.emailAddress': 'Email Address',
+    'profile.phoneNumber': 'Phone Number',
+    'profile.jobTitle': 'Job Title',
+    'profile.company': 'Company',
+    'profile.timezone': 'Timezone',
+    'profile.saveChanges': 'Save Changes',
+    'profile.cancel': 'Cancel',
+    'profile.accountDetails': 'Account Details',
+    'profile.accountId': 'Account ID',
+    'profile.accountType': 'Account Type',
+    'profile.memberSince': 'Member Since',
+    'profile.lastLogin': 'Last Login',
+    'profile.securitySettings': 'Security Settings',
+    'profile.changePassword': 'Change Password',
+    'profile.lastChanged': 'Last changed:',
+    'profile.never': 'Never',
+    'profile.uniquePasswordHint': 'Use a strong, unique password',
+    'profile.currentPassword': 'Current Password',
+    'profile.newPassword': 'New Password',
+    'profile.confirmNewPassword': 'Confirm New Password',
+    'profile.updatePassword': 'Update Password',
+    'profile.twoFactorAuth': 'Two-Factor Authentication',
+    'profile.twoFactorDescription': 'Add an extra layer of security via authenticator app',
+    'profile.twoFactorCurrently': '2FA is currently',
+    'profile.twoFactorEnabledState': 'enabled',
+    'profile.twoFactorDisabledState': 'disabled',
+    'profile.twoFactorEnabled': '2FA is enabled',
+    'profile.twoFactorDisabled': '2FA is not enabled',
+    'profile.loginAlerts': 'Login Alerts',
+    'profile.loginAlertsDescription': 'Get notified when a new device signs into your account',
+    'profile.newDeviceLogin': 'Email me on new device login',
+    'profile.failedLogin': 'Email me on failed login attempts',
+    'profile.loginAlertsSaved': 'Login alert preferences are saved to your account.',
+    'profile.loginAlertsSaving': 'Saving login alert preferences...',
+    'profile.loginAlertsUpdated': 'Login alerts updated',
+    'profile.activeSessions': 'Active Sessions',
+    'profile.activeSessionsDescription': 'Devices currently signed in to your account.',
+    'profile.activeSessionsUpdated': 'Updated from live session records',
+    'profile.preferences': 'Preferences',
+    'profile.notificationPreferences': 'Notification Preferences',
+    'profile.billingAlerts': 'Email notifications for billing alerts',
+    'profile.securityAlerts': 'Email notifications for security alerts',
+    'profile.smsAlerts': 'SMS notifications for critical events',
+    'profile.marketingEmails': 'Marketing emails and product updates',
+    'profile.appearance': 'Appearance',
+    'profile.lightMode': 'Light Mode',
+    'profile.darkMode': 'Dark Mode',
+    'profile.systemDefault': 'System Default',
+    'profile.languageRegion': 'Language & Region',
+    'profile.languageLabel': 'Language',
+    'profile.regionLabel': 'Region',
+    'profile.languageUpdated': 'Language updated',
+    'profile.regionUpdated': 'Region updated',
+    'profile.resourceUsage': 'Resource Usage',
+    'profile.sshKeys': 'SSH Keys',
+    'profile.noSshKeysFound': 'No SSH keys found. Add one to get started.',
+    'profile.noSshKeysFoundCreate': 'No SSH keys found. Create one to get started.',
+    'profile.sshKeysDescription': 'Securely connect to instances without a password.',
+    'profile.generatedSshKey': 'Generated SSH key',
+    'profile.manualKeyImport': 'Manual key import',
+    'profile.addedOn': 'Added on',
+    'profile.created': 'Created',
+    'profile.expires': 'Expires',
+    'profile.currentSession': 'Current session',
+    'profile.unknownDevice': 'Unknown device',
+    'profile.unknownBrowser': 'Unknown browser',
+    'profile.unknownOS': 'Unknown OS',
+    'profile.unknownLocation': 'Unknown location',
+    'profile.currentDevice': 'Current device',
+    'profile.delete': 'Delete',
+    'profile.deleteKey': 'Delete Key',
+    'profile.revoke': 'Revoke',
+    'profile.dangerZone': 'Danger Zone',
+    'profile.accountDeletionWarning': 'Once you delete your account, there is no going back. All data, instances, and resources will be permanently deleted.',
+    'profile.deleteAccount': 'Delete Account',
+    'profile.noActiveSessions': 'No active sessions right now.',
+    'profile.noActiveSessionsDescription': 'When you sign in on a device, it will appear here with live session details.',
+    'profile.sshKeyAdded': 'SSH key added successfully',
+    'profile.sshKeyDeleted': 'SSH key deleted',
+    'profile.editModeEnabled': 'Edit mode enabled. Make your changes and click Save.',
+    'profile.nameAndEmailRequired': 'Name and email are required',
+    'profile.validEmailRequired': 'Enter a valid email address',
+    'profile.failedToUpdateProfile': 'Failed to update profile',
+    'profile.errorUpdatingProfile': 'Error updating profile',
+    'profile.profileUpdated': 'Profile updated successfully!',
+    'profile.changesCancelled': 'Changes cancelled',
+    'profile.passwordFieldsRequired': 'Please fill all fields',
+    'profile.passwordsDoNotMatch': 'New passwords do not match',
+    'profile.passwordMinLength': 'Password must be at least 8 characters',
+    'profile.passwordChanged': 'Password changed successfully!',
+    'profile.errorChangingPassword': 'Error changing password',
+    'profile.accountDeletionCancelled': 'Account deletion cancelled',
+    'profile.accountDeletionInitiated': 'Account deletion initiated. You will receive a confirmation email.',
+    'profile.signInToUpdateLoginAlerts': 'Please sign in to update login alerts',
+    'profile.unableToLoadLoginAlerts': 'Unable to load login alert preferences',
+    'profile.unableToSaveLoginAlerts': 'Unable to save login alert preferences',
+    'profile.loginAlertsLoaded': 'Login alert preferences are saved to your account.',
+    'profile.loginAlertsSavedMessage': 'Login alert preferences saved.',
+    'profile.loginAlertsUpdateMessage': 'Login alerts updated',
+    'profile.twoFAEnabledMessage': '2FA enabled successfully',
+    'profile.twoFADisabledMessage': '2FA disabled',
+    'profile.twoFAEnabledStatus': '2FA is enabled',
+    'profile.twoFADisabledStatus': '2FA is not enabled',
+    'profile.createdLabel': 'Created',
+    'profile.connectedAt': 'Connected',
+    'profile.expiresLabel': 'Expires',
+    'profile.currentLabel': 'Current',
+    'profile.revokeLabel': 'Revoke',
+    'profile.selectLanguage': 'Language',
+    'profile.selectRegion': 'Region',
+    'language.englishUS': 'English (US)',
+    'language.englishUK': 'English (UK)',
+    'language.spanish': 'Spanish',
+    'language.french': 'French',
+    'language.german': 'German',
+    'region.unitedStates': 'United States',
+    'region.unitedKingdom': 'United Kingdom',
+    'region.india': 'India',
+    'region.germany': 'Germany'
+};
+const ES_STRINGS = {
+    ...EN_US_STRINGS,
+    'nav.section.core': 'Núcleo',
+    'nav.section.management': 'Administración',
+    'nav.section.settings': 'Ajustes',
+    'nav.dashboard': 'Panel',
+    'nav.compute': 'Cómputo',
+    'nav.network': 'Red y VPC',
+    'nav.storage': 'Almacenamiento',
+    'nav.monitoring': 'Supervisión',
+    'nav.support': 'Soporte',
+    'nav.billing': 'Facturación',
+    'nav.marketplace': 'Marketplace',
+    'nav.profile': 'Perfil',
+    'nav.admin': 'Panel de admin',
+    'profile.accountSettings': 'Configuración de la cuenta',
+    'profile.editProfile': 'Editar perfil',
+    'profile.personalInformation': 'Información personal',
+    'profile.fullName': 'Nombre completo',
+    'profile.emailAddress': 'Correo electrónico',
+    'profile.phoneNumber': 'Número de teléfono',
+    'profile.jobTitle': 'Puesto',
+    'profile.company': 'Empresa',
+    'profile.timezone': 'Zona horaria',
+    'profile.saveChanges': 'Guardar cambios',
+    'profile.cancel': 'Cancelar',
+    'profile.accountDetails': 'Detalles de la cuenta',
+    'profile.accountId': 'ID de cuenta',
+    'profile.accountType': 'Tipo de cuenta',
+    'profile.memberSince': 'Miembro desde',
+    'profile.lastLogin': 'Último inicio de sesión',
+    'profile.securitySettings': 'Configuración de seguridad',
+    'profile.changePassword': 'Cambiar contraseña',
+    'profile.lastChanged': 'Último cambio:',
+    'profile.never': 'Nunca',
+    'profile.uniquePasswordHint': 'Usa una contraseña segura y única',
+    'profile.currentPassword': 'Contraseña actual',
+    'profile.newPassword': 'Nueva contraseña',
+    'profile.confirmNewPassword': 'Confirmar nueva contraseña',
+    'profile.updatePassword': 'Actualizar contraseña',
+    'profile.twoFactorAuth': 'Autenticación de dos factores',
+    'profile.twoFactorDescription': 'Añade una capa extra de seguridad con una app autenticadora',
+    'profile.twoFactorCurrently': '2FA está actualmente',
+    'profile.twoFactorEnabledState': 'activada',
+    'profile.twoFactorDisabledState': 'desactivada',
+    'profile.twoFactorEnabled': '2FA está activada',
+    'profile.twoFactorDisabled': '2FA no está activada',
+    'profile.loginAlerts': 'Alertas de inicio de sesión',
+    'profile.loginAlertsDescription': 'Recibe notificaciones cuando un nuevo dispositivo inicie sesión en tu cuenta',
+    'profile.newDeviceLogin': 'Enviarme un correo al iniciar sesión desde un nuevo dispositivo',
+    'profile.failedLogin': 'Enviarme un correo en intentos fallidos',
+    'profile.loginAlertsSaved': 'Las preferencias de alertas de inicio de sesión se guardan en tu cuenta.',
+    'profile.loginAlertsSaving': 'Guardando preferencias de alertas de inicio de sesión...',
+    'profile.loginAlertsUpdated': 'Alertas de inicio de sesión actualizadas',
+    'profile.activeSessions': 'Sesiones activas',
+    'profile.activeSessionsDescription': 'Dispositivos conectados actualmente a tu cuenta.',
+    'profile.activeSessionsUpdated': 'Actualizado con registros de sesiones en vivo',
+    'profile.preferences': 'Preferencias',
+    'profile.notificationPreferences': 'Preferencias de notificación',
+    'profile.languageRegion': 'Idioma y región',
+    'profile.languageLabel': 'Idioma',
+    'profile.regionLabel': 'Región',
+    'profile.languageUpdated': 'Idioma actualizado',
+    'profile.regionUpdated': 'Región actualizada',
+    'profile.resourceUsage': 'Uso de recursos',
+    'profile.sshKeys': 'Claves SSH',
+    'profile.noSshKeysFound': 'No se encontraron claves SSH. Añade una para empezar.',
+    'profile.noSshKeysFoundCreate': 'No se encontraron claves SSH. Crea una para empezar.',
+    'profile.addedOn': 'Añadido el',
+    'profile.created': 'Creado',
+    'profile.expires': 'Expira',
+    'profile.currentSession': 'Sesión actual',
+    'profile.unknownDevice': 'Dispositivo desconocido',
+    'profile.unknownBrowser': 'Navegador desconocido',
+    'profile.unknownOS': 'Sistema operativo desconocido',
+    'profile.unknownLocation': 'Ubicación desconocida',
+    'profile.currentDevice': 'Dispositivo actual',
+    'profile.delete': 'Eliminar',
+    'profile.deleteKey': 'Eliminar clave',
+    'profile.revoke': 'Revocar',
+    'profile.noActiveSessions': 'No hay sesiones activas ahora.',
+    'profile.noActiveSessionsDescription': 'Cuando inicies sesión en un dispositivo, aparecerá aquí con detalles en vivo.',
+    'profile.sshKeyAdded': 'Clave SSH añadida correctamente',
+    'profile.sshKeyDeleted': 'Clave SSH eliminada',
+    'profile.editModeEnabled': 'Modo de edición activado. Haz tus cambios y pulsa Guardar.',
+    'profile.nameAndEmailRequired': 'El nombre y el correo son obligatorios',
+    'profile.validEmailRequired': 'Introduce una dirección de correo válida',
+    'profile.failedToUpdateProfile': 'No se pudo actualizar el perfil',
+    'profile.errorUpdatingProfile': 'Error al actualizar el perfil',
+    'profile.profileUpdated': '¡Perfil actualizado correctamente!',
+    'profile.changesCancelled': 'Cambios cancelados',
+    'profile.passwordFieldsRequired': 'Rellena todos los campos',
+    'profile.passwordsDoNotMatch': 'Las nuevas contraseñas no coinciden',
+    'profile.passwordMinLength': 'La contraseña debe tener al menos 8 caracteres',
+    'profile.passwordChanged': '¡Contraseña cambiada correctamente!',
+    'profile.errorChangingPassword': 'Error al cambiar la contraseña',
+    'profile.signInToUpdateLoginAlerts': 'Inicia sesión para actualizar las alertas de inicio de sesión',
+    'profile.unableToLoadLoginAlerts': 'No se pudieron cargar las preferencias de alertas de inicio de sesión',
+    'profile.unableToSaveLoginAlerts': 'No se pudieron guardar las preferencias de alertas de inicio de sesión',
+    'profile.loginAlertsLoaded': 'Las preferencias de alertas de inicio de sesión se guardan en tu cuenta.',
+    'profile.loginAlertsSavedMessage': 'Preferencias de alertas de inicio de sesión guardadas.',
+    'profile.loginAlertsUpdateMessage': 'Alertas de inicio de sesión actualizadas',
+    'profile.twoFAEnabledMessage': '2FA activada correctamente',
+    'profile.twoFADisabledMessage': '2FA desactivada',
+    'profile.twoFAEnabledStatus': '2FA está activada',
+    'profile.twoFADisabledStatus': '2FA no está activada',
+    'profile.createdLabel': 'Creado',
+    'profile.expiresLabel': 'Expira',
+    'profile.currentLabel': 'Actual',
+    'profile.revokeLabel': 'Revocar',
+    'profile.selectLanguage': 'Idioma',
+    'profile.selectRegion': 'Región',
+    'language.englishUS': 'Inglés (EE. UU.)',
+    'language.englishUK': 'Inglés (Reino Unido)',
+    'language.spanish': 'Español',
+    'language.french': 'Francés',
+    'language.german': 'Alemán',
+    'region.unitedStates': 'Estados Unidos',
+    'region.unitedKingdom': 'Reino Unido',
+    'region.india': 'India',
+    'region.germany': 'Alemania'
+};
+const FR_STRINGS = {
+    ...EN_US_STRINGS,
+    'nav.section.core': 'Noyau',
+    'nav.section.management': 'Gestion',
+    'nav.section.settings': 'Paramètres',
+    'nav.dashboard': 'Tableau de bord',
+    'nav.compute': 'Calcul',
+    'nav.network': 'Réseau et VPC',
+    'nav.storage': 'Stockage',
+    'nav.monitoring': 'Surveillance',
+    'nav.support': 'Assistance',
+    'nav.billing': 'Facturation',
+    'nav.marketplace': 'Marketplace',
+    'nav.profile': 'Profil',
+    'nav.admin': 'Panneau admin',
+    'profile.accountSettings': 'Paramètres du compte',
+    'profile.editProfile': 'Modifier le profil',
+    'profile.personalInformation': 'Informations personnelles',
+    'profile.fullName': 'Nom complet',
+    'profile.emailAddress': 'Adresse e-mail',
+    'profile.phoneNumber': 'Numéro de téléphone',
+    'profile.jobTitle': 'Poste',
+    'profile.company': 'Entreprise',
+    'profile.timezone': 'Fuseau horaire',
+    'profile.saveChanges': 'Enregistrer les modifications',
+    'profile.cancel': 'Annuler',
+    'profile.accountDetails': 'Détails du compte',
+    'profile.accountId': 'ID du compte',
+    'profile.accountType': 'Type de compte',
+    'profile.memberSince': 'Membre depuis',
+    'profile.lastLogin': 'Dernière connexion',
+    'profile.securitySettings': 'Paramètres de sécurité',
+    'profile.changePassword': 'Modifier le mot de passe',
+    'profile.lastChanged': 'Dernière modification :',
+    'profile.never': 'Jamais',
+    'profile.uniquePasswordHint': 'Utilisez un mot de passe fort et unique',
+    'profile.currentPassword': 'Mot de passe actuel',
+    'profile.newPassword': 'Nouveau mot de passe',
+    'profile.confirmNewPassword': 'Confirmer le nouveau mot de passe',
+    'profile.updatePassword': 'Mettre à jour le mot de passe',
+    'profile.twoFactorAuth': 'Authentification à deux facteurs',
+    'profile.twoFactorDescription': "Ajoutez une couche de sécurité supplémentaire via l'application d'authentification",
+    'profile.twoFactorCurrently': 'La 2FA est actuellement',
+    'profile.twoFactorEnabledState': 'activée',
+    'profile.twoFactorDisabledState': 'désactivée',
+    'profile.twoFactorEnabled': 'La 2FA est activée',
+    'profile.twoFactorDisabled': 'La 2FA n’est pas activée',
+    'profile.loginAlerts': 'Alertes de connexion',
+    'profile.loginAlertsDescription': 'Recevez une notification lorsqu’un nouvel appareil se connecte à votre compte',
+    'profile.newDeviceLogin': 'M’envoyer un e-mail lors d’une connexion depuis un nouvel appareil',
+    'profile.failedLogin': 'M’envoyer un e-mail lors d’échecs de connexion',
+    'profile.loginAlertsSaved': 'Les préférences d’alertes de connexion sont enregistrées dans votre compte.',
+    'profile.loginAlertsSaving': 'Enregistrement des préférences d’alertes de connexion...',
+    'profile.loginAlertsUpdated': 'Alertes de connexion mises à jour',
+    'profile.activeSessions': 'Sessions actives',
+    'profile.activeSessionsDescription': 'Appareils actuellement connectés à votre compte.',
+    'profile.activeSessionsUpdated': 'Mis à jour à partir des sessions en direct',
+    'profile.preferences': 'Préférences',
+    'profile.notificationPreferences': 'Préférences de notification',
+    'profile.languageRegion': 'Langue et région',
+    'profile.languageLabel': 'Langue',
+    'profile.regionLabel': 'Région',
+    'profile.languageUpdated': 'Langue mise à jour',
+    'profile.regionUpdated': 'Région mise à jour',
+    'profile.resourceUsage': 'Utilisation des ressources',
+    'profile.sshKeys': 'Clés SSH',
+    'profile.noSshKeysFound': 'Aucune clé SSH trouvée. Ajoutez-en une pour commencer.',
+    'profile.noSshKeysFoundCreate': 'Aucune clé SSH trouvée. Créez-en une pour commencer.',
+    'profile.addedOn': 'Ajouté le',
+    'profile.created': 'Créé',
+    'profile.expires': 'Expire',
+    'profile.currentSession': 'Session actuelle',
+    'profile.unknownDevice': 'Appareil inconnu',
+    'profile.unknownBrowser': 'Navigateur inconnu',
+    'profile.unknownOS': 'Système d’exploitation inconnu',
+    'profile.unknownLocation': 'Emplacement inconnu',
+    'profile.currentDevice': 'Appareil actuel',
+    'profile.delete': 'Supprimer',
+    'profile.deleteKey': 'Supprimer la clé',
+    'profile.revoke': 'Révoquer',
+    'profile.noActiveSessions': 'Aucune session active pour le moment.',
+    'profile.noActiveSessionsDescription': 'Lorsque vous vous connectez sur un appareil, il apparaîtra ici avec les détails en direct.',
+    'profile.sshKeyAdded': 'Clé SSH ajoutée avec succès',
+    'profile.sshKeyDeleted': 'Clé SSH supprimée',
+    'profile.editModeEnabled': 'Mode édition activé. Faites vos modifications puis cliquez sur Enregistrer.',
+    'profile.nameAndEmailRequired': 'Le nom et l’e-mail sont obligatoires',
+    'profile.validEmailRequired': 'Saisissez une adresse e-mail valide',
+    'profile.failedToUpdateProfile': 'Impossible de mettre à jour le profil',
+    'profile.errorUpdatingProfile': 'Erreur lors de la mise à jour du profil',
+    'profile.profileUpdated': 'Profil mis à jour avec succès !',
+    'profile.changesCancelled': 'Modifications annulées',
+    'profile.passwordFieldsRequired': 'Veuillez remplir tous les champs',
+    'profile.passwordsDoNotMatch': 'Les nouveaux mots de passe ne correspondent pas',
+    'profile.passwordMinLength': 'Le mot de passe doit comporter au moins 8 caractères',
+    'profile.passwordChanged': 'Mot de passe modifié avec succès !',
+    'profile.errorChangingPassword': 'Erreur lors du changement de mot de passe',
+    'profile.signInToUpdateLoginAlerts': 'Veuillez vous connecter pour mettre à jour les alertes de connexion',
+    'profile.unableToLoadLoginAlerts': 'Impossible de charger les préférences d’alertes de connexion',
+    'profile.unableToSaveLoginAlerts': 'Impossible d’enregistrer les préférences d’alertes de connexion',
+    'profile.loginAlertsLoaded': 'Les préférences d’alertes de connexion sont enregistrées dans votre compte.',
+    'profile.loginAlertsSavedMessage': 'Préférences d’alertes de connexion enregistrées.',
+    'profile.loginAlertsUpdateMessage': 'Alertes de connexion mises à jour',
+    'profile.twoFAEnabledMessage': 'La 2FA a été activée',
+    'profile.twoFADisabledMessage': 'La 2FA a été désactivée',
+    'profile.twoFAEnabledStatus': 'La 2FA est activée',
+    'profile.twoFADisabledStatus': 'La 2FA n’est pas activée',
+    'profile.createdLabel': 'Créé',
+    'profile.expiresLabel': 'Expire',
+    'profile.currentLabel': 'Actuelle',
+    'profile.revokeLabel': 'Révoquer',
+    'profile.selectLanguage': 'Langue',
+    'profile.selectRegion': 'Région',
+    'language.englishUS': 'Anglais (États-Unis)',
+    'language.englishUK': 'Anglais (Royaume-Uni)',
+    'language.spanish': 'Espagnol',
+    'language.french': 'Français',
+    'language.german': 'Allemand',
+    'region.unitedStates': 'États-Unis',
+    'region.unitedKingdom': 'Royaume-Uni',
+    'region.india': 'Inde',
+    'region.germany': 'Allemagne'
+};
+const DE_STRINGS = {
+    ...EN_US_STRINGS,
+    'nav.section.core': 'Kern',
+    'nav.section.management': 'Verwaltung',
+    'nav.section.settings': 'Einstellungen',
+    'nav.dashboard': 'Dashboard',
+    'nav.compute': 'Compute',
+    'nav.network': 'Netzwerk & VPC',
+    'nav.storage': 'Speicher',
+    'nav.monitoring': 'Überwachung',
+    'nav.support': 'Support',
+    'nav.billing': 'Abrechnung',
+    'nav.marketplace': 'Marketplace',
+    'nav.profile': 'Profil',
+    'nav.admin': 'Admin-Panel',
+    'profile.accountSettings': 'Kontoeinstellungen',
+    'profile.editProfile': 'Profil bearbeiten',
+    'profile.personalInformation': 'Persönliche Informationen',
+    'profile.fullName': 'Vollständiger Name',
+    'profile.emailAddress': 'E-Mail-Adresse',
+    'profile.phoneNumber': 'Telefonnummer',
+    'profile.jobTitle': 'Position',
+    'profile.company': 'Unternehmen',
+    'profile.timezone': 'Zeitzone',
+    'profile.saveChanges': 'Änderungen speichern',
+    'profile.cancel': 'Abbrechen',
+    'profile.accountDetails': 'Kontodetails',
+    'profile.accountId': 'Konto-ID',
+    'profile.accountType': 'Kontotyp',
+    'profile.memberSince': 'Mitglied seit',
+    'profile.lastLogin': 'Letzte Anmeldung',
+    'profile.securitySettings': 'Sicherheitseinstellungen',
+    'profile.changePassword': 'Passwort ändern',
+    'profile.lastChanged': 'Zuletzt geändert:',
+    'profile.never': 'Nie',
+    'profile.uniquePasswordHint': 'Verwende ein starkes, einzigartiges Passwort',
+    'profile.currentPassword': 'Aktuelles Passwort',
+    'profile.newPassword': 'Neues Passwort',
+    'profile.confirmNewPassword': 'Neues Passwort bestätigen',
+    'profile.updatePassword': 'Passwort aktualisieren',
+    'profile.twoFactorAuth': 'Zwei-Faktor-Authentifizierung',
+    'profile.twoFactorDescription': 'Füge eine zusätzliche Sicherheitsebene über eine Authenticator-App hinzu',
+    'profile.twoFactorCurrently': '2FA ist derzeit',
+    'profile.twoFactorEnabledState': 'aktiviert',
+    'profile.twoFactorDisabledState': 'deaktiviert',
+    'profile.twoFactorEnabled': '2FA ist aktiviert',
+    'profile.twoFactorDisabled': '2FA ist nicht aktiviert',
+    'profile.loginAlerts': 'Anmeldebenachrichtigungen',
+    'profile.loginAlertsDescription': 'Benachrichtige mich, wenn sich ein neues Gerät in dein Konto einloggt',
+    'profile.newDeviceLogin': 'E-Mail bei Anmeldung von einem neuen Gerät',
+    'profile.failedLogin': 'E-Mail bei fehlgeschlagenen Anmeldeversuchen',
+    'profile.loginAlertsSaved': 'Die Einstellungen für Anmeldebenachrichtigungen sind in deinem Konto gespeichert.',
+    'profile.loginAlertsSaving': 'Speichere Anmeldebenachrichtigungen...',
+    'profile.loginAlertsUpdated': 'Anmeldebenachrichtigungen aktualisiert',
+    'profile.activeSessions': 'Aktive Sitzungen',
+    'profile.activeSessionsDescription': 'Geräte, die derzeit in deinem Konto angemeldet sind.',
+    'profile.activeSessionsUpdated': 'Aus Live-Sitzungsdaten aktualisiert',
+    'profile.preferences': 'Einstellungen',
+    'profile.notificationPreferences': 'Benachrichtigungseinstellungen',
+    'profile.languageRegion': 'Sprache & Region',
+    'profile.languageLabel': 'Sprache',
+    'profile.regionLabel': 'Region',
+    'profile.languageUpdated': 'Sprache aktualisiert',
+    'profile.regionUpdated': 'Region aktualisiert',
+    'profile.resourceUsage': 'Ressourcennutzung',
+    'profile.sshKeys': 'SSH-Schlüssel',
+    'profile.noSshKeysFound': 'Keine SSH-Schlüssel gefunden. Füge einen hinzu, um zu beginnen.',
+    'profile.noSshKeysFoundCreate': 'Keine SSH-Schlüssel gefunden. Erstelle einen, um zu beginnen.',
+    'profile.addedOn': 'Hinzugefügt am',
+    'profile.created': 'Erstellt',
+    'profile.expires': 'Läuft ab',
+    'profile.currentSession': 'Aktuelle Sitzung',
+    'profile.unknownDevice': 'Unbekanntes Gerät',
+    'profile.unknownBrowser': 'Unbekannter Browser',
+    'profile.unknownOS': 'Unbekanntes Betriebssystem',
+    'profile.unknownLocation': 'Unbekannter Standort',
+    'profile.currentDevice': 'Aktuelles Gerät',
+    'profile.delete': 'Löschen',
+    'profile.deleteKey': 'Schlüssel löschen',
+    'profile.revoke': 'Widerrufen',
+    'profile.noActiveSessions': 'Zurzeit keine aktiven Sitzungen.',
+    'profile.noActiveSessionsDescription': 'Wenn du dich auf einem Gerät anmeldest, wird es hier mit Live-Sitzungsdetails angezeigt.',
+    'profile.sshKeyAdded': 'SSH-Schlüssel erfolgreich hinzugefügt',
+    'profile.sshKeyDeleted': 'SSH-Schlüssel gelöscht',
+    'profile.editModeEnabled': 'Bearbeitungsmodus aktiviert. Nimm deine Änderungen vor und klicke auf Speichern.',
+    'profile.nameAndEmailRequired': 'Name und E-Mail sind erforderlich',
+    'profile.validEmailRequired': 'Gib eine gültige E-Mail-Adresse ein',
+    'profile.failedToUpdateProfile': 'Profil konnte nicht aktualisiert werden',
+    'profile.errorUpdatingProfile': 'Fehler beim Aktualisieren des Profils',
+    'profile.profileUpdated': 'Profil erfolgreich aktualisiert!',
+    'profile.changesCancelled': 'Änderungen abgebrochen',
+    'profile.passwordFieldsRequired': 'Bitte alle Felder ausfüllen',
+    'profile.passwordsDoNotMatch': 'Die neuen Passwörter stimmen nicht überein',
+    'profile.passwordMinLength': 'Das Passwort muss mindestens 8 Zeichen lang sein',
+    'profile.passwordChanged': 'Passwort erfolgreich geändert!',
+    'profile.errorChangingPassword': 'Fehler beim Ändern des Passworts',
+    'profile.signInToUpdateLoginAlerts': 'Bitte melde dich an, um Anmeldebenachrichtigungen zu aktualisieren',
+    'profile.unableToLoadLoginAlerts': 'Anmeldebenachrichtigungseinstellungen konnten nicht geladen werden',
+    'profile.unableToSaveLoginAlerts': 'Anmeldebenachrichtigungseinstellungen konnten nicht gespeichert werden',
+    'profile.loginAlertsLoaded': 'Die Einstellungen für Anmeldebenachrichtigungen sind in deinem Konto gespeichert.',
+    'profile.loginAlertsSavedMessage': 'Anmeldebenachrichtigungseinstellungen gespeichert.',
+    'profile.loginAlertsUpdateMessage': 'Anmeldebenachrichtigungen aktualisiert',
+    'profile.twoFAEnabledMessage': '2FA wurde aktiviert',
+    'profile.twoFADisabledMessage': '2FA wurde deaktiviert',
+    'profile.twoFAEnabledStatus': '2FA ist aktiviert',
+    'profile.twoFADisabledStatus': '2FA ist nicht aktiviert',
+    'profile.createdLabel': 'Erstellt',
+    'profile.expiresLabel': 'Läuft ab',
+    'profile.currentLabel': 'Aktuell',
+    'profile.revokeLabel': 'Widerrufen',
+    'profile.selectLanguage': 'Sprache',
+    'profile.selectRegion': 'Region',
+    'language.englishUS': 'Englisch (USA)',
+    'language.englishUK': 'Englisch (Vereinigtes Königreich)',
+    'language.spanish': 'Spanisch',
+    'language.french': 'Französisch',
+    'language.german': 'Deutsch',
+    'region.unitedStates': 'Vereinigte Staaten',
+    'region.unitedKingdom': 'Vereinigtes Königreich',
+    'region.india': 'Indien',
+    'region.germany': 'Deutschland'
+};
+const I18N = {
+    'en-US': EN_US_STRINGS,
+    'en-GB': EN_US_STRINGS,
+    'es-ES': ES_STRINGS,
+    'fr-FR': FR_STRINGS,
+    'de-DE': DE_STRINGS
+};
 let marketingRevealObserver = null;
 let pendingMarketingSectionId = null;
+
+let currentLocale = DEFAULT_LOCALE;
+let currentRegion = DEFAULT_REGION;
+
+function getStoredProfile() {
+    try {
+        return JSON.parse(localStorage.getItem('bytesky_profile') || '{}') || {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function updateStoredProfile(updates = {}) {
+    const nextProfile = {
+        ...getStoredProfile(),
+        ...updates
+    };
+    localStorage.setItem('bytesky_profile', JSON.stringify(nextProfile));
+    return nextProfile;
+}
+
+function normalizeLocale(locale) {
+    const value = String(locale || '').trim();
+    if (!value) return DEFAULT_LOCALE;
+
+    const lower = value.toLowerCase();
+    if (I18N[value]) return value;
+    if (lower.startsWith('en')) return lower.includes('gb') ? 'en-GB' : 'en-US';
+    if (lower.startsWith('es')) return 'es-ES';
+    if (lower.startsWith('fr')) return 'fr-FR';
+    if (lower.startsWith('de')) return 'de-DE';
+
+    switch (lower) {
+        case 'english (us)':
+            return 'en-US';
+        case 'english (uk)':
+            return 'en-GB';
+        case 'spanish':
+            return 'es-ES';
+        case 'french':
+            return 'fr-FR';
+        case 'german':
+            return 'de-DE';
+        default:
+            return DEFAULT_LOCALE;
+    }
+}
+
+function normalizeRegion(region) {
+    const value = String(region || '').trim().toLowerCase();
+    if (!value) return DEFAULT_REGION;
+
+    switch (value) {
+        case 'us':
+        case 'united states':
+            return 'us';
+        case 'gb':
+        case 'uk':
+        case 'united kingdom':
+            return 'gb';
+        case 'in':
+        case 'india':
+            return 'in';
+        case 'de':
+        case 'germany':
+            return 'de';
+        default:
+            return DEFAULT_REGION;
+    }
+}
+
+function getSavedLanguagePreference() {
+    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (storedLanguage) {
+        return normalizeLocale(storedLanguage);
+    }
+
+    const savedProfile = getStoredProfile();
+    if (savedProfile.language) {
+        return normalizeLocale(savedProfile.language);
+    }
+
+    return normalizeLocale(window.navigator?.language || DEFAULT_LOCALE);
+}
+
+function getSavedRegionPreference() {
+    const storedRegion = localStorage.getItem(REGION_STORAGE_KEY);
+    if (storedRegion) {
+        return normalizeRegion(storedRegion);
+    }
+
+    const savedProfile = getStoredProfile();
+    if (savedProfile.region) {
+        return normalizeRegion(savedProfile.region);
+    }
+
+    return DEFAULT_REGION;
+}
+
+function getLocaleDictionary(locale = currentLocale) {
+    const normalizedLocale = normalizeLocale(locale);
+    return I18N[normalizedLocale] || EN_US_STRINGS;
+}
+
+function translate(key, params = {}, locale = currentLocale) {
+    const dictionary = getLocaleDictionary(locale);
+    const template = dictionary[key] || EN_US_STRINGS[key] || key;
+
+    return template.replace(/\{(\w+)\}/g, (_, token) => (
+        Object.prototype.hasOwnProperty.call(params, token) ? String(params[token]) : ''
+    ));
+}
+
+function formatLocalizedDate(value, options = {}, fallback = translate('general.unknownTime')) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return fallback;
+    }
+
+    return new Intl.DateTimeFormat(getActiveLocale(), options).format(date);
+}
+
+function formatLocalizedDateShort(value, fallback = translate('general.unknown')) {
+    return formatLocalizedDate(value, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    }, fallback);
+}
+
+function formatLocalizedMonthYear(value, fallback = translate('general.unknown')) {
+    return formatLocalizedDate(value, {
+        month: 'short',
+        year: 'numeric'
+    }, fallback);
+}
+
+function formatLocalizedDateTime(value, fallback = translate('general.unknown')) {
+    return formatLocalizedDate(value, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }, fallback);
+}
+
+function formatStoredDate(value, options = {}, fallback = translate('general.unknown')) {
+    if (!value) {
+        return fallback;
+    }
+
+    if (value instanceof Date || typeof value === 'number') {
+        return formatLocalizedDate(value, options, fallback);
+    }
+
+    if (typeof value === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}(T|$)/.test(value)) {
+            return formatLocalizedDate(value, options, fallback);
+        }
+
+        return value;
+    }
+
+    return formatLocalizedDate(value, options, fallback);
+}
+
+function getActiveLocale() {
+    return currentLocale || getSavedLanguagePreference();
+}
+
+function syncLanguageControls() {
+    const languageSelect = document.getElementById('profile-language');
+    if (languageSelect && languageSelect.value !== currentLocale) {
+        languageSelect.value = currentLocale;
+    }
+
+    const regionSelect = document.getElementById('profile-region');
+    if (regionSelect && regionSelect.value !== currentRegion) {
+        regionSelect.value = currentRegion;
+    }
+}
+
+function applyLocalizedText(root = document) {
+    const scope = root || document;
+
+    scope.querySelectorAll('[data-i18n]').forEach((element) => {
+        const key = element.getAttribute('data-i18n');
+        if (!key) return;
+        element.textContent = translate(key);
+    });
+
+    scope.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        if (!key) return;
+        element.setAttribute('placeholder', translate(key));
+    });
+
+    scope.querySelectorAll('[data-i18n-title]').forEach((element) => {
+        const key = element.getAttribute('data-i18n-title');
+        if (!key) return;
+        element.setAttribute('title', translate(key));
+    });
+
+    scope.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+        const key = element.getAttribute('data-i18n-aria-label');
+        if (!key) return;
+        element.setAttribute('aria-label', translate(key));
+    });
+}
+
+function updateProfileTwoFactorStatus() {
+    const toggle = document.getElementById('2fa-toggle');
+    const status = document.getElementById('2fa-status');
+    if (!toggle || !status) return;
+
+    if (toggle.checked) {
+        status.innerHTML = `<span style="color: #166534;">${translate('profile.twoFactorCurrently')} <strong>${translate('profile.twoFactorEnabledState')}</strong></span>`;
+        status.style.background = '#f0fdf4';
+        status.style.borderLeftColor = '#10b981';
+    } else {
+        status.innerHTML = `<span style="color: #991b1b;">${translate('profile.twoFactorCurrently')} <strong>${translate('profile.twoFactorDisabledState')}</strong></span>`;
+        status.style.background = '#fee2e2';
+        status.style.borderLeftColor = '#ef4444';
+    }
+}
+
+function syncProfilePreferencesTexts() {
+    syncLanguageControls();
+    updateProfileTwoFactorStatus();
+}
+
+function applyLanguagePreference(locale = getSavedLanguagePreference(), options = {}) {
+    const { persist = false, region = getSavedRegionPreference() } = options;
+    const nextLocale = normalizeLocale(locale);
+    const nextRegion = normalizeRegion(region);
+
+    currentLocale = nextLocale;
+    currentRegion = nextRegion;
+
+    if (persist) {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLocale);
+        localStorage.setItem(REGION_STORAGE_KEY, nextRegion);
+        updateStoredProfile({
+            language: nextLocale,
+            region: nextRegion
+        });
+    }
+
+    document.documentElement.lang = nextLocale;
+    document.documentElement.dir = 'ltr';
+    if (document.body) {
+        document.body.dataset.language = nextLocale;
+        document.body.dataset.region = nextRegion;
+    }
+
+    applyLocalizedText(document);
+    syncProfilePreferencesTexts();
+
+    if (getActivePageId() === 'profile' && currentUser) {
+        loadProfileData();
+    }
+}
 
 function getMainContentElement() {
     return document.querySelector('.main-content');
@@ -752,7 +1537,7 @@ function editProfile() {
         input.style.background = 'white';
         input.removeAttribute('readonly');
     });
-    showToast('Edit mode enabled. Make your changes and click Save.');
+    showToast(translate('profile.editModeEnabled'));
 }
 
 async function saveProfile() {
@@ -762,15 +1547,17 @@ async function saveProfile() {
     const job = document.getElementById('profile-job').value;
     const company = document.getElementById('profile-company').value;
     const timezone = document.getElementById('profile-timezone').value;
+    const language = document.getElementById('profile-language')?.value || currentLocale;
+    const region = document.getElementById('profile-region')?.value || currentRegion;
 
     if (!fullName || !email) {
-        showToast('Name and email are required');
+        showToast(translate('profile.nameAndEmailRequired'));
         return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        showToast('Enter a valid email address');
+        showToast(translate('profile.validEmailRequired'));
         return;
     }
 
@@ -779,7 +1566,9 @@ async function saveProfile() {
         phone,
         job,
         company,
-        timezone
+        timezone,
+        language: normalizeLocale(language),
+        region: normalizeRegion(region)
     };
 
     try {
@@ -794,18 +1583,20 @@ async function saveProfile() {
 
         const data = await res.json();
         if (!res.ok) {
-            showToast(data.msg || 'Failed to update profile');
+            showToast(data.msg || translate('profile.failedToUpdateProfile'));
             return;
         }
 
         currentUser = data.user;
         localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
         localStorage.setItem('bytesky_profile', JSON.stringify(profileData));
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, profileData.language);
+        localStorage.setItem(REGION_STORAGE_KEY, profileData.region);
 
         updateNav();
         loadProfileData();
     } catch (err) {
-        showToast('Error updating profile');
+        showToast(translate('profile.errorUpdatingProfile'));
         return;
     }
 
@@ -816,7 +1607,7 @@ async function saveProfile() {
         input.setAttribute('readonly', 'readonly');
     });
 
-    showToast('Profile updated successfully!');
+    showToast(translate('profile.profileUpdated'));
 }
 
 function cancelEdit() {
@@ -825,7 +1616,19 @@ function cancelEdit() {
         input.style.background = '#f8fafc';
         input.setAttribute('readonly', 'readonly');
     });
-    showToast('Changes cancelled');
+    showToast(translate('profile.changesCancelled'));
+}
+
+function handleProfileLanguageChange(locale) {
+    const nextRegion = currentRegion || getSavedRegionPreference();
+    applyLanguagePreference(locale, { persist: true, region: nextRegion });
+    showToast(translate('profile.languageUpdated'));
+}
+
+function handleProfileRegionChange(region) {
+    const nextLocale = currentLocale || getSavedLanguagePreference();
+    applyLanguagePreference(nextLocale, { persist: true, region });
+    showToast(translate('profile.regionUpdated'));
 }
 
 async function changePassword() {
@@ -834,17 +1637,17 @@ async function changePassword() {
     const confirm = document.getElementById('confirm-password').value;
 
     if (!current || !newPass || !confirm) {
-        showToast('Please fill all fields');
+        showToast(translate('profile.passwordFieldsRequired'));
         return;
     }
 
     if (newPass !== confirm) {
-        showToast('New passwords do not match');
+        showToast(translate('profile.passwordsDoNotMatch'));
         return;
     }
 
     if (newPass.length < 8) {
-        showToast('Password must be at least 8 characters');
+        showToast(translate('profile.passwordMinLength'));
         return;
     }
 
@@ -863,16 +1666,16 @@ async function changePassword() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-            showToast(data.msg || data.message || 'Unable to change password');
+            showToast(data.msg || data.message || translate('profile.errorChangingPassword'));
             return;
         }
 
-        showToast('Password changed successfully!');
+        showToast(translate('profile.passwordChanged'));
         document.getElementById('current-password').value = '';
         document.getElementById('new-password').value = '';
         document.getElementById('confirm-password').value = '';
     } catch (err) {
-        showToast('Error changing password');
+        showToast(translate('profile.errorChangingPassword'));
     }
 }
 
@@ -929,7 +1732,7 @@ async function loadLoginAlertPreferences() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-            throw new Error(data.message || data.msg || 'Unable to load login alerts');
+            throw new Error(data.message || data.msg || translate('profile.unableToLoadLoginAlerts'));
         }
 
         currentUser = {
@@ -938,15 +1741,15 @@ async function loadLoginAlertPreferences() {
         };
         localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
         applyLoginAlertPreferences(data.loginAlerts);
-        setLoginAlertStatus('Login alert preferences are saved to your account.');
+        setLoginAlertStatus(translate('profile.loginAlertsLoaded'));
     } catch (err) {
-        setLoginAlertStatus(err.message || 'Unable to load login alert preferences', true);
+        setLoginAlertStatus(err.message || translate('profile.unableToLoadLoginAlerts'), true);
     }
 }
 
 async function saveLoginAlertPreferences() {
     if (!token) {
-        showToast('Please sign in to update login alerts');
+        showToast(translate('profile.signInToUpdateLoginAlerts'));
         return;
     }
 
@@ -956,7 +1759,7 @@ async function saveLoginAlertPreferences() {
     };
 
     setLoginAlertControlsDisabled(true);
-    setLoginAlertStatus('Saving login alert preferences...');
+    setLoginAlertStatus(translate('profile.loginAlertsSaving'));
 
     try {
         const res = await fetch(`${API_URL}/auth/login-alerts`, {
@@ -970,7 +1773,7 @@ async function saveLoginAlertPreferences() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-            throw new Error(data.message || data.msg || 'Unable to save login alerts');
+            throw new Error(data.message || data.msg || translate('profile.unableToSaveLoginAlerts'));
         }
 
         currentUser = data.user || {
@@ -979,12 +1782,12 @@ async function saveLoginAlertPreferences() {
         };
         localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
         applyLoginAlertPreferences(data.loginAlerts || currentUser.loginAlerts);
-        setLoginAlertStatus('Login alert preferences saved.');
-        showToast('Login alerts updated');
+        setLoginAlertStatus(translate('profile.loginAlertsSavedMessage'));
+        showToast(translate('profile.loginAlertsUpdateMessage'));
     } catch (err) {
         applyLoginAlertPreferences(currentUser?.loginAlerts);
-        setLoginAlertStatus(err.message || 'Unable to save login alert preferences', true);
-        showToast(err.message || 'Unable to save login alerts');
+        setLoginAlertStatus(err.message || translate('profile.unableToSaveLoginAlerts'), true);
+        showToast(err.message || translate('profile.unableToSaveLoginAlerts'));
     } finally {
         setLoginAlertControlsDisabled(false);
     }
@@ -995,65 +1798,57 @@ function toggle2FA() {
     const status = document.getElementById('2fa-status');
 
     if (toggle.checked) {
-        status.innerHTML = '<span style="color: #166534;"> 2FA is currently <strong>enabled</strong></span>';
+        status.innerHTML = `<span style="color: #166534;">${translate('profile.twoFactorCurrently')} <strong>${translate('profile.twoFactorEnabledState')}</strong></span>`;
         status.style.background = '#f0fdf4';
         status.style.borderLeftColor = '#10b981';
-        showToast('2FA enabled successfully');
+        showToast(translate('profile.twoFAEnabledMessage'));
     } else {
-        status.innerHTML = '<span style="color: #991b1b;"> 2FA is currently <strong>disabled</strong></span>';
+        status.innerHTML = `<span style="color: #991b1b;">${translate('profile.twoFactorCurrently')} <strong>${translate('profile.twoFactorDisabledState')}</strong></span>`;
         status.style.background = '#fee2e2';
         status.style.borderLeftColor = '#ef4444';
-        showToast('2FA disabled');
+        showToast(translate('profile.twoFADisabledMessage'));
     }
 }
 
 function formatRelativeTime(value) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-        return 'Unknown time';
+        return translate('general.unknownTime');
     }
 
     const diffMs = date.getTime() - Date.now();
     const diffAbs = Math.abs(diffMs);
-    const future = diffMs > 0;
-    const units = [
-        { label: 'year', ms: 365 * 24 * 60 * 60 * 1000 },
-        { label: 'month', ms: 30 * 24 * 60 * 60 * 1000 },
-        { label: 'day', ms: 24 * 60 * 60 * 1000 },
-        { label: 'hour', ms: 60 * 60 * 1000 },
-        { label: 'minute', ms: 60 * 1000 }
-    ];
 
     if (diffAbs < 30 * 1000) {
-        return 'Just now';
+        return translate('general.justNow');
     }
+
+    const units = [
+        { unit: 'year', ms: 365 * 24 * 60 * 60 * 1000 },
+        { unit: 'month', ms: 30 * 24 * 60 * 60 * 1000 },
+        { unit: 'day', ms: 24 * 60 * 60 * 1000 },
+        { unit: 'hour', ms: 60 * 60 * 1000 },
+        { unit: 'minute', ms: 60 * 1000 }
+    ];
+    const formatter = new Intl.RelativeTimeFormat(getActiveLocale(), { numeric: 'auto' });
 
     for (const unit of units) {
         if (diffAbs >= unit.ms) {
             const valueCount = Math.max(1, Math.round(diffAbs / unit.ms));
-            const suffix = valueCount === 1 ? '' : 's';
-            return future
-                ? `In ${valueCount} ${unit.label}${suffix}`
-                : `${valueCount} ${unit.label}${suffix} ago`;
+            return formatter.format(diffMs < 0 ? -valueCount : valueCount, unit.unit);
         }
     }
 
-    return future ? 'In a moment' : 'Just now';
+    return diffMs > 0 ? translate('general.inMoment') : translate('general.justNow');
 }
 
 function formatSessionDate(value) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-        return 'Unknown';
+        return translate('general.unknown');
     }
 
-    return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    return formatLocalizedDateTime(date);
 }
 
 function renderAuthSessions(sessions = []) {
@@ -1142,7 +1937,13 @@ async function loadAuthSessions() {
                 router('login', { skipAuthCheck: true });
                 return;
             }
-            throw new Error(data.message || data.msg || 'Unable to load active sessions');
+
+            const fallbackMessage = res.status === 404
+                ? 'Active sessions endpoint is not available yet. Rebuild the backend container.'
+                : res.status >= 500
+                    ? 'The server hit an error while loading active sessions.'
+                    : 'Unable to load active sessions';
+            throw new Error(data.message || data.msg || fallbackMessage);
         }
 
         if (data.currentSessionId) {
@@ -1243,7 +2044,7 @@ function renderProfileSSHKeys() {
 
     const keys = getStoredSSHKeys();
     if (keys.length === 0) {
-        list.innerHTML = '<p style="color: #64748b; text-align: center; padding: 20px;">No SSH keys found. Add one to get started.</p>';
+        list.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">${translate('profile.noSshKeysFound')}</p>`;
         return;
     }
 
@@ -1252,10 +2053,10 @@ function renderProfileSSHKeys() {
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div>
                     <div style="font-weight: 600;"> ${key.name}</div>
-                    <div style="font-size: 0.85rem; color: #64748b; font-family: monospace; margin: 5px 0;">${key.key || key.fingerprint || 'Generated SSH key'}</div>
-                    <div style="font-size: 0.85rem; color: #94a3b8;">Added on ${key.added || new Date(key.createdAt).toLocaleDateString()}</div>
+                    <div style="font-size: 0.85rem; color: #64748b; font-family: monospace; margin: 5px 0;">${key.key || key.fingerprint || translate('profile.generatedSshKey')}</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8;">${translate('profile.addedOn')} ${formatStoredDate(key.addedAt || key.createdAt || key.added, { month: 'short', day: 'numeric', year: 'numeric' }, key.added || translate('general.unknown'))}</div>
                 </div>
-                <button class="btn btn-danger" style="font-size: 0.75rem;" onclick="deleteSSHKey('${key.id}')">Delete</button>
+                <button class="btn btn-danger" style="font-size: 0.75rem;" onclick="deleteSSHKey('${key.id}')">${translate('profile.delete')}</button>
             </div>
         </div>
     `).join('');
@@ -1267,18 +2068,18 @@ function renderComputeSSHKeys() {
 
     const keys = getStoredSSHKeys();
     if (keys.length === 0) {
-        container.innerHTML = '<p style="color: #64748b; padding: 20px; text-align: center;">No SSH keys found. Create one to get started.</p>';
+        container.innerHTML = `<p style="color: #64748b; padding: 20px; text-align: center;">${translate('profile.noSshKeysFoundCreate')}</p>`;
         return;
     }
 
     container.innerHTML = keys.map(key => `
         <div class="ssh-key-item">
             <div class="ssh-key-name"> ${key.name}</div>
-            <div class="ssh-key-fingerprint">${key.fingerprint || key.key || 'Manual key import'}</div>
+            <div class="ssh-key-fingerprint">${key.fingerprint || key.key || translate('profile.manualKeyImport')}</div>
             <div style="margin-top: 10px; font-size: 0.8rem; color: #64748b;">
-                Created: ${key.createdAt ? new Date(key.createdAt).toLocaleString() : (key.added || 'Just now')}
+                ${translate('profile.createdLabel')}: ${key.createdAt ? formatLocalizedDateTime(key.createdAt, translate('general.unknown')) : (key.added || translate('general.justNow'))}
             </div>
-            <button class="btn btn-danger" style="margin-top: 10px; font-size: 0.75rem;" onclick="deleteSSHKey('${key.id}')">Delete Key</button>
+            <button class="btn btn-danger" style="margin-top: 10px; font-size: 0.75rem;" onclick="deleteSSHKey('${key.id}')">${translate('profile.deleteKey')}</button>
         </div>
     `).join('');
 }
@@ -1295,12 +2096,12 @@ function addSSHKey() {
         id: `key-${Date.now()}`,
         name,
         key: key.substring(0, 50) + '...',
-        added: new Date().toLocaleDateString(),
+        addedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
     });
     persistSSHKeys(keys);
 
-    showToast('SSH key added successfully');
+    showToast(translate('profile.sshKeyAdded'));
     loadSSHKeys();
 }
 
@@ -1315,7 +2116,7 @@ function deleteSSHKey(id) {
     const keys = getStoredSSHKeys().filter(k => String(k.id) !== String(id));
     persistSSHKeys(keys);
 
-    showToast('SSH key deleted');
+    showToast(translate('profile.sshKeyDeleted'));
     loadSSHKeys();
 }
 
@@ -1324,12 +2125,12 @@ function deleteAccount() {
 
     const confirmText = prompt('Type "DELETE" to confirm account deletion:');
     if (confirmText !== 'DELETE') {
-        showToast('Account deletion cancelled');
+        showToast(translate('profile.accountDeletionCancelled'));
         return;
     }
 
     // Call backend to delete account
-    showToast('Account deletion initiated. You will receive a confirmation email.');
+    showToast(translate('profile.accountDeletionInitiated'));
     setTimeout(() => {
         logout();
     }, 2000);
@@ -1350,12 +2151,21 @@ function loadProfileData() {
     if (emailInput) emailInput.value = currentUser.email || '';
 
     // Load saved profile data
-    const savedProfile = JSON.parse(localStorage.getItem('bytesky_profile'));
+    const savedProfile = getStoredProfile();
     if (savedProfile) {
-        document.getElementById('profile-phone').value = savedProfile.phone || '';
-        document.getElementById('profile-job').value = savedProfile.job || '';
-        document.getElementById('profile-company').value = savedProfile.company || '';
-        document.getElementById('profile-timezone').value = savedProfile.timezone || 'UTC';
+        const profilePhone = document.getElementById('profile-phone');
+        const profileJob = document.getElementById('profile-job');
+        const profileCompany = document.getElementById('profile-company');
+        const profileTimezone = document.getElementById('profile-timezone');
+        const profileLanguage = document.getElementById('profile-language');
+        const profileRegion = document.getElementById('profile-region');
+
+        if (profilePhone) profilePhone.value = savedProfile.phone || '';
+        if (profileJob) profileJob.value = savedProfile.job || '';
+        if (profileCompany) profileCompany.value = savedProfile.company || '';
+        if (profileTimezone) profileTimezone.value = savedProfile.timezone || 'UTC';
+        if (profileLanguage) profileLanguage.value = getSavedLanguagePreference();
+        if (profileRegion) profileRegion.value = getSavedRegionPreference();
     }
 
     // Generate account ID
@@ -1363,12 +2173,16 @@ function loadProfileData() {
         || `acc_${Math.random().toString(36).slice(2, 12)}`;
     localStorage.setItem('bytesky_account_id', accountId);
     document.getElementById('profile-account-id').innerText = accountId;
+    document.getElementById('profile-member-since').innerText = formatLocalizedMonthYear(currentUser.createdAt || new Date());
+    document.getElementById('profile-joined').innerText = formatLocalizedMonthYear(currentUser.createdAt || new Date());
+    document.getElementById('profile-last-login').innerText = formatRelativeTime(currentUser.lastLogin || currentUser.createdAt || new Date());
 
     // Load SSH keys
     loadSSHKeys();
 
     // Load account-backed security alert preferences
     loadLoginAlertPreferences();
+    syncProfilePreferencesTexts();
 
     // Load real active sessions
     loadAuthSessions();
@@ -1970,7 +2784,7 @@ function renderInstanceActions(vm) {
 }
 
 function calculateUptime(createdAt) {
-    if (!createdAt) return 'N/A';
+    if (!createdAt) return translate('general.unknown');
     const now = new Date();
     const created = new Date(createdAt);
     const diffMs = now - created;
@@ -2215,7 +3029,7 @@ async function viewInstanceDetails(id) {
             </div>
             <div class="detail-item">
                 <div class="detail-label">Launch Time</div>
-                <div class="detail-value">${new Date(vm.createdAt).toLocaleString()}</div>
+                <div class="detail-value">${formatLocalizedDateTime(vm.createdAt)}</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Uptime</div>
@@ -2337,7 +3151,7 @@ function createSSHKey() {
         name,
         fingerprint,
         key: fingerprint,
-        added: new Date().toLocaleDateString(),
+        addedAt: new Date().toISOString(),
         createdAt: new Date().toISOString()
     };
 
@@ -3655,7 +4469,7 @@ function parseMonitoringTimestamp(value) {
 function formatMonitoringLabel(value, timeRange) {
     const parsedDate = parseMonitoringTimestamp(value);
     if (!parsedDate) {
-        return typeof value === 'string' && value.trim() ? value : 'Unknown time';
+        return typeof value === 'string' && value.trim() ? value : translate('general.unknownTime');
     }
 
     const options = timeRange === '7d'
@@ -3664,16 +4478,16 @@ function formatMonitoringLabel(value, timeRange) {
             ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
             : { hour: '2-digit', minute: '2-digit', hour12: true };
 
-    return parsedDate.toLocaleString('en-US', options);
+    return formatLocalizedDate(parsedDate, options);
 }
 
 function formatMonitoringTooltipLabel(value) {
     const parsedDate = parseMonitoringTimestamp(value);
     if (!parsedDate) {
-        return typeof value === 'string' && value.trim() ? value : 'Unknown time';
+        return typeof value === 'string' && value.trim() ? value : translate('general.unknownTime');
     }
 
-    return parsedDate.toLocaleString('en-US', {
+    return formatLocalizedDate(parsedDate, {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -3900,7 +4714,7 @@ async function loadBilling() {
                 }
                 list.innerHTML += `
                     <tr>
-                        <td>${new Date(inv.createdAt).toLocaleDateString()}</td>
+                        <td>${formatLocalizedDateShort(inv.createdAt)}</td>
                         <td>${inv.description}</td>
                         <td>${inv.usageHours ? inv.usageHours.toFixed(2) + ' hrs' : 'N/A'}</td>
                         <td>$${inv.amount.toFixed(2)}</td>
@@ -4142,7 +4956,7 @@ function renderContainerSessions(sessions) {
                         <div style="font-weight:700; color:#0f172a;">${session.containerName}</div>
                         <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Container ${session.containerId}</div>
                         <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">Browser-accessible sandbox container with live development tooling</div>
-                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort} • ` : ''}Expires ${new Date(session.expiresAt).toLocaleString()}</div>
+                        <div style="color:#64748b; font-size:0.92rem; margin-top:4px;">${session.hostPort ? `Port ${session.hostPort} • ` : ''}${translate('profile.expires')}: ${formatLocalizedDateTime(session.expiresAt)}</div>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         ${openAction}
@@ -4371,12 +5185,12 @@ function createCostChart(invoices) {
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        last7Days.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        last7Days.push(formatLocalizedDate(d, { month: 'short', day: 'numeric' }));
     }
 
     const dailyCosts = last7Days.map(date => {
         return invoices
-            .filter(inv => new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date)
+            .filter(inv => formatLocalizedDate(inv.createdAt, { month: 'short', day: 'numeric' }) === date)
             .reduce((sum, inv) => sum + inv.amount, 0);
     });
 
@@ -4455,7 +5269,7 @@ function loadRecentActivity(vms, storageUsed) {
     // Add VM activities
     vms.slice(0, 5).forEach(vm => {
         activities.push({
-            time: new Date(vm.createdAt).toLocaleString(),
+            time: formatLocalizedDateTime(vm.createdAt),
             text: `Instance "${vm.name}" ${vm.status}`,
             icon: vm.status === 'running' ? '' : vm.status === 'stopped' ? '' : ''
         });
@@ -4600,7 +5414,7 @@ function createAdminTicketsChart(ticketsPerDay) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
-        labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        labels.push(formatLocalizedDate(d, { month: 'short', day: 'numeric' }));
         values.push(map.get(key) || 0);
     }
 
@@ -5208,7 +6022,7 @@ function renderStorage(files) {
                 <td><span class="bucket-badge">${f.bucket}</span></td>
                 <td>${formatFileSize(f.fileSize)}</td>
                 <td>${fileType}</td>
-                <td>${new Date(f.createdAt).toLocaleDateString()}</td>
+                <td>${formatLocalizedDateShort(f.createdAt)}</td>
                 <td>
                     ${renderStorageActions(f, { compact: true })}
                 </td>
@@ -5794,10 +6608,10 @@ function openTicketModal() {
 }
 
 function formatTicketDate(value) {
-    if (!value) return 'N/A';
+    if (!value) return translate('general.unknown');
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return 'N/A';
-    return d.toLocaleString();
+    if (Number.isNaN(d.getTime())) return translate('general.unknown');
+    return formatLocalizedDateTime(d, translate('general.unknown'));
 }
 
 function ticketStatusBadge(status) {
@@ -6490,7 +7304,7 @@ async function loadIAMAPIKeys() {
                             </p>
                             <small style="color: #64748b;">
                                 Permissions: ${key.permissions?.join(', ') || 'None'}<br>
-                                Created: ${new Date(key.createdAt).toLocaleDateString()}
+                                ${translate('profile.createdLabel')}: ${formatLocalizedDateShort(key.createdAt)}
                             </small>
                         </div>
                         <button class="btn btn-danger" style="font-size: 0.7rem;" onclick="revokeAPIKey('${key._id}')">Revoke</button>
@@ -6589,7 +7403,7 @@ async function loadAuditLogs() {
             const statusClass = log.status === 'success' ? 'bg-running' : 'bg-error';
             tbody.innerHTML += `
                 <tr>
-                    <td>${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>${formatLocalizedDateTime(log.timestamp)}</td>
                     <td>${log.user?.email || 'System'}</td>
                     <td><span class="badge" style="background: #e2e8f0;">${log.action}</span></td>
                     <td>${log.resource || 'N/A'}</td>
@@ -6624,12 +7438,12 @@ async function load2FAStatus() {
         if (!statusEl) return;
 
         if (data.enabled) {
-            statusEl.innerHTML = '<p style="color:var(--success);"> 2FA is enabled</p>';
+            statusEl.innerHTML = `<p style="color:var(--success);">${translate('profile.twoFAEnabledStatus')}</p>`;
             if (setupBtn) setupBtn.style.display = 'none';
             if (disableBtn) disableBtn.style.display = 'block';
             if (setupEl) setupEl.style.display = 'none';
         } else {
-            statusEl.innerHTML = '<p style="color:#64748b;">2FA is not enabled</p>';
+            statusEl.innerHTML = `<p style="color:#64748b;">${translate('profile.twoFADisabledStatus')}</p>`;
             if (setupBtn) setupBtn.style.display = 'block';
             if (disableBtn) disableBtn.style.display = 'none';
         }
@@ -6679,7 +7493,7 @@ async function verify2FA() {
         });
 
         if (res.ok) {
-            showToast('2FA enabled successfully!');
+            showToast(translate('profile.twoFAEnabledMessage'));
             load2FAStatus();
         } else {
             showToast('Invalid token');
@@ -6703,7 +7517,7 @@ async function disable2FA() {
             body: JSON.stringify({ token: token2FA })
         });
 
-        showToast('2FA disabled');
+        showToast(translate('profile.twoFADisabledMessage'));
         load2FAStatus();
     } catch (err) {
         showToast('Error disabling 2FA');
@@ -7241,6 +8055,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     applyTheme();
+    applyLanguagePreference();
     syncMonitoringMetricButtons();
     window.launchVM = launchVM;
     window.launchBrowserVm = launchVM;
@@ -8163,7 +8978,7 @@ function loadSaaSIntegrations() {
         <div class="saas-integration-item">
             <div>
                 <strong>${int.name}</strong>
-                <div style="font-size: 0.85rem; color: #64748b;">Connected: ${new Date(int.connectedAt).toLocaleDateString()}</div>
+                <div style="font-size: 0.85rem; color: #64748b;">${translate('profile.connectedAt')}: ${formatLocalizedDateShort(int.connectedAt)}</div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <span class="integration-status ${int.status === 'connected' ? 'connected' : 'disconnected'}">
