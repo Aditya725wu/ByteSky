@@ -1416,15 +1416,31 @@ tr:hover {
 }
 
 .network-section-card {
-    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 249, 253, 0.98) 100%);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
     transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     min-width: 0;
 }
 
+.network-section-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.95), rgba(59, 130, 246, 0.38), rgba(16, 185, 129, 0.34));
+    opacity: 0.85;
+}
+
 .network-section-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
-    border-color: rgba(37, 99, 235, 0.16);
+    box-shadow: 0 22px 40px rgba(15, 23, 42, 0.1);
+    border-color: rgba(37, 99, 235, 0.18);
 }
 
 .network-section-header {
@@ -1432,32 +1448,39 @@ tr:hover {
     justify-content: space-between;
     align-items: flex-start;
     gap: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .network-section-header h3 {
     margin-bottom: 6px;
+    font-size: 1.35rem;
+    letter-spacing: -0.03em;
+    color: #0f172a;
 }
 
 .network-section-header p {
     color: #64748b;
     font-size: 0.9rem;
     line-height: 1.5;
+    max-width: 62ch;
 }
 
 .network-stack {
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .network-vpc-cluster {
+    position: relative;
     display: grid;
     gap: 14px;
-    padding: 16px;
+    padding: 18px;
     border: 1px solid #dbe3ee;
-    border-radius: 18px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     min-width: 0;
 }
@@ -1465,30 +1488,32 @@ tr:hover {
 .network-vpc-cluster:hover,
 .network-surface-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
     border-color: rgba(37, 99, 235, 0.16);
 }
 
 .network-vpc-split {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
     min-width: 0;
 }
 
 .network-surface-card {
+    position: relative;
     display: grid;
     gap: 12px;
     padding: 16px;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    background: #fcfdff;
+    border-radius: 18px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 252, 255, 1) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     min-width: 0;
 }
 
 .network-surface-card h4 {
-    font-size: 0.96rem;
+    font-size: 1rem;
     color: #0f172a;
 }
 
@@ -1506,11 +1531,17 @@ tr:hover {
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .network-meta {
     display: grid;
     gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
 }
 
 .network-meta-row {
@@ -1534,15 +1565,17 @@ tr:hover {
 
 .network-metrics-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
 }
 
 .network-metric {
-    padding: 12px;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    min-height: 86px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .network-metric-label {
@@ -1555,15 +1588,17 @@ tr:hover {
 
 .network-metric-value {
     color: #0f172a;
-    font-size: 1.08rem;
+    font-size: 1.05rem;
     font-weight: 800;
     margin-top: 6px;
+    letter-spacing: -0.02em;
 }
 
 .network-action-row {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
+    margin-top: 2px;
 }
 
 .network-list {
@@ -1572,10 +1607,11 @@ tr:hover {
 }
 
 .network-list-card {
-    padding: 14px;
+    padding: 13px 14px;
     border-radius: 14px;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
     transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
@@ -1583,6 +1619,7 @@ tr:hover {
     background: #ffffff;
     border-color: #cbd5e1;
     transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
 }
 
 .network-list-head {
@@ -1595,6 +1632,7 @@ tr:hover {
 .network-list-title {
     font-weight: 700;
     color: #0f172a;
+    font-size: 0.96rem;
     overflow-wrap: anywhere;
 }
 
@@ -1614,7 +1652,7 @@ tr:hover {
 
 .network-inline-pills {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
@@ -1627,6 +1665,7 @@ tr:hover {
     font-size: 0.76rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .network-pill-available {
@@ -1660,7 +1699,7 @@ tr:hover {
     gap: 12px;
     text-align: center;
     padding: 28px 18px;
-    border-radius: 16px;
+    border-radius: 18px;
     border: 1px dashed #cbd5e1;
     background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
 }
@@ -1671,7 +1710,7 @@ tr:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-radius: 18px;
     background: #eff6ff;
     color: #2563eb;
 }
@@ -1692,6 +1731,83 @@ tr:hover {
     font-size: 0.9rem;
     line-height: 1.5;
     max-width: 280px;
+}
+
+.network-action-btn {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.network-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(37, 99, 235, 0.12);
+}
+
+.network-action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.network-action-btn--primary {
+    background: linear-gradient(135deg, var(--primary), #1d4ed8);
+    border-color: transparent;
+    color: white;
+}
+
+.network-action-btn--primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    color: white;
+}
+
+.network-action-btn--secondary {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.network-action-btn--secondary:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.network-action-btn--ghost {
+    background: #ffffff;
+    border-color: #dbe3ee;
+    color: #475569;
+}
+
+.network-action-btn--ghost:hover {
+    background: #f8fafc;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.network-action-btn--danger {
+    background: #fff5f5;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.network-action-btn--danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
 }
 
 .instance-actions {
@@ -3679,17 +3795,48 @@ body[data-theme="dark"] .network-empty-icon {
     border-color: #334155;
 }
 
+body[data-theme="dark"] .network-section-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(10, 16, 28, 0.98) 100%);
+    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.34);
+}
+
+body[data-theme="dark"] .network-section-card:hover {
+    box-shadow: 0 24px 44px rgba(2, 6, 23, 0.42);
+    border-color: rgba(96, 165, 250, 0.22);
+}
+
+body[data-theme="dark"] .network-section-card::before {
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.96), rgba(59, 130, 246, 0.42), rgba(34, 197, 94, 0.28));
+    opacity: 0.82;
+}
+
 body[data-theme="dark"] .network-vpc-cluster,
 body[data-theme="dark"] .network-surface-card,
 body[data-theme="dark"] .network-list-card,
 body[data-theme="dark"] .network-metric,
 body[data-theme="dark"] .network-empty-state {
-    background: #111827;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(17, 24, 39, 0.98) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body[data-theme="dark"] .network-vpc-cluster,
+body[data-theme="dark"] .network-surface-card {
+    box-shadow: 0 14px 28px rgba(2, 6, 23, 0.26);
+}
+
+body[data-theme="dark"] .network-vpc-cluster:hover,
+body[data-theme="dark"] .network-surface-card:hover {
+    box-shadow: 0 20px 34px rgba(2, 6, 23, 0.32);
+    border-color: rgba(96, 165, 250, 0.24);
 }
 
 body[data-theme="dark"] .network-empty-icon {
     background: rgba(37, 99, 235, 0.22);
     color: #93c5fd;
+}
+
+body[data-theme="dark"] .network-section-header h3 {
+    color: #f8fafc;
 }
 
 body[data-theme="dark"] .network-section-header p,
@@ -3709,6 +3856,19 @@ body[data-theme="dark"] .network-metric-value,
 body[data-theme="dark"] .network-empty-state h4,
 body[data-theme="dark"] .network-surface-card h4 {
     color: #f8fafc;
+}
+
+body[data-theme="dark"] .network-meta,
+body[data-theme="dark"] .network-list-card,
+body[data-theme="dark"] .network-metric {
+    background: rgba(17, 24, 39, 0.72);
+    border-color: #334155;
+}
+
+body[data-theme="dark"] .network-list-card:hover {
+    background: rgba(17, 24, 39, 0.94);
+    border-color: rgba(96, 165, 250, 0.24);
+    box-shadow: 0 12px 24px rgba(2, 6, 23, 0.24);
 }
 
 body[data-theme="dark"] .network-pill-neutral {
@@ -3734,6 +3894,74 @@ body[data-theme="dark"] .network-pill-available {
 body[data-theme="dark"] .network-pill-warning {
     background: rgba(146, 64, 14, 0.28);
     color: #fcd34d;
+}
+
+body[data-theme="dark"] .network-action-btn {
+    background: #111827;
+    color: #e2e8f0;
+    border-color: #334155;
+    box-shadow: none;
+}
+
+body[data-theme="dark"] .network-action-btn:hover {
+    background: #172033;
+    color: #ffffff;
+    border-color: #60a5fa;
+    box-shadow: 0 10px 18px rgba(2, 6, 23, 0.26);
+}
+
+body[data-theme="dark"] .network-action-btn:disabled {
+    background: #0b1220;
+    color: #64748b;
+    border-color: #1f2937;
+    box-shadow: none;
+}
+
+body[data-theme="dark"] .network-action-btn--primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-color: transparent;
+}
+
+body[data-theme="dark"] .network-action-btn--primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    color: white;
+}
+
+body[data-theme="dark"] .network-action-btn--secondary {
+    background: rgba(37, 99, 235, 0.14);
+    color: #bfdbfe;
+    border-color: rgba(96, 165, 250, 0.24);
+}
+
+body[data-theme="dark"] .network-action-btn--secondary:hover {
+    background: rgba(37, 99, 235, 0.2);
+    color: #eff6ff;
+    border-color: rgba(96, 165, 250, 0.32);
+}
+
+body[data-theme="dark"] .network-action-btn--ghost {
+    background: rgba(15, 23, 42, 0.72);
+    color: #cbd5e1;
+    border-color: #334155;
+}
+
+body[data-theme="dark"] .network-action-btn--ghost:hover {
+    background: rgba(23, 32, 51, 0.98);
+    color: #ffffff;
+    border-color: #60a5fa;
+}
+
+body[data-theme="dark"] .network-action-btn--danger {
+    background: rgba(127, 29, 29, 0.22);
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.34);
+}
+
+body[data-theme="dark"] .network-action-btn--danger:hover {
+    background: rgba(127, 29, 29, 0.3);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fee2e2;
 }
 
 body[data-theme="dark"] input,

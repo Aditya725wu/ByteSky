@@ -2214,7 +2214,7 @@ function getNetworkEmptyStateMarkup({ icon = 'layers', title, description, actio
             <div class="network-empty-icon">${icons[icon] || icons.layers}</div>
             <h4>${title}</h4>
             <p>${description}</p>
-            ${actionLabel && actionHandler ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
+            ${actionLabel && actionHandler ? `<button class="network-action-btn network-action-btn--primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
         </div>
     `;
 }
@@ -2426,7 +2426,7 @@ function renderVPCs(vpcs = []) {
                                 <div class="network-list-meta">${subnet.cidr} | AZ ${String(subnet.availabilityZone || 'a').toUpperCase()}</div>
                                 <div class="network-list-note">Route Table: ${routeTableLabel}</div>
                             </div>
-                            <button class="btn btn-outline" style="font-size:0.72rem;" onclick="deleteSubnet('${vpc._id}', '${subnet._id}')">Delete</button>
+                            <button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.72rem;" onclick="deleteSubnet('${vpc._id}', '${subnet._id}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -2454,8 +2454,8 @@ function renderVPCs(vpcs = []) {
                             <div class="network-list-note">${((routeTable.associatedSubnets || []).map(association => association.subnetName).join(', ')) || 'No associated subnets'}</div>
                         </div>
                         ${routeTable.isMain
-                    ? '<button class="btn btn-outline" style="font-size:0.72rem;" disabled>Main</button>'
-                    : `<button class="btn btn-outline" style="font-size:0.72rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
+                    ? '<button class="network-action-btn network-action-btn--ghost" style="font-size:0.72rem;" disabled>Main</button>'
+                    : `<button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.72rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
                     </div>
                 </div>
             `).join('')
@@ -2478,7 +2478,7 @@ function renderVPCs(vpcs = []) {
                         </div>
                         <div style="color:#64748b; margin-top:6px; font-size:0.9rem;">${vpc.cidr} | ${vpc.region}</div>
                     </div>
-                    <button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteVpc('${vpc._id}')">Delete</button>
+                    <button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.75rem;" onclick="deleteVpc('${vpc._id}')">Delete</button>
                 </div>
                 <div class="network-vpc-split">
                     <div class="network-surface-card">
@@ -2514,8 +2514,8 @@ function renderVPCs(vpcs = []) {
                             </div>
                         </div>
                         <div class="network-action-row">
-                            <button class="btn btn-primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
-                            <button class="btn btn-outline" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
+                            <button class="network-action-btn network-action-btn--primary" style="font-size:0.75rem;" onclick="openSubnetModal('${vpc._id}')">Add Subnet</button>
+                            <button class="network-action-btn network-action-btn--secondary" style="font-size:0.75rem;" onclick="openRouteTableModal('${vpc._id}')">Add Route Table</button>
                         </div>
                     </div>
                     <div class="network-surface-card">
@@ -2592,8 +2592,8 @@ function renderRouteTables(routeTables = []) {
                         </div>
                     </div>
                     ${routeTable.isMain
-                ? '<button class="btn btn-outline" style="font-size:0.75rem;" disabled>Main</button>'
-                : `<button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
+                    ? '<button class="network-action-btn network-action-btn--ghost" style="font-size:0.75rem;" disabled>Main</button>'
+                    : `<button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.75rem;" onclick="deleteRouteTable('${routeTable._id}')">Delete</button>`}
                 </div>
                 <div class="network-list">${routeMarkup}</div>
                 <div class="network-list-card">
@@ -2661,7 +2661,7 @@ function renderLoadBalancers(loadBalancers = []) {
                             VPC: ${loadBalancer.vpc?.name || 'Not attached'}
                         </div>
                     </div>
-                    <button class="btn btn-outline" style="font-size:0.75rem;" onclick="deleteLB('${loadBalancer._id}')">Delete</button>
+                    <button class="network-action-btn network-action-btn--ghost network-action-btn--danger" style="font-size:0.75rem;" onclick="deleteLB('${loadBalancer._id}')">Delete</button>
                 </div>
                 <div class="network-metrics-row">
                     <div class="network-metric">
