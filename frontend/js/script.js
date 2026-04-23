@@ -620,7 +620,9 @@ function updateNav() {
     } else {
         document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
         nav.className = 'nav-links nav-links-public nav-links-public-minimal';
-        nav.innerHTML = '';
+        nav.innerHTML = `
+            <span class="nav-context-pill">Cloud Control Plane</span>
+        `;
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
