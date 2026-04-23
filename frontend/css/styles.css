@@ -4293,6 +4293,62 @@ body[data-theme="dark"] .storage-action-btn--danger:disabled {
     border-color: rgba(248, 113, 113, 0.22);
 }
 
+body[data-theme="dark"] .profile-session-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.98) 100%);
+    border-color: rgba(51, 65, 85, 0.9);
+    box-shadow: 0 16px 32px rgba(2, 6, 23, 0.28);
+}
+
+body[data-theme="dark"] .profile-session-card:hover {
+    border-color: rgba(96, 165, 250, 0.22);
+    box-shadow: 0 22px 38px rgba(2, 6, 23, 0.34);
+}
+
+body[data-theme="dark"] .profile-session-title {
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .profile-session-meta,
+body[data-theme="dark"] .profile-session-empty {
+    color: #94a3b8;
+}
+
+body[data-theme="dark"] .profile-session-empty {
+    background: rgba(15, 23, 42, 0.84);
+    border-color: rgba(51, 65, 85, 0.9);
+}
+
+body[data-theme="dark"] .profile-session-empty strong {
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .profile-session-chip {
+    background: rgba(37, 99, 235, 0.18);
+    color: #bfdbfe;
+}
+
+body[data-theme="dark"] .profile-session-chip--muted {
+    background: rgba(15, 23, 42, 0.76);
+    color: #cbd5e1;
+}
+
+body[data-theme="dark"] .profile-session-badge-current {
+    background: rgba(22, 101, 52, 0.24);
+    color: #86efac;
+}
+
+body[data-theme="dark"] .profile-session-revoke-btn {
+    background: rgba(15, 23, 42, 0.86);
+    border-color: rgba(148, 163, 184, 0.24);
+    color: #e2e8f0;
+}
+
+body[data-theme="dark"] .profile-session-revoke-btn:hover {
+    background: rgba(23, 32, 51, 0.96);
+    color: #ffffff;
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
 body[data-theme="dark"] .document-preview-shell,
 body[data-theme="dark"] .text-document-preview,
 body[data-theme="dark"] .preview-fallback {

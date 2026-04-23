@@ -29,6 +29,5 @@ const AuthSessionSchema = new mongoose.Schema(
 );
 
 AuthSessionSchema.index({ user: 1, status: 1, lastActiveAt: -1 });
-AuthSessionSchema.index({ user: 1, sessionId: 1 }, { unique: true });
 
 module.exports = mongoose.model('AuthSession', AuthSessionSchema);

@@ -356,6 +356,28 @@ function resolveSessionIdFromAuthResponse(data = {}) {
         || null;
 }
 
+async function resolveCurrentSessionIdForLogout() {
+    const storedSessionId = currentAuthSessionId || localStorage.getItem(SESSION_ID_STORAGE_KEY);
+    if (storedSessionId) {
+        return storedSessionId;
+    }
+
+    const tokenPayload = parseJwtPayload(token || '');
+    if (tokenPayload?.jti) {
+        return tokenPayload.jti;
+    }
+
+    if (!token || !window.crypto?.subtle || typeof TextEncoder !== 'function') {
+        return null;
+    }
+
+    const tokenBuffer = new TextEncoder().encode(token);
+    const digest = await window.crypto.subtle.digest('SHA-256', tokenBuffer);
+    return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 function createFallbackDeviceId() {
     return `dev_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
 }
@@ -581,7 +603,7 @@ async function handleLogin(e) {
 }
 
 async function logout() {
-    const sessionId = currentAuthSessionId || localStorage.getItem(SESSION_ID_STORAGE_KEY) || resolveSessionIdFromAuthResponse({ token });
+    const sessionId = await resolveCurrentSessionIdForLogout();
 
     try {
         if (token && sessionId) {
@@ -1113,11 +1135,25 @@ async function loadAuthSessions() {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
+            if (res.status === 401) {
+                clearStoredSession();
+                updateNav();
+                showToast('Your session ended. Please sign in again.');
+                router('login', { skipAuthCheck: true });
+                return;
+            }
             throw new Error(data.message || data.msg || 'Unable to load active sessions');
         }
 
         if (data.currentSessionId) {
             setCurrentAuthSessionId(data.currentSessionId);
+        }
+
+        const currentSession = Array.isArray(data.sessions)
+            ? data.sessions.find((session) => session.isCurrent)
+            : null;
+        if (!currentAuthSessionId && currentSession?.sessionId) {
+            setCurrentAuthSessionId(currentSession.sessionId);
         }
 
         renderAuthSessions(data.sessions || []);
@@ -1158,6 +1194,13 @@ async function revokeSession(sessionId) {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
+            if (res.status === 401) {
+                clearStoredSession();
+                updateNav();
+                showToast('Your session ended. Please sign in again.');
+                router('login', { skipAuthCheck: true });
+                return;
+            }
             throw new Error(data.message || data.msg || 'Unable to revoke session');
         }
 
