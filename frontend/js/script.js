@@ -60,6 +60,120 @@ const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-color-scheme: dark)')
     : null;
+const MARKETING_SECTION_IDS = new Set([
+    'home-compute',
+    'home-network',
+    'home-security',
+    'home-pricing',
+    'home-docs'
+]);
+let marketingRevealObserver = null;
+let pendingMarketingSectionId = null;
+
+function getMainContentElement() {
+    return document.querySelector('.main-content');
+}
+
+function getActivePageId() {
+    return document.querySelector('.page.active')?.id || null;
+}
+
+function updateNavScrollState() {
+    const nav = document.querySelector('nav');
+    const mainContent = getMainContentElement();
+    const activePageId = getActivePageId();
+    if (!nav || !mainContent) return;
+
+    const shouldElevate = Boolean(currentUser) || activePageId !== 'home' || mainContent.scrollTop > 12;
+    nav.classList.toggle('nav-scrolled', shouldElevate);
+}
+
+function disconnectMarketingReveal() {
+    if (marketingRevealObserver) {
+        marketingRevealObserver.disconnect();
+        marketingRevealObserver = null;
+    }
+}
+
+function initializeMarketingReveal() {
+    const homePage = document.getElementById('home');
+    const mainContent = getMainContentElement();
+    if (!homePage || !homePage.classList.contains('active') || currentUser || !mainContent) {
+        disconnectMarketingReveal();
+        return;
+    }
+
+    const revealItems = Array.from(homePage.querySelectorAll('.reveal'));
+    if (!revealItems.length) {
+        disconnectMarketingReveal();
+        return;
+    }
+
+    if (typeof IntersectionObserver !== 'function') {
+        revealItems.forEach((item) => item.classList.add('is-visible'));
+        return;
+    }
+
+    disconnectMarketingReveal();
+
+    marketingRevealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                marketingRevealObserver?.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: mainContent,
+        threshold: 0.14,
+        rootMargin: '0px 0px -10% 0px'
+    });
+
+    revealItems.forEach((item, index) => {
+        if (index < 2) {
+            item.classList.add('is-visible');
+            return;
+        }
+
+        item.classList.remove('is-visible');
+        marketingRevealObserver.observe(item);
+    });
+}
+
+function scrollMarketingSectionIntoView(sectionId) {
+    if (!MARKETING_SECTION_IDS.has(sectionId)) {
+        return;
+    }
+
+    const mainContent = getMainContentElement();
+    const target = document.getElementById(sectionId);
+    if (!mainContent || !target) {
+        return;
+    }
+
+    const mainBounds = mainContent.getBoundingClientRect();
+    const targetBounds = target.getBoundingClientRect();
+    const targetTop = targetBounds.top - mainBounds.top + mainContent.scrollTop - 92;
+
+    mainContent.scrollTo({
+        top: Math.max(targetTop, 0),
+        behavior: 'smooth'
+    });
+}
+
+function navigateToMarketingSection(sectionId) {
+    if (!MARKETING_SECTION_IDS.has(sectionId)) {
+        return;
+    }
+
+    if (!currentUser && getActivePageId() === 'home') {
+        scrollMarketingSectionIntoView(sectionId);
+        return;
+    }
+
+    pendingMarketingSectionId = sectionId;
+    router('home', { skipAuthCheck: true });
+}
 
 function isCompactSidebarLayout() {
     return window.innerWidth <= SIDEBAR_DISMISS_BREAKPOINT;
@@ -507,13 +621,19 @@ function updateNav() {
         document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
         nav.className = 'nav-links nav-links-public';
         nav.innerHTML = `
-            <a class="nav-link" onclick="router('home')">Home</a>
-            <a class="nav-link" onclick="router('login')">Login</a>
+            <a class="nav-link" onclick="navigateToMarketingSection('home-compute')">Compute</a>
+            <a class="nav-link" onclick="navigateToMarketingSection('home-network')">Network</a>
+            <a class="nav-link" onclick="navigateToMarketingSection('home-security')">Security</a>
+            <a class="nav-link" onclick="navigateToMarketingSection('home-pricing')">Pricing</a>
+            <a class="nav-link" onclick="navigateToMarketingSection('home-docs')">Docs</a>
+            <a class="nav-link nav-link-ghost" onclick="router('login', { skipAuthCheck: true })">Sign In</a>
             <a class="nav-link nav-link-cta" onclick="router('register')">Start Free Trial</a>
         `;
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
+
+    updateNavScrollState();
 }
 
 // ============================================
@@ -880,6 +1000,7 @@ async function loadUsageStats() {
 
 function router(pageId, options = {}) {
     const skipAuthCheck = Boolean(options.skipAuthCheck);
+    const mainContent = getMainContentElement();
 
     if (!skipAuthCheck && !PUBLIC_PAGES.has(pageId) && !hasAuthenticatedSession()) {
         showToast('Please log in first');
@@ -891,6 +1012,13 @@ function router(pageId, options = {}) {
     const target = document.getElementById(pageId);
     if (target) {
         target.classList.add('active');
+    }
+
+    if (mainContent) {
+        mainContent.scrollTo({
+            top: 0,
+            behavior: pageId === 'home' && !currentUser ? 'smooth' : 'auto'
+        });
     }
 
     document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active-link'));
@@ -909,6 +1037,11 @@ function router(pageId, options = {}) {
     if (pageId !== 'saas' && saasStatusRefreshInterval) {
         clearInterval(saasStatusRefreshInterval);
         saasStatusRefreshInterval = null;
+    }
+
+    if (pageId !== 'home') {
+        pendingMarketingSectionId = null;
+        disconnectMarketingReveal();
     }
 
     // Trigger page-specific loads
@@ -934,6 +1067,19 @@ function router(pageId, options = {}) {
         case 'admin': loadAdmin(); break;
         case 'saas': showSaaSTab('marketplace'); startSaaSStatusAutoRefresh(); break;
     }
+
+    if (pageId === 'home' && !currentUser) {
+        initializeMarketingReveal();
+        if (pendingMarketingSectionId) {
+            const sectionId = pendingMarketingSectionId;
+            pendingMarketingSectionId = null;
+            window.setTimeout(() => {
+                scrollMarketingSectionIntoView(sectionId);
+            }, 120);
+        }
+    }
+
+    updateNavScrollState();
 }
 // ============================================
 // MODAL FUNCTIONS
@@ -6651,6 +6797,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const mainContent = getMainContentElement();
+    if (mainContent) {
+        mainContent.addEventListener('scroll', updateNavScrollState, { passive: true });
+    }
+
     const activePage = document.querySelector('.page.active');
     if (!activePage) {
         console.log(' No active page, showing home...');
@@ -6658,6 +6809,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const home = document.getElementById('home');
         if (home) home.classList.add('active');
     }
+
+    initializeMarketingReveal();
+    updateNavScrollState();
 });
 
 window.addEventListener('resize', syncSidebarLayout);
