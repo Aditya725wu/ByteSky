@@ -118,6 +118,10 @@ nav.nav-scrolled {
     flex-wrap: wrap;
 }
 
+.nav-links-public-minimal {
+    display: none;
+}
+
 .nav-links-public .nav-link {
     display: inline-flex;
     align-items: center;

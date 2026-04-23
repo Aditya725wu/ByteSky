@@ -619,16 +619,8 @@ function updateNav() {
         }
     } else {
         document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
-        nav.className = 'nav-links nav-links-public';
-        nav.innerHTML = `
-            <a class="nav-link" onclick="navigateToMarketingSection('home-compute')">Compute</a>
-            <a class="nav-link" onclick="navigateToMarketingSection('home-network')">Network</a>
-            <a class="nav-link" onclick="navigateToMarketingSection('home-security')">Security</a>
-            <a class="nav-link" onclick="navigateToMarketingSection('home-pricing')">Pricing</a>
-            <a class="nav-link" onclick="navigateToMarketingSection('home-docs')">Docs</a>
-            <a class="nav-link nav-link-ghost" onclick="router('login', { skipAuthCheck: true })">Sign In</a>
-            <a class="nav-link nav-link-cta" onclick="router('register')">Start Free Trial</a>
-        `;
+        nav.className = 'nav-links nav-links-public nav-links-public-minimal';
+        nav.innerHTML = '';
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }
