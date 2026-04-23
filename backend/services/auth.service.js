@@ -7,7 +7,7 @@ const User = require('../models/User');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
-const { signToken } = require('./token.service');
+const authSessionService = require('./auth-session.service');
 const loginAlertService = require('./login-alert.service');
 
 const googleClient = env.googleClientId ? new OAuth2Client(env.googleClientId) : null;
@@ -35,6 +35,10 @@ function sanitizeUser(user) {
     twoFAEnabled: Boolean(user.twoFAEnabled),
     loginAlerts: sanitizeLoginAlerts(user.loginAlerts)
   };
+}
+
+function sanitizeCurrentSession(session) {
+  return authSessionService.sanitizeAuthSession(session, session?.sessionId || null);
 }
 
 function sanitizeLoginAlerts(loginAlerts = {}) {
@@ -127,6 +131,16 @@ async function verifyGoogleCredential(credential) {
   }
 }
 
+async function issueAuthResponse(user, req) {
+  const { token, session } = await authSessionService.issueAuthSession(user, req);
+
+  return {
+    token,
+    user: sanitizeUser(user),
+    session: sanitizeCurrentSession(session)
+  };
+}
+
 async function register(payload, req) {
   const name = payload?.name?.trim();
   const email = payload?.email?.trim().toLowerCase();
@@ -156,9 +170,11 @@ async function register(payload, req) {
     userAgent: req.get('user-agent')
   });
 
+  const payloadResponse = await issueAuthResponse(user, req);
   return {
-    token: signToken(user),
-    user: sanitizeUser(user)
+    token: payloadResponse.token,
+    user: payloadResponse.user,
+    session: payloadResponse.session
   };
 }
 
@@ -210,9 +226,11 @@ async function login(payload, req) {
     await loginAlertService.notifyNewDeviceLogin(user, req);
   }
 
+  const payloadResponse = await issueAuthResponse(user, req);
   return {
-    token: signToken(user),
-    user: sanitizeUser(user)
+    token: payloadResponse.token,
+    user: payloadResponse.user,
+    session: payloadResponse.session
   };
 }
 
@@ -304,9 +322,11 @@ async function googleLogin(payload, req) {
     userAgent: req.get('user-agent')
   });
 
+  const payloadResponse = await issueAuthResponse(user, req);
   return {
-    token: signToken(user),
-    user: sanitizeUser(user)
+    token: payloadResponse.token,
+    user: payloadResponse.user,
+    session: payloadResponse.session
   };
 }
 
@@ -379,6 +399,8 @@ async function changePassword(userId, payload, req) {
   user.password = newPassword;
   await user.save();
 
+  await authSessionService.revokeOtherAuthSessions(user._id, req?.auth?.sessionId, 'password_change');
+
   await writeAuditLog({
     user: user._id,
     action: 'USER_PASSWORD_CHANGED',
@@ -394,14 +416,40 @@ async function changePassword(userId, payload, req) {
   };
 }
 
-async function getCurrentUser(userId) {
+async function getCurrentUser(userId, req) {
   const user = await User.findById(userId).select('-password');
   if (!user) {
     throw new ApiError(404, 'User not found');
   }
 
   return {
-    user: sanitizeUser(user)
+    user: sanitizeUser(user),
+    session: req?.session ? sanitizeCurrentSession(req.session) : null
+  };
+}
+
+async function getAuthSessions(userId, currentSessionId) {
+  const sessions = await authSessionService.listAuthSessions(userId, currentSessionId);
+
+  return {
+    sessions,
+    currentSessionId: currentSessionId || null
+  };
+}
+
+async function revokeAuthSession(userId, sessionId) {
+  const session = await authSessionService.revokeAuthSession(userId, sessionId, 'manual_revoke', 'self');
+
+  return {
+    msg: session ? 'Session revoked successfully' : 'Session already ended'
+  };
+}
+
+async function revokeCurrentAuthSession(userId, sessionId) {
+  const session = await authSessionService.revokeCurrentAuthSession(userId, sessionId, 'logout');
+
+  return {
+    msg: session ? 'Session revoked successfully' : 'Session already ended'
   };
 }
 
@@ -454,10 +502,13 @@ async function updateLoginAlertPreferences(userId, payload, req) {
 
 module.exports = {
   changePassword,
+  getAuthSessions,
   getCurrentUser,
   getLoginAlertPreferences,
   googleLogin,
   login,
+  revokeAuthSession,
+  revokeCurrentAuthSession,
   register,
   updateLoginAlertPreferences,
   updateProfile

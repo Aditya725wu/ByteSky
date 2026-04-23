@@ -47,7 +47,34 @@ async function changePassword(req, res, next) {
 
 async function getCurrentUser(req, res, next) {
   try {
-    const payload = await authService.getCurrentUser(req.user.id);
+    const payload = await authService.getCurrentUser(req.user.id, req);
+    return res.json(payload);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function getAuthSessions(req, res, next) {
+  try {
+    const payload = await authService.getAuthSessions(req.user.id, req.auth?.sessionId);
+    return res.json(payload);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function revokeAuthSession(req, res, next) {
+  try {
+    const payload = await authService.revokeAuthSession(req.user.id, req.params.sessionId);
+    return res.json(payload);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function revokeCurrentAuthSession(req, res, next) {
+  try {
+    const payload = await authService.revokeCurrentAuthSession(req.user.id, req.auth?.sessionId);
     return res.json(payload);
   } catch (error) {
     return next(error);
@@ -74,10 +101,13 @@ async function updateLoginAlertPreferences(req, res, next) {
 
 module.exports = {
   changePassword,
+  getAuthSessions,
   getCurrentUser,
   getLoginAlertPreferences,
   googleLogin,
   login,
+  revokeAuthSession,
+  revokeCurrentAuthSession,
   register,
   updateLoginAlertPreferences,
   updateProfile

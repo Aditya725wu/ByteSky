@@ -3440,6 +3440,130 @@ input[type="checkbox"] {
     border-bottom-color: var(--primary);
 }
 
+.profile-session-list {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-session-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+    display: grid;
+    gap: 14px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-session-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(37, 99, 235, 0.2);
+    box-shadow: 0 20px 36px rgba(15, 23, 42, 0.08);
+}
+
+.profile-session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.profile-session-copy {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.profile-session-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.profile-session-meta {
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.profile-session-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.profile-session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.48rem 0.82rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.profile-session-badge-current {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.profile-session-chip-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-session-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.46rem 0.74rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.profile-session-chip--muted {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.profile-session-footer {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-session-revoke-btn {
+    min-width: 96px;
+    padding-inline: 1rem;
+    border-radius: 12px;
+}
+
+.profile-session-empty {
+    padding: 28px 20px;
+    border-radius: 16px;
+    border: 1px dashed rgba(148, 163, 184, 0.28);
+    background: rgba(248, 250, 252, 0.8);
+    color: #64748b;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.profile-session-empty strong {
+    display: block;
+    color: #0f172a;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
 /* Toggle Switch for 2FA */
 .switch {
     position: relative;

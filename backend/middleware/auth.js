@@ -1,7 +1,8 @@
 const ApiError = require('../utils/ApiError');
 const { verifyToken } = require('../services/token.service');
+const authSessionService = require('../services/auth-session.service');
 
-function authenticate(req, _res, next) {
+async function authenticate(req, _res, next) {
   const authHeader = req.header('Authorization') || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -11,10 +12,25 @@ function authenticate(req, _res, next) {
 
   try {
     const decoded = verifyToken(token);
-    req.user = decoded.user;
-    req.auth = decoded.user;
+    const session = await authSessionService.resolveAuthSession({
+      userId: decoded.user.id,
+      rawToken: token,
+      decodedToken: decoded,
+      req
+    });
+
+    req.session = authSessionService.sanitizeAuthSession(session, session.sessionId);
+    req.user = {
+      ...decoded.user,
+      sessionId: session.sessionId
+    };
+    req.auth = req.user;
     return next();
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return next(error);
+    }
+
     return next(new ApiError(401, 'Token is not valid'));
   }
 }

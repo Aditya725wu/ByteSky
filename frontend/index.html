@@ -1695,32 +1695,14 @@
 
                         <!-- Active Sessions -->
                         <div>
-                            <h4 style="margin-bottom: 14px;">Active Sessions</h4>
-                            <div style="display:grid; gap:10px;">
-                                <div
-                                    style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <div style="font-weight: 600;">Chrome on Windows</div>
-                                            <div style="font-size: 0.82rem; color: #64748b; margin-top:2px;">New York,
-                                                USA &nbsp;·&nbsp; Last active: Just now</div>
-                                        </div>
-                                        <span class="badge bg-running">Current</span>
-                                    </div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom: 14px; flex-wrap:wrap;">
+                                <div>
+                                    <h4 style="margin-bottom: 4px;">Active Sessions</h4>
+                                    <p style="color: #64748b; font-size: 0.88rem; margin: 0;">Devices currently signed in to your account.</p>
                                 </div>
-                                <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0;"
-                                    data-session-card="mobile-safari">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <div style="font-weight: 600;">Safari on iPhone</div>
-                                            <div style="font-size: 0.82rem; color: #64748b; margin-top:2px;">Los
-                                                Angeles, USA &nbsp;·&nbsp; Last active: 2 hours ago</div>
-                                        </div>
-                                        <button class="btn btn-outline" style="font-size: 0.75rem;"
-                                            onclick="revokeSession('mobile-safari')">Revoke</button>
-                                    </div>
-                                </div>
+                                <span style="font-size: 0.78rem; color: #64748b;">Updated from live session records</span>
                             </div>
+                            <div id="active-sessions-list" class="profile-session-list"></div>
                         </div>
                     </div>
                 </div>

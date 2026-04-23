@@ -49,6 +49,8 @@ let billing = JSON.parse(localStorage.getItem('bytesky_billing') || '[]');
 let saasIntegrations = JSON.parse(localStorage.getItem('bytesky_saas_integrations') || '[]');
 let marketplaceServices = [];
 let activeMarketplaceSessions = [];
+let authSessions = [];
+let currentAuthSessionId = localStorage.getItem('bytesky_session_id') || null;
 
 // Storage variables
 let allStorageFiles = [];
@@ -57,6 +59,7 @@ let selectedStorageIds = [];
 let activeMonitoringMetric = 'cpu';
 const THEME_STORAGE_KEY = 'bytesky_theme';
 const DEVICE_ID_STORAGE_KEY = 'bytesky_device_id';
+const SESSION_ID_STORAGE_KEY = 'bytesky_session_id';
 const SIDEBAR_COLLAPSE_STORAGE_KEY = 'bytesky_sidebar_collapsed';
 const SIDEBAR_DISMISS_BREAKPOINT = 1024;
 const SYSTEM_THEME_QUERY = typeof window.matchMedia === 'function'
@@ -296,8 +299,20 @@ function applyTheme(themePreference = getSavedThemePreference(), options = {}) {
 function clearStoredSession() {
     localStorage.removeItem('bytesky_token');
     localStorage.removeItem('bytesky_user');
+    localStorage.removeItem(SESSION_ID_STORAGE_KEY);
     token = null;
     currentUser = null;
+    currentAuthSessionId = null;
+}
+
+function setCurrentAuthSessionId(sessionId) {
+    currentAuthSessionId = sessionId || null;
+
+    if (currentAuthSessionId) {
+        localStorage.setItem(SESSION_ID_STORAGE_KEY, currentAuthSessionId);
+    } else {
+        localStorage.removeItem(SESSION_ID_STORAGE_KEY);
+    }
 }
 
 function hasAuthenticatedSession() {
@@ -331,6 +346,14 @@ function isStoredTokenUsable(tokenValue) {
     }
 
     return (payload.exp * 1000) > (Date.now() + 5000);
+}
+
+function resolveSessionIdFromAuthResponse(data = {}) {
+    return data?.session?.sessionId
+        || data?.sessionId
+        || parseJwtPayload(data?.token || '')?.jti
+        || currentAuthSessionId
+        || null;
 }
 
 function createFallbackDeviceId() {
@@ -465,6 +488,7 @@ function applyAuthenticatedSession(data, successMessage) {
     localStorage.setItem('bytesky_user', JSON.stringify(data.user));
     token = data.token;
     currentUser = data.user;
+    setCurrentAuthSessionId(resolveSessionIdFromAuthResponse(data));
     updateNav();
     if (successMessage) {
         showToast(successMessage);
@@ -556,10 +580,25 @@ async function handleLogin(e) {
     }
 }
 
-function logout() {
-    clearStoredSession();
-    updateNav();
-    router('home', { skipAuthCheck: true });
+async function logout() {
+    const sessionId = currentAuthSessionId || localStorage.getItem(SESSION_ID_STORAGE_KEY) || resolveSessionIdFromAuthResponse({ token });
+
+    try {
+        if (token && sessionId) {
+            await fetch(`${API_URL}/auth/sessions/current`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        }
+    } catch (error) {
+        console.warn('Logout session revoke failed:', error);
+    } finally {
+        clearStoredSession();
+        updateNav();
+        router('home', { skipAuthCheck: true });
+    }
 }
 
 async function checkSession() {
@@ -605,6 +644,11 @@ async function checkSession() {
         if (data.user) {
             currentUser = data.user;
             localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        }
+
+        const resolvedSessionId = resolveSessionIdFromAuthResponse(data);
+        if (resolvedSessionId) {
+            setCurrentAuthSessionId(resolvedSessionId);
         }
 
         updateNav();
@@ -674,6 +718,10 @@ function showProfileTab(tabName, clickedBtn) {
     } else {
         const navBtn = document.querySelector(`.profile-tab-btn[onclick*="'${tabName}'"]`);
         if (navBtn) navBtn.classList.add('active');
+    }
+
+    if (tabName === 'security') {
+        loadAuthSessions();
     }
 }
 function editProfile() {
@@ -937,18 +985,196 @@ function toggle2FA() {
     }
 }
 
-function revokeSession(sessionId) {
-    if (!confirm('Revoke this session? The device will be logged out.')) return;
-
-    const sessionCard = sessionId
-        ? document.querySelector(`[data-session-card="${sessionId}"]`)
-        : null;
-
-    if (sessionCard) {
-        sessionCard.remove();
+function formatRelativeTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return 'Unknown time';
     }
 
-    showToast('Session revoked successfully');
+    const diffMs = date.getTime() - Date.now();
+    const diffAbs = Math.abs(diffMs);
+    const future = diffMs > 0;
+    const units = [
+        { label: 'year', ms: 365 * 24 * 60 * 60 * 1000 },
+        { label: 'month', ms: 30 * 24 * 60 * 60 * 1000 },
+        { label: 'day', ms: 24 * 60 * 60 * 1000 },
+        { label: 'hour', ms: 60 * 60 * 1000 },
+        { label: 'minute', ms: 60 * 1000 }
+    ];
+
+    if (diffAbs < 30 * 1000) {
+        return 'Just now';
+    }
+
+    for (const unit of units) {
+        if (diffAbs >= unit.ms) {
+            const valueCount = Math.max(1, Math.round(diffAbs / unit.ms));
+            const suffix = valueCount === 1 ? '' : 's';
+            return future
+                ? `In ${valueCount} ${unit.label}${suffix}`
+                : `${valueCount} ${unit.label}${suffix} ago`;
+        }
+    }
+
+    return future ? 'In a moment' : 'Just now';
+}
+
+function formatSessionDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return 'Unknown';
+    }
+
+    return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function renderAuthSessions(sessions = []) {
+    const container = document.getElementById('active-sessions-list');
+    if (!container) {
+        return;
+    }
+
+    authSessions = Array.isArray(sessions) ? sessions : [];
+
+    if (!authSessions.length) {
+        container.innerHTML = `
+            <div class="profile-session-empty">
+                <strong>No active sessions right now.</strong>
+                <div style="margin-top: 6px;">When you sign in on a device, it will appear here with live session details.</div>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = authSessions.map((session) => {
+        const title = escapeHtml(session.deviceLabel || 'Unknown device');
+        const browser = escapeHtml(session.browser || 'Unknown browser');
+        const os = escapeHtml(session.os || 'Unknown OS');
+        const location = escapeHtml(session.locationLabel || 'Unknown location');
+        const ipAddress = session.ipAddress ? `IP ${escapeHtml(session.ipAddress)}` : '';
+        const createdAt = formatSessionDate(session.createdAt);
+        const expiresAt = formatSessionDate(session.expiresAt);
+        const lastActive = formatRelativeTime(session.lastActiveAt);
+        const isCurrent = Boolean(session.isCurrent || session.sessionId === currentAuthSessionId);
+
+        return `
+            <div class="profile-session-card" data-session-card="${escapeHtml(session.sessionId)}">
+                <div class="profile-session-header">
+                    <div class="profile-session-copy">
+                        <div class="profile-session-title">${title}</div>
+                        <div class="profile-session-meta">
+                            ${location}${ipAddress ? ` · ${ipAddress}` : ''} · Last active: ${escapeHtml(lastActive)}
+                        </div>
+                        <div class="profile-session-chip-row">
+                            <span class="profile-session-chip">${browser}</span>
+                            <span class="profile-session-chip profile-session-chip--muted">${os}</span>
+                        </div>
+                    </div>
+                    <div class="profile-session-actions">
+                        ${isCurrent
+                            ? '<span class="profile-session-badge profile-session-badge-current">Current</span>'
+                            : `<button class="btn btn-outline profile-session-revoke-btn" type="button" onclick="revokeSession('${escapeHtml(session.sessionId)}')">Revoke</button>`}
+                    </div>
+                </div>
+                <div class="profile-session-footer">
+                    <span class="profile-session-chip profile-session-chip--muted">Created ${escapeHtml(createdAt)}</span>
+                    <span class="profile-session-chip">Expires ${escapeHtml(expiresAt)}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadAuthSessions() {
+    const container = document.getElementById('active-sessions-list');
+    if (!container || !token) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="profile-session-empty">
+            <strong>Loading active sessions...</strong>
+            <div style="margin-top: 6px;">Fetching signed-in devices from your account.</div>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(`${API_URL}/auth/sessions`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            throw new Error(data.message || data.msg || 'Unable to load active sessions');
+        }
+
+        if (data.currentSessionId) {
+            setCurrentAuthSessionId(data.currentSessionId);
+        }
+
+        renderAuthSessions(data.sessions || []);
+    } catch (error) {
+        console.error('Error loading auth sessions:', error);
+        container.innerHTML = `
+            <div class="profile-session-empty">
+                <strong>Unable to load active sessions.</strong>
+                <div style="margin-top: 6px;">Please refresh the page or try again in a moment.</div>
+            </div>
+        `;
+    }
+}
+
+async function revokeSession(sessionId) {
+    if (!sessionId) {
+        return;
+    }
+
+    const isCurrentSession = sessionId === currentAuthSessionId;
+    if (!confirm(isCurrentSession
+        ? 'Revoke this session? You will be logged out immediately.'
+        : 'Revoke this session? The device will be logged out.')) {
+        return;
+    }
+
+    try {
+        const endpoint = isCurrentSession
+            ? `${API_URL}/auth/sessions/current`
+            : `${API_URL}/auth/sessions/${encodeURIComponent(sessionId)}`;
+
+        const res = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            throw new Error(data.message || data.msg || 'Unable to revoke session');
+        }
+
+        showToast(data.msg || 'Session revoked successfully');
+
+        if (isCurrentSession) {
+            clearStoredSession();
+            updateNav();
+            router('home', { skipAuthCheck: true });
+            return;
+        }
+
+        await loadAuthSessions();
+    } catch (error) {
+        console.error('Revoke session error:', error);
+        showToast(error.message || 'Unable to revoke session');
+    }
 }
 
 function setTheme(theme) {
@@ -1100,6 +1326,9 @@ function loadProfileData() {
 
     // Load account-backed security alert preferences
     loadLoginAlertPreferences();
+
+    // Load real active sessions
+    loadAuthSessions();
 
     // Load usage stats
     loadUsageStats();
