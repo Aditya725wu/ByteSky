@@ -3038,6 +3038,13 @@ input[type="checkbox"] {
     box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
 }
 
+.storage-action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .storage-action-btn__icon {
     width: 14px;
     height: 14px;
@@ -3063,6 +3070,12 @@ input[type="checkbox"] {
     background: #fee2e2;
     border-color: #fca5a5;
     color: #991b1b;
+}
+
+.storage-action-btn--danger:disabled {
+    background: #fff5f5;
+    border-color: #fecaca;
+    color: #dc2626;
 }
 
 .storage-share-menu {
@@ -3139,6 +3152,10 @@ input[type="checkbox"] {
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 8px;
+}
+
+.saas-app-actions {
+    margin-top: 4px;
 }
 
 /* Bucket Badge */
@@ -3733,6 +3750,30 @@ body[data-theme="dark"] .storage-action-btn {
 body[data-theme="dark"] .btn-outline:hover,
 body[data-theme="dark"] .storage-action-btn:hover {
     background: #1f2937;
+}
+
+body[data-theme="dark"] .storage-action-btn:disabled {
+    background: #0b1220;
+    color: #64748b;
+    border-color: #1f2937;
+}
+
+body[data-theme="dark"] .storage-action-btn--danger {
+    background: rgba(127, 29, 29, 0.22);
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.34);
+}
+
+body[data-theme="dark"] .storage-action-btn--danger:hover {
+    background: rgba(127, 29, 29, 0.3);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fee2e2;
+}
+
+body[data-theme="dark"] .storage-action-btn--danger:disabled {
+    background: rgba(127, 29, 29, 0.18);
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.22);
 }
 
 body[data-theme="dark"] .document-preview-shell,

@@ -12,6 +12,7 @@ const loginAlertService = require('./login-alert.service');
 
 const googleClient = env.googleClientId ? new OAuth2Client(env.googleClientId) : null;
 const MAX_KNOWN_LOGIN_DEVICES = 20;
+const GOOGLE_VERIFY_TIMEOUT_MS = 10000;
 
 async function writeAuditLog(entry) {
   try {
@@ -103,6 +104,27 @@ function rememberLoginDevice(user, req) {
   user.markModified('knownLoginDevices');
 
   return { isNewDevice: true, snapshot };
+}
+
+async function verifyGoogleCredential(credential) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new ApiError(504, 'Google authentication timed out. Check server outbound internet access to Google.'));
+    }, GOOGLE_VERIFY_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([
+      googleClient.verifyIdToken({
+        idToken: credential,
+        audience: env.googleClientId
+      }),
+      timeout
+    ]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 async function register(payload, req) {
@@ -206,11 +228,13 @@ async function googleLogin(payload, req) {
 
   let ticket;
   try {
-    ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: env.googleClientId
-    });
-  } catch (_error) {
+    ticket = await verifyGoogleCredential(credential);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    logger.warn('Google credential verification failed', { error: error.message });
     throw new ApiError(401, 'Invalid Google credential');
   }
 

@@ -25,6 +25,7 @@ const API_URL = (() => {
 })();
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51T5lPlFRBdmpZ6N0v3l17Z2O7yYFCCSSGIxoDDCkRPauDlYffZjX3So5KiQaqKk9njO3iS63un695KIwVVJlJ5C600Xzo5DnTN';
 const DEFAULT_GOOGLE_CLIENT_ID = '54516308982-1q21ghba191vu089q332jvrqdvaasj1q.apps.googleusercontent.com';
+const GOOGLE_AUTH_REQUEST_TIMEOUT_MS = 15000;
 const PUBLIC_PAGES = new Set(['home', 'login', 'register']);
 let currentUser = null;
 let token = localStorage.getItem('bytesky_token');
@@ -3098,12 +3099,18 @@ function clearChart() {
 }
 
 async function handleGoogleCredentialResponse(response) {
+    let timeoutId = null;
+
     try {
         console.log('[GoogleAuth] credential received');
+        const controller = new AbortController();
+        timeoutId = window.setTimeout(() => controller.abort(), GOOGLE_AUTH_REQUEST_TIMEOUT_MS);
+
         const res = await fetch(`${API_URL}/auth/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...getDeviceHeaders() },
-            body: JSON.stringify({ credential: response.credential })
+            body: JSON.stringify({ credential: response.credential }),
+            signal: controller.signal
         });
 
         const data = await res.json().catch(() => ({}));
@@ -3114,7 +3121,17 @@ async function handleGoogleCredentialResponse(response) {
         applyAuthenticatedSession(data, 'Signed in with Google');
     } catch (err) {
         console.error('[GoogleAuth] Error:', err);
+
+        if (err.name === 'AbortError') {
+            showToast('Google sign-in timed out. Please check the server API and try again.');
+            return;
+        }
+
         showToast(err.message || 'Google sign-in failed');
+    } finally {
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+        }
     }
 }
 
@@ -6870,12 +6887,12 @@ function loadSaaSMarketplace() {
                 Ready: ${app.ready ? 'Yes' : 'No'}<br>
                 Build: ${app.build?.label || 'Not built yet'}${app.build?.number ? ` (#${app.build.number})` : ''}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="launchJenkinsService()" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-outline" type="button" onclick="openJenkinsService()" ${app.running ? '' : 'disabled'}>Open</button>
-                <button class="btn btn-primary" type="button" onclick="triggerJenkinsBuild()" ${app.running && app.ready ? '' : 'disabled'}>Build</button>
-                <button class="btn btn-outline" type="button" onclick="refreshJenkinsStatus(true)">Status</button>
-                <button class="btn btn-danger" type="button" onclick="stopJenkinsService()" ${app.running ? '' : 'disabled'}>Stop</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="launchJenkinsService()" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn" type="button" onclick="openJenkinsService()" ${app.running ? '' : 'disabled'}>Open</button>
+                <button class="storage-action-btn" type="button" onclick="triggerJenkinsBuild()" ${app.running && app.ready ? '' : 'disabled'}>Build</button>
+                <button class="storage-action-btn" type="button" onclick="refreshJenkinsStatus(true)">Status</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopJenkinsService()" ${app.running ? '' : 'disabled'}>Stop</button>
             </div>
         </div>`;
         }
@@ -6898,10 +6915,10 @@ function loadSaaSMarketplace() {
                 Password: ${app.connection.password}<br>
                 Database: ${app.connection.database}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="runPostgresService()" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-danger" type="button" onclick="stopPostgresService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
-                <button class="btn btn-outline" type="button" onclick="refreshDockerServices()">Refresh</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="runPostgresService()" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopPostgresService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
+                <button class="storage-action-btn" type="button" onclick="refreshDockerServices()">Refresh</button>
             </div>
         </div>`;
         }
@@ -6922,10 +6939,10 @@ function loadSaaSMarketplace() {
                 Port: ${app.connection.port}<br>
                 Container: ${app.containerName || 'bytesky-redis'}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="runRedisService()" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-danger" type="button" onclick="stopRedisService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
-                <button class="btn btn-outline" type="button" onclick="refreshRedisStatus(true)">Refresh</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="runRedisService()" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopRedisService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
+                <button class="storage-action-btn" type="button" onclick="refreshRedisStatus(true)">Refresh</button>
             </div>
         </div>`;
         }
@@ -6946,11 +6963,11 @@ function loadSaaSMarketplace() {
                 Container: ${app.containerName || 'vm'}<br>
                 Port: ${app.hostPort}:${app.containerPort}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="runVmService()" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-outline" type="button" onclick="openVmService()" ${app.running ? '' : 'disabled'}>Open</button>
-                <button class="btn btn-danger" type="button" onclick="stopVmService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
-                <button class="btn btn-outline" type="button" onclick="refreshVmStatus(true)">Refresh</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="runVmService()" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn" type="button" onclick="openVmService()" ${app.running ? '' : 'disabled'}>Open</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopVmService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
+                <button class="storage-action-btn" type="button" onclick="refreshVmStatus(true)">Refresh</button>
             </div>
         </div>`;
         }
@@ -6971,11 +6988,11 @@ function loadSaaSMarketplace() {
                 Container: ${app.containerName || 'metabase'}<br>
                 Status: ${app.status}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="runMetabaseService()" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-outline" type="button" onclick="openMetabaseService()" ${app.running ? '' : 'disabled'}>Open</button>
-                <button class="btn btn-outline" type="button" onclick="refreshMetabaseStatus(true)">Status</button>
-                <button class="btn btn-danger" type="button" onclick="stopMetabaseService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="runMetabaseService()" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn" type="button" onclick="openMetabaseService()" ${app.running ? '' : 'disabled'}>Open</button>
+                <button class="storage-action-btn" type="button" onclick="refreshMetabaseStatus(true)">Status</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopMetabaseService('${app.containerId}')" ${app.running && app.containerId ? '' : 'disabled'}>Stop</button>
             </div>
         </div>`;
         }
@@ -6990,10 +7007,10 @@ function loadSaaSMarketplace() {
             <div style="font-size:0.85rem; color:#2563eb; font-weight:600; margin-top:6px;">${app.image}</div>
             <p style="color:#64748b; margin:10px 0 16px;">${app.description}</p>
             <div style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">Port mapping: ${app.hostPort}:${app.containerPort}</div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn btn-primary" type="button" onclick="launchMarketplaceService('${app.id}')" ${app.running ? 'disabled' : ''}>Launch</button>
-                <button class="btn btn-outline" type="button" onclick="openApacheService('${app.id}')" ${app.running ? '' : 'disabled'}>Open</button>
-                <button class="btn btn-danger" type="button" onclick="stopMarketplaceService('${app.id}')" ${app.running ? '' : 'disabled'}>Stop</button>
+            <div class="storage-actions saas-app-actions">
+                <button class="storage-action-btn" type="button" onclick="launchMarketplaceService('${app.id}')" ${app.running ? 'disabled' : ''}>Launch</button>
+                <button class="storage-action-btn" type="button" onclick="openApacheService('${app.id}')" ${app.running ? '' : 'disabled'}>Open</button>
+                <button class="storage-action-btn storage-action-btn--danger" type="button" onclick="stopMarketplaceService('${app.id}')" ${app.running ? '' : 'disabled'}>Stop</button>
             </div>
         </div>
     `;
