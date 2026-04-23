@@ -169,28 +169,91 @@
         <!-- Main Content -->
         <div class="main-content">
             <!-- HOME PAGE -->
-            <div id="home" class="page active">
-                <div class="hero">
-                    <h1>Build Faster on ByteSky</h1>
-                    <p>Deploy virtual machines, managed databases, and serverless functions in seconds.</p>
-                    <button class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem;"
-                        onclick="router('register')">Start Free Trial</button>
-                </div>
-                <div class="grid-3">
-                    <div class="card">
-                        <h3> High Performance</h3>
-                        <p style="color:#64748b; margin-top:10px;">NVMe SSD storage and latest gen processors for your
-                            VMs.</p>
+            <div id="home" class="page active home-page">
+                <section class="hero hero-premium">
+                    <div class="hero-grid">
+                        <div class="hero-copy">
+                            <span class="hero-eyebrow">Purpose-built cloud infrastructure for fast-moving product teams</span>
+                            <h1>Build Faster on ByteSky</h1>
+                            <p>Launch compute, managed data, and secure networking from a polished control plane designed
+                                for modern teams that care about speed, reliability, and clean operations.</p>
+                            <div class="hero-actions">
+                                <button class="btn btn-primary hero-primary" onclick="router('register')">Start Free
+                                    Trial</button>
+                                <button class="btn btn-outline hero-secondary" onclick="router('login')">Sign In</button>
+                            </div>
+                            <div class="hero-proof">
+                                <div class="hero-proof-item">
+                                    <strong>25 Regions</strong>
+                                    <span>Low-latency global coverage</span>
+                                </div>
+                                <div class="hero-proof-item">
+                                    <strong>NVMe Compute</strong>
+                                    <span>Fast boot times and steady throughput</span>
+                                </div>
+                                <div class="hero-proof-item">
+                                    <strong>Secure By Default</strong>
+                                    <span>Encryption, firewalls, and private networking</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-surface">
+                            <div class="hero-surface-card">
+                                <span class="hero-surface-label">Platform Snapshot</span>
+                                <div class="hero-surface-metrics">
+                                    <div class="hero-surface-metric">
+                                        <span>Provisioning</span>
+                                        <strong>45 sec</strong>
+                                    </div>
+                                    <div class="hero-surface-metric">
+                                        <span>Availability</span>
+                                        <strong>99.95%</strong>
+                                    </div>
+                                    <div class="hero-surface-metric">
+                                        <span>Network</span>
+                                        <strong>Edge Ready</strong>
+                                    </div>
+                                    <div class="hero-surface-metric">
+                                        <span>Security</span>
+                                        <strong>Encrypted</strong>
+                                    </div>
+                                </div>
+                                <div class="hero-surface-list">
+                                    <div class="hero-surface-line">
+                                        <span class="hero-surface-dot"></span>
+                                        Private networking and firewall controls included
+                                    </div>
+                                    <div class="hero-surface-line">
+                                        <span class="hero-surface-dot"></span>
+                                        Managed services for compute, storage, and databases
+                                    </div>
+                                    <div class="hero-surface-line">
+                                        <span class="hero-surface-dot"></span>
+                                        Clean console built for operators and developers alike
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3> Global Network</h3>
-                        <p style="color:#64748b; margin-top:10px;">Low latency connectivity with our edge network in 25
-                            regions.</p>
+                </section>
+                <div class="grid-3 home-feature-grid">
+                    <div class="card home-feature-card">
+                        <span class="home-feature-kicker">Compute</span>
+                        <h3>High Performance</h3>
+                        <p>NVMe SSD storage and latest generation processors tuned for workloads that cannot afford lag.</p>
+                        <div class="home-feature-note">Optimized for quick launches, burst traffic, and steady runtime performance.</div>
                     </div>
-                    <div class="card">
-                        <h3> Enterprise Security</h3>
-                        <p style="color:#64748b; margin-top:10px;">DDoS protection, firewalls, and encrypted storage
-                            included.</p>
+                    <div class="card home-feature-card">
+                        <span class="home-feature-kicker">Network</span>
+                        <h3>Global Network</h3>
+                        <p>Low-latency connectivity with an edge-aware footprint designed for distributed apps and teams.</p>
+                        <div class="home-feature-note">Move closer to users without adding operational drag to your platform team.</div>
+                    </div>
+                    <div class="card home-feature-card">
+                        <span class="home-feature-kicker">Security</span>
+                        <h3>Enterprise Security</h3>
+                        <p>DDoS protection, firewall controls, and encrypted storage included from day one.</p>
+                        <div class="home-feature-note">Security posture that feels premium, not bolted on after launch.</div>
                     </div>
                 </div>
             </div>

@@ -491,6 +491,7 @@ function updateNav() {
     const adminLink = document.getElementById('adminLink');
 
     if (currentUser) {
+        nav.className = 'nav-links nav-links-private';
         nav.innerHTML = `
             <span class="nav-user-email">${currentUser.email}</span>
             <button class="btn-logout" onclick="logout()">Logout</button>
@@ -504,10 +505,11 @@ function updateNav() {
         }
     } else {
         document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
+        nav.className = 'nav-links nav-links-public';
         nav.innerHTML = `
-            <a onclick="router('home')">Home</a>
-            <a onclick="router('login')">Login</a>
-            <a onclick="router('register')">Register</a>
+            <a class="nav-link" onclick="router('home')">Home</a>
+            <a class="nav-link" onclick="router('login')">Login</a>
+            <a class="nav-link nav-link-cta" onclick="router('register')">Start Free Trial</a>
         `;
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
