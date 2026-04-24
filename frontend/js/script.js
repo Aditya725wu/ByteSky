@@ -1220,10 +1220,10 @@ async function fetchClientConfig() {
             .then((data) => ({
                 appBaseUrl: data.appBaseUrl || '',
                 corsOrigins: Array.isArray(data.corsOrigins) ? data.corsOrigins : [],
-                googleClientId: data.googleClientId || DEFAULT_GOOGLE_CLIENT_ID,
+                googleClientId: typeof data.googleClientId === 'string' ? data.googleClientId.trim() : '',
                 googleAuthEnabled: typeof data.googleAuthEnabled === 'boolean'
                     ? data.googleAuthEnabled
-                    : Boolean(data.googleClientId || DEFAULT_GOOGLE_CLIENT_ID)
+                    : Boolean(typeof data.googleClientId === 'string' && data.googleClientId.trim())
             }));
     }
 
