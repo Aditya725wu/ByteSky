@@ -15,8 +15,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "docker:up": "docker-compose up --build",
-    "docker:down": "docker-compose down",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
     "backend:dev": "npm --prefix backend run dev",
     "test": "echo \"No automated tests configured yet\""
   },

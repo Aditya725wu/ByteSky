@@ -28,7 +28,7 @@ const DEFAULT_GOOGLE_CLIENT_ID = '54516308982-1q21ghba191vu089q332jvrqdvaasj1q.a
 const GOOGLE_AUTH_REQUEST_TIMEOUT_MS = 15000;
 const PUBLIC_PAGES = new Set(['home', 'login', 'register']);
 let currentUser = null;
-let token = localStorage.getItem('bytesky_token');
+let token = localStorage.getItem('bytesky_token') || localStorage.getItem('token');
 let metricsChart = null;
 let currentTicketId = null;
 let ticketCurrentPage = 1;
@@ -72,6 +72,9 @@ const MARKETING_SECTION_IDS = new Set([
     'home-pricing',
     'home-docs'
 ]);
+const AUTH_TOKEN_STORAGE_KEY = 'bytesky_token';
+const LEGACY_AUTH_TOKEN_STORAGE_KEY = 'token';
+const AUTH_USER_STORAGE_KEY = 'bytesky_user';
 const LANGUAGE_STORAGE_KEY = 'bytesky_language';
 const REGION_STORAGE_KEY = 'bytesky_region';
 const DEFAULT_LOCALE = 'en-US';
@@ -1082,12 +1085,37 @@ function applyTheme(themePreference = getSavedThemePreference(), options = {}) {
 }
 
 function clearStoredSession() {
-    localStorage.removeItem('bytesky_token');
-    localStorage.removeItem('bytesky_user');
+    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(LEGACY_AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(AUTH_USER_STORAGE_KEY);
     localStorage.removeItem(SESSION_ID_STORAGE_KEY);
     token = null;
     currentUser = null;
     currentAuthSessionId = null;
+}
+
+function getActiveAuthToken() {
+    return token
+        || localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+        || localStorage.getItem(LEGACY_AUTH_TOKEN_STORAGE_KEY)
+        || null;
+}
+
+function getActiveAuthUser() {
+    if (currentUser?.email) {
+        return currentUser;
+    }
+
+    const rawUser = localStorage.getItem(AUTH_USER_STORAGE_KEY);
+    if (!rawUser) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(rawUser);
+    } catch (_error) {
+        return null;
+    }
 }
 
 function setCurrentAuthSessionId(sessionId) {
@@ -1101,7 +1129,7 @@ function setCurrentAuthSessionId(sessionId) {
 }
 
 function hasAuthenticatedSession() {
-    return Boolean(token && currentUser?.email);
+    return Boolean(getActiveAuthToken() && getActiveAuthUser()?.email);
 }
 
 function parseJwtPayload(tokenValue) {
@@ -1291,8 +1319,9 @@ async function alignLocalOriginWithConfig() {
 }
 
 function applyAuthenticatedSession(data, successMessage) {
-    localStorage.setItem('bytesky_token', data.token);
-    localStorage.setItem('bytesky_user', JSON.stringify(data.user));
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, data.token);
+    localStorage.setItem(LEGACY_AUTH_TOKEN_STORAGE_KEY, data.token);
+    localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(data.user));
     token = data.token;
     currentUser = data.user;
     setCurrentAuthSessionId(resolveSessionIdFromAuthResponse(data));
@@ -1409,8 +1438,8 @@ async function logout() {
 }
 
 async function checkSession() {
-    const storedToken = localStorage.getItem('bytesky_token');
-    const storedUser = localStorage.getItem('bytesky_user');
+    const storedToken = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || localStorage.getItem(LEGACY_AUTH_TOKEN_STORAGE_KEY);
+    const storedUser = localStorage.getItem(AUTH_USER_STORAGE_KEY);
 
     if (!storedToken || !storedUser) {
         clearStoredSession();
@@ -1428,6 +1457,9 @@ async function checkSession() {
     }
 
     try {
+        if (!localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) && storedToken) {
+            localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, storedToken);
+        }
         currentUser = JSON.parse(storedUser);
         token = storedToken;
     } catch (err) {
@@ -1450,7 +1482,7 @@ async function checkSession() {
         const data = await res.json().catch(() => ({}));
         if (data.user) {
             currentUser = data.user;
-            localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+            localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(currentUser));
         }
 
         const resolvedSessionId = resolveSessionIdFromAuthResponse(data);
@@ -1588,7 +1620,7 @@ async function saveProfile() {
         }
 
         currentUser = data.user;
-        localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(currentUser));
         localStorage.setItem('bytesky_profile', JSON.stringify(profileData));
         localStorage.setItem(LANGUAGE_STORAGE_KEY, profileData.language);
         localStorage.setItem(REGION_STORAGE_KEY, profileData.region);
@@ -1739,7 +1771,7 @@ async function loadLoginAlertPreferences() {
             ...currentUser,
             loginAlerts: data.loginAlerts
         };
-        localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(currentUser));
         applyLoginAlertPreferences(data.loginAlerts);
         setLoginAlertStatus(translate('profile.loginAlertsLoaded'));
     } catch (err) {
@@ -1780,7 +1812,7 @@ async function saveLoginAlertPreferences() {
             ...currentUser,
             loginAlerts: data.loginAlerts
         };
-        localStorage.setItem('bytesky_user', JSON.stringify(currentUser));
+        localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(currentUser));
         applyLoginAlertPreferences(data.loginAlerts || currentUser.loginAlerts);
         setLoginAlertStatus(translate('profile.loginAlertsSavedMessage'));
         showToast(translate('profile.loginAlertsUpdateMessage'));
@@ -5329,10 +5361,9 @@ async function loadAdmin() {
         if (analyticsRes.status === 401 || analyticsRes.status === 403) {
             const msg = await analyticsRes.json().catch(() => ({ msg: 'Admin access required' }));
             showToast(msg.msg || 'Admin access required');
-            localStorage.removeItem('bytesky_user');
-            currentUser = null;
+            clearStoredSession();
             updateNav();
-            router('login');
+            router('login', { skipAuthCheck: true });
             return;
         }
 
@@ -5446,6 +5477,15 @@ function debouncedLoadAdminTickets() {
 
 async function loadAdminTickets(page = 1) {
     try {
+        const authToken = getActiveAuthToken();
+        if (!authToken) {
+            const tbody = document.getElementById('admin-ticket-list');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Please sign in to view tickets</td></tr>';
+            }
+            return;
+        }
+
         adminTicketCurrentPage = page;
         const tbody = document.getElementById('admin-ticket-list');
         if (!tbody) return;
@@ -5462,7 +5502,7 @@ async function loadAdminTickets(page = 1) {
         if (priority) params.append('priority', priority);
 
         const res = await fetch(`${API_URL}/admin/tickets?${params.toString()}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
         if (!res.ok) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Unable to load tickets</td></tr>';
@@ -6636,8 +6676,13 @@ function debouncedLoadTickets() {
 
 async function loadTicketSummary() {
     try {
+        const authToken = getActiveAuthToken();
+        if (!authToken) {
+            return;
+        }
+
         const res = await fetch(`${API_URL}/tickets/summary`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const contentType = res.headers.get('content-type') || '';
         if (!res.ok || !contentType.includes('application/json')) throw new Error('Summary endpoint unavailable');
@@ -6694,6 +6739,15 @@ function renderTicketPagination(total, page, limit, totalPages) {
 
 async function loadTickets(page = 1) {
     try {
+        const authToken = getActiveAuthToken();
+        if (!authToken) {
+            const tbody = document.getElementById('ticket-list');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Please sign in to view tickets</td></tr>';
+            }
+            return;
+        }
+
         ticketCurrentPage = page;
         const tbody = document.getElementById('ticket-list');
         if (tbody) {
@@ -6714,7 +6768,7 @@ async function loadTickets(page = 1) {
         if (priority) params.append('priority', priority);
 
         const res = await fetch(`${API_URL}/tickets?${params.toString()}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const contentType = res.headers.get('content-type') || '';
         let tickets = [];
@@ -6726,7 +6780,7 @@ async function loadTickets(page = 1) {
             pagination = payload.pagination || {};
         } else {
             const legacyRes = await fetch(`${API_URL}/support`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (!legacyRes.ok) {
                 if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Unable to load tickets</td></tr>';
