@@ -7604,8 +7604,13 @@ function loadRegions() {
         { code: 'us-east-1', name: 'US East (N. Virginia)', status: 'available' },
         { code: 'us-west-2', name: 'US West (Oregon)', status: 'available' },
         { code: 'eu-west-1', name: 'EU West (Ireland)', status: 'available' },
+        { code: 'eu-central-1', name: 'EU Central (Frankfurt)', status: 'available' },
         { code: 'ap-south-1', name: 'Asia Pacific (Mumbai)', status: 'limited' },
-        { code: 'ap-northeast-1', name: 'Asia Pacific (Tokyo)', status: 'available' }
+        { code: 'ap-southeast-1', name: 'Asia Pacific (Singapore)', status: 'available' },
+        { code: 'ap-northeast-1', name: 'Asia Pacific (Tokyo)', status: 'available' },
+        { code: 'ap-southeast-2', name: 'Asia Pacific (Sydney)', status: 'available' },
+        { code: 'ca-central-1', name: 'Canada Central (Toronto)', status: 'available' },
+        { code: 'sa-east-1', name: 'South America (Sao Paulo)', status: 'limited' }
     ];
 
     const container = document.getElementById('region-list');
