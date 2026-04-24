@@ -713,9 +713,9 @@ const CURRENCY_FRACTION_DIGITS_MAP = {
 };
 
 const VM_BASE_MONTHLY_USD = {
-    micro: 4.99,
-    small: 12.99,
-    large: 39.99
+    micro: 9.99,
+    small: 24.99,
+    large: 79.99
 };
 
 const VM_REGION_PRICE_MULTIPLIERS = {
@@ -2837,7 +2837,9 @@ function renderInstances(vms) {
         const uptime = calculateUptime(vm.createdAt);
         const badgeClass = vm.status === 'running' ? 'badge-running' :
             vm.status === 'stopped' ? 'badge-stopped' : 'badge-provisioning';
-        const pricingRegion = vm.currency || vm.region || currentRegion;
+        const pricingRegion = vm.region || currentRegion;
+        const pricingPreview = getVmPricingPreview(vm.size || 'micro', pricingRegion);
+        const hourlyDigits = getCurrencyFractionDigits(pricingRegion) === 0 ? 0 : 4;
 
         tbody.innerHTML += `
             <tr>
@@ -2861,7 +2863,7 @@ function renderInstances(vms) {
                     <small style="color:#64748b">${vm.privateIp || 'Private IP pending'}</small>
                 </td>
                 <td><span class="${badgeClass}">${vm.status}</span></td>
-                <td>${formatCurrencyAmount(vm.hourlyRate || 0.0068, pricingRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</td>
+                <td>${formatCurrencyAmount(pricingPreview.hourlyRate, pricingRegion, { minimumFractionDigits: hourlyDigits, maximumFractionDigits: hourlyDigits })}/hr</td>
                 <td>${uptime}</td>
                 <td>
                     ${renderInstanceActions(vm)}

@@ -1,9 +1,9 @@
 const { convertCurrencyAmount, resolveCurrencyCode } = require('./currency');
 
 const VM_BASE_MONTHLY_USD = {
-  micro: 4.99,
-  small: 12.99,
-  large: 39.99
+  micro: 9.99,
+  small: 24.99,
+  large: 79.99
 };
 
 const VM_REGION_PRICE_MULTIPLIERS = {
