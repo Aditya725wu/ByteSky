@@ -11,7 +11,7 @@
     --surface: rgba(255, 255, 255, 0.88);
     --surface-muted: #f5f8fc;
     --border: rgba(148, 163, 184, 0.2);
-    --sidebar-collapsed-width: 88px;
+    --sidebar-collapsed-width: 96px;
     --sidebar-width: 260px;
 }
 
@@ -38,16 +38,17 @@ body {
 nav {
     position: sticky;
     top: 0;
-    background: linear-gradient(180deg, rgba(5, 10, 28, 0.98) 0%, rgba(8, 15, 38, 0.96) 100%);
+    background: linear-gradient(180deg, rgba(8, 13, 30, 0.98) 0%, rgba(10, 16, 34, 0.96) 100%);
     color: white;
-    padding: 0.95rem clamp(1rem, 2vw, 1.9rem);
+    padding: 0.84rem clamp(1rem, 2vw, 1.6rem);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 14px;
+    min-height: 72px;
     z-index: 100;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    box-shadow: 0 10px 22px rgba(2, 6, 23, 0.18);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.16);
     backdrop-filter: blur(18px);
     transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
@@ -56,10 +57,9 @@ nav::before {
     content: "";
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(90deg, rgba(96, 165, 250, 0.09) 0%, transparent 24%, transparent 76%, rgba(96, 165, 250, 0.08) 100%);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, transparent 28%, transparent 72%, rgba(255, 255, 255, 0.02) 100%);
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 0.45;
 }
 
 nav.nav-scrolled {
@@ -71,7 +71,7 @@ nav.nav-scrolled {
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 0.35rem;
     min-width: 0;
     flex: 0 1 auto;
 }
@@ -86,7 +86,7 @@ nav.nav-scrolled {
 
 .logo img {
     display: block;
-    height: 30px;
+    height: 36px;
     width: auto;
     flex: 0 0 auto;
     filter: drop-shadow(0 8px 16px rgba(2, 6, 23, 0.18));
@@ -97,25 +97,26 @@ nav.nav-scrolled {
     align-items: center;
     justify-content: flex-end;
     flex: 1;
-    gap: 12px;
+    gap: 10px;
     min-width: 0;
     position: relative;
     z-index: 1;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .nav-links-private {
-    gap: 12px;
+    gap: 8px;
 }
 
 .nav-welcome {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
-    padding: 0.56rem 0.1rem;
-    color: rgba(226, 232, 240, 0.92);
-    font-size: 0.88rem;
-    font-weight: 700;
+    min-height: 36px;
+    padding: 0;
+    color: rgba(226, 232, 240, 0.84);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     white-space: nowrap;
 }
 
@@ -233,23 +234,28 @@ body:not(.sidebar-visible) nav {
 }
 
 .btn-logout {
-    background: linear-gradient(180deg, rgba(239, 68, 68, 0.16) 0%, rgba(239, 68, 68, 0.1) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.22);
-    padding: 0.56rem 0.94rem;
-    color: white;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 0.48rem 0.9rem;
+    color: rgba(226, 232, 240, 0.96);
     cursor: pointer;
-    border-radius: 12px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-height: 36px;
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-logout:hover {
-    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-    border-color: rgba(239, 68, 68, 0.96);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(96, 165, 250, 0.3);
     transform: translateY(-1px);
-    box-shadow: 0 14px 26px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.16);
+}
+
+.btn-logout:focus-visible {
+    outline: 2px solid rgba(96, 165, 250, 0.62);
+    outline-offset: 2px;
 }
 
 /* --- Layout --- */
@@ -290,22 +296,22 @@ body:not(.sidebar-visible) nav {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 4px 0 16px;
+    padding: 2px 0 14px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    min-height: 72px;
+    min-height: 68px;
 }
 
 .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     min-width: 0;
 }
 
 .sidebar-brand-mark {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -314,7 +320,7 @@ body:not(.sidebar-visible) nav {
     box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
     flex: 0 0 auto;
     overflow: hidden;
-    padding: 6px;
+    padding: 5px;
 }
 
 .sidebar-brand-mark img {
@@ -346,11 +352,11 @@ body:not(.sidebar-visible) nav {
 }
 
 .sidebar-collapse-btn {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border: 1px solid rgba(148, 163, 184, 0.22);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.66);
     color: #475569;
     display: inline-flex;
     align-items: center;
@@ -368,8 +374,8 @@ body:not(.sidebar-visible) nav {
 }
 
 .sidebar-collapse-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     fill: currentColor;
     transition: transform 0.28s ease;
 }
@@ -377,14 +383,14 @@ body:not(.sidebar-visible) nav {
 .sidebar-body {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 14px;
     min-height: 0;
 }
 
 .sidebar-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .sidebar-section-title {
@@ -397,12 +403,12 @@ body:not(.sidebar-visible) nav {
 }
 
 .sidebar a {
-    padding: 13px 14px;
+    padding: 12px 14px;
     text-decoration: none;
     color: #475569;
     border-left: 4px solid transparent;
     margin: 0;
-    border-radius: 14px;
+    border-radius: 12px;
     transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
     cursor: pointer;
     display: flex;
@@ -411,7 +417,7 @@ body:not(.sidebar-visible) nav {
     position: relative;
     overflow: hidden;
     font-weight: 500;
-    min-height: 48px;
+    min-height: 46px;
     outline: none;
 }
 
@@ -491,33 +497,54 @@ body:not(.sidebar-visible) .sidebar {
 body.sidebar-collapsed .sidebar {
     width: var(--sidebar-collapsed-width);
     flex-basis: var(--sidebar-collapsed-width);
-    padding-inline: 12px;
+    padding: 12px 10px;
 }
 
 body.sidebar-collapsed .sidebar-brand-copy,
 body.sidebar-collapsed .sidebar-section-title,
 body.sidebar-collapsed .sidebar-link-text {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    pointer-events: none;
+    display: none;
 }
 
 body.sidebar-collapsed .sidebar-header {
-    justify-content: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 12px;
+    min-height: 60px;
 }
 
 body.sidebar-collapsed .sidebar-brand {
     justify-content: center;
+    gap: 0;
+}
+
+body.sidebar-collapsed .sidebar-brand-mark {
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+    border-radius: 12px;
 }
 
 body.sidebar-collapsed .sidebar-collapse-btn svg {
     transform: rotate(180deg);
 }
 
+body.sidebar-collapsed .sidebar-body {
+    gap: 10px;
+}
+
+body.sidebar-collapsed .sidebar-section {
+    gap: 8px;
+    align-items: center;
+}
+
 body.sidebar-collapsed .sidebar a {
     justify-content: center;
     padding-inline: 0;
+    min-height: 44px;
+    border-left-width: 0;
+    border-radius: 12px;
+    gap: 0;
 }
 
 body.sidebar-collapsed .sidebar a.active-link {
@@ -4471,18 +4498,18 @@ iframe {
 
 @media (max-width: 1024px) {
     nav {
-        padding: 0.58rem 1rem;
-        gap: 12px;
+        padding: 0.68rem 1rem;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
     .logo img {
-        height: 28px;
+        height: 32px;
     }
 
     .nav-links {
         flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: flex-end;
     }
 
     .container {
@@ -4617,7 +4644,7 @@ iframe {
 
 @media (max-width: 768px) {
     nav {
-        padding: 0.52rem 0.85rem;
+        padding: 0.58rem 0.85rem;
     }
 
     .nav-brand {
@@ -4625,22 +4652,23 @@ iframe {
     }
 
     .logo img {
-        height: 24px;
+        height: 28px;
     }
 
     .nav-links {
-        width: 100%;
+        width: auto;
         gap: 8px;
+        justify-content: flex-end;
     }
 
     .nav-links span {
-        width: 100%;
-        font-size: 0.76rem;
+        width: auto;
+        font-size: 0.78rem;
     }
 
     .btn-logout {
-        padding: 0.46rem 0.72rem;
-        font-size: 0.76rem;
+        padding: 0.42rem 0.76rem;
+        font-size: 0.74rem;
     }
 
     .main-content {

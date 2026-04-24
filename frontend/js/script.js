@@ -1146,28 +1146,9 @@ function getUserDisplayName(user = currentUser) {
     return 'Signed in';
 }
 
-function getUserInitials(user = currentUser) {
-    const name = String(user?.name || '').trim();
-    if (name) {
-        const initials = name
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((part) => part.charAt(0))
-            .join('')
-            .toUpperCase();
-
-        if (initials) {
-            return initials;
-        }
-    }
-
-    const email = String(user?.email || '').trim();
-    if (email) {
-        return email.slice(0, 2).toUpperCase();
-    }
-
-    return 'BS';
+function getUserGreetingName(user = currentUser) {
+    const displayName = getUserDisplayName(user);
+    return displayName.split(/\s+/)[0] || displayName;
 }
 
 function parseJwtPayload(tokenValue) {
@@ -1551,7 +1532,7 @@ function updateNav() {
     if (currentUser) {
         nav.className = 'nav-links nav-links-private';
         nav.innerHTML = `
-            <span class="nav-welcome">Welcome, ${escapeHtml(getUserDisplayName(currentUser))}</span>
+            <span class="nav-welcome">Welcome, ${escapeHtml(getUserGreetingName(currentUser))}</span>
             <button class="btn-logout" onclick="logout()">Logout</button>
         `;
         document.body.classList.add('sidebar-visible');
