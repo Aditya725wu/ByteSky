@@ -14,6 +14,7 @@ const InvoiceSchema = new mongoose.Schema({
     total: Number,
     resourceType: String
   }],
+  currency: { type: String, default: 'usd', trim: true },
   region: { type: String, default: 'us-east-1' },
   usageHours: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },

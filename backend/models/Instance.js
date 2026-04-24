@@ -5,6 +5,7 @@ const InstanceSchema = new mongoose.Schema({
   os: { type: String, required: true },
   size: { type: String, required: true },
   region: { type: String, default: 'us-east-1' },
+  currency: { type: String, default: 'usd', trim: true },
   vpcId: { type: mongoose.Schema.Types.ObjectId, ref: 'VPC' },
   vpcName: { type: String },
   subnetId: { type: String },

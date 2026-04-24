@@ -6,6 +6,7 @@ const AuditLog = require('../models/AuditLog');
 const Region = require('../models/Region');
 const VPC = require('../models/VPC');
 const auth = require('../middleware/auth');
+const { resolveCurrencyCode } = require('../utils/currency');
 
 const router = express.Router();
 
@@ -114,8 +115,10 @@ router.post('/', auth, async (req, res) => {
       userId: req.user.id
     });
 
-    const regionData = await Region.findOne({ code: finalRegion || 'us-east-1' });
+    const regionCode = finalRegion || 'us-east-1';
+    const regionData = await Region.findOne({ code: regionCode });
     const pricingMultiplier = regionData ? regionData.pricing.compute : 1.0;
+    const currency = regionData?.currency || resolveCurrencyCode(regionCode);
 
     let baseRate = 5;
     if (size === 'small') baseRate = 10;
@@ -141,6 +144,7 @@ router.post('/', auth, async (req, res) => {
       privateIp,
       securityGroup,
       ip,
+      currency,
       cost: monthlyCost,
       hourlyRate,
       owner: req.user.id
@@ -161,6 +165,7 @@ router.post('/', auth, async (req, res) => {
         total: monthlyCost,
         resourceType: 'Compute'
       }],
+      currency,
       region: finalRegion || 'us-east-1',
       usageHours: 0,
       status: 'Unpaid'
