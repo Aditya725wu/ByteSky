@@ -8,7 +8,12 @@ const AuditLog = require('../models/AuditLog');
 const auth = require('../middleware/auth');
 const pdfGenerator = require('../utils/pdfGenerator');
 const env = require('../config/env');
-const { resolveCurrencyCode } = require('../utils/currency');
+const { getVmPricing } = require('../utils/pricing');
+const {
+  convertCurrencyAmount,
+  resolveCurrencyCode,
+  toCurrencyMinorUnits
+} = require('../utils/currency');
 
 const router = express.Router();
 
@@ -24,12 +29,21 @@ function canAccessInvoice(invoice, userId) {
   return invoice.user.toString() === userId;
 }
 
-function getInvoiceCurrency(invoice) {
+function getInvoiceSourceCurrency(invoice) {
+  return resolveCurrencyCode(invoice?.currency || 'usd');
+}
+
+function getInvoiceDisplayCurrency(invoice) {
   return resolveCurrencyCode(invoice?.currency || invoice?.region || 'us-east-1');
 }
 
+function getInvoiceDisplayAmount(invoice, targetCurrency) {
+  const sourceCurrency = getInvoiceSourceCurrency(invoice);
+  return convertCurrencyAmount(invoice?.amount || 0, sourceCurrency, targetCurrency);
+}
+
 function getCheckoutCurrency(invoices = []) {
-  const currencies = [...new Set(invoices.map(getInvoiceCurrency))];
+  const currencies = [...new Set(invoices.map(getInvoiceDisplayCurrency))];
   return currencies.length === 1 ? currencies[0] : env.stripeCurrency;
 }
 
@@ -129,7 +143,10 @@ router.post('/checkout-session', auth, async (req, res) => {
             name: invoice.description,
             description: `Invoice ${invoice.invoiceNumber}`
           },
-          unit_amount: Math.round(invoice.amount * 100)
+          unit_amount: toCurrencyMinorUnits(
+            getInvoiceDisplayAmount(invoice, checkoutCurrency),
+            checkoutCurrency
+          )
         }
       })),
       metadata: {
@@ -212,6 +229,7 @@ router.post('/:id/pay', auth, async (req, res) => {
 router.get('/usage/summary', auth, async (req, res) => {
   try {
     const instances = await Instance.find({ owner: req.user.id });
+    const summaryCurrency = resolveCurrencyCode(instances[0]?.currency || instances[0]?.region || 'us-east-1');
 
     let totalHours = 0;
     let totalCost = 0;
@@ -220,15 +238,23 @@ router.get('/usage/summary', auth, async (req, res) => {
       const endTime = inst.endTime || new Date();
       const startTime = inst.startTime || inst.createdAt;
       const hours = (endTime - startTime) / (1000 * 60 * 60);
+      const sourceCurrency = resolveCurrencyCode(inst.currency || 'usd');
+      const pricing = getVmPricing(inst.size || 'micro', inst.region || 'us-east-1', {
+        currency: sourceCurrency
+      });
+      const hourlyRate = Number.isFinite(Number(inst.hourlyRate)) && inst.currency
+        ? Number(inst.hourlyRate)
+        : pricing.hourlyRate;
+
       totalHours += hours;
-      totalCost += hours * inst.hourlyRate;
+      totalCost += convertCurrencyAmount(hours * hourlyRate, sourceCurrency, summaryCurrency);
     });
 
     res.json({
       totalInstances: instances.length,
       totalHours: totalHours.toFixed(2),
       totalCost: totalCost.toFixed(2),
-      currency: resolveCurrencyCode(instances[0]?.region || 'us-east-1'),
+      currency: summaryCurrency,
       instances: instances.map((i) => ({
         name: i.name,
         hours: ((i.endTime || new Date()) - (i.startTime || i.createdAt)) / (1000 * 60 * 60)

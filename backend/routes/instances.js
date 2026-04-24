@@ -6,7 +6,7 @@ const AuditLog = require('../models/AuditLog');
 const Region = require('../models/Region');
 const VPC = require('../models/VPC');
 const auth = require('../middleware/auth');
-const { resolveCurrencyCode } = require('../utils/currency');
+const { getVmPricing } = require('../utils/pricing');
 
 const router = express.Router();
 
@@ -117,15 +117,11 @@ router.post('/', auth, async (req, res) => {
 
     const regionCode = finalRegion || 'us-east-1';
     const regionData = await Region.findOne({ code: regionCode });
-    const pricingMultiplier = regionData ? regionData.pricing.compute : 1.0;
-    const currency = regionData?.currency || resolveCurrencyCode(regionCode);
-
-    let baseRate = 5;
-    if (size === 'small') baseRate = 10;
-    if (size === 'large') baseRate = 40;
-
-    const hourlyRate = (baseRate / 730) * pricingMultiplier;
-    const monthlyCost = baseRate * pricingMultiplier;
+    const pricing = getVmPricing(size, regionCode, {
+      regionMultiplier: regionData?.pricing?.compute,
+      currency: regionData?.currency
+    });
+    const { currency, hourlyRate, monthlyCost } = pricing;
     const ip = generatePublicIp();
     const privateIp = generatePrivateIp(selectedSubnet.cidr);
 
@@ -266,7 +262,18 @@ router.delete('/:id', auth, async (req, res) => {
     const usageHours = (endTime - startTime) / (1000 * 60 * 60);
     const expectedMonthlyHours = 730;
     const usageRatio = Math.min(usageHours / expectedMonthlyHours, 1);
-    const proratedCost = instance.cost * usageRatio;
+    const regionData = await Region.findOne({ code: instance.region || 'us-east-1' });
+    const pricing = getVmPricing(instance.size || 'micro', instance.region || 'us-east-1', {
+      regionMultiplier: regionData?.pricing?.compute,
+      currency: instance.currency
+    });
+    const hasStoredPricing = Boolean(instance.currency) &&
+      Number.isFinite(Number(instance.cost)) &&
+      Number.isFinite(Number(instance.hourlyRate));
+    const monthlyCost = hasStoredPricing ? Number(instance.cost) : pricing.monthlyCost;
+    const hourlyRate = hasStoredPricing ? Number(instance.hourlyRate) : pricing.hourlyRate;
+    const billingCurrency = hasStoredPricing ? instance.currency : pricing.currency;
+    const proratedCost = monthlyCost * usageRatio;
 
     if (usageHours > 0) {
       const finalInvoice = new Invoice({
@@ -277,10 +284,11 @@ router.delete('/:id', auth, async (req, res) => {
         items: [{
           description: `VM Runtime Adjustment - ${instance.name}`,
           quantity: usageHours,
-          unitPrice: instance.hourlyRate,
+          unitPrice: hourlyRate,
           total: proratedCost,
           resourceType: 'Compute'
         }],
+        currency: billingCurrency,
         region: instance.region,
         usageHours,
         status: 'Unpaid'

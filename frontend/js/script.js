@@ -696,6 +696,45 @@ const REGION_CURRENCY_MAP = {
     'sa-east-1': { code: 'BRL', locale: 'pt-BR' }
 };
 
+const CURRENCY_EXCHANGE_RATE_MAP = {
+    usd: 1,
+    gbp: 0.79,
+    eur: 0.92,
+    inr: 83.5,
+    sgd: 1.35,
+    jpy: 149,
+    aud: 1.52,
+    cad: 1.36,
+    brl: 5.08
+};
+
+const CURRENCY_FRACTION_DIGITS_MAP = {
+    jpy: 0
+};
+
+const VM_BASE_MONTHLY_USD = {
+    micro: 4.99,
+    small: 12.99,
+    large: 39.99
+};
+
+const VM_REGION_PRICE_MULTIPLIERS = {
+    'us-east-1': 1.0,
+    'us-west-2': 1.1,
+    'eu-west-1': 1.15,
+    'eu-central-1': 1.18,
+    'ap-south-1': 1.2,
+    'ap-southeast-1': 1.22,
+    'ap-northeast-1': 1.25,
+    'ap-southeast-2': 1.24,
+    'ca-central-1': 1.14,
+    'sa-east-1': 1.28,
+    us: 1.0,
+    gb: 1.08,
+    in: 1.2,
+    de: 1.18
+};
+
 function normalizeCurrencyKey(value) {
     return String(value || '').trim().toLowerCase();
 }
@@ -709,15 +748,66 @@ function getCurrencyCodeForRegion(region = currentRegion) {
     return resolveCurrencyMeta(region).code;
 }
 
+function getCurrencyFractionDigits(region = currentRegion) {
+    const meta = resolveCurrencyMeta(region);
+    return CURRENCY_FRACTION_DIGITS_MAP[meta.code.toLowerCase()] ?? 2;
+}
+
+function resolveCurrencyRate(region = currentRegion) {
+    const meta = resolveCurrencyMeta(region);
+    return CURRENCY_EXCHANGE_RATE_MAP[meta.code.toLowerCase()] || 1;
+}
+
+function convertCurrencyAmount(amount, fromRegion = 'usd', toRegion = currentRegion) {
+    const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    const sourceMeta = resolveCurrencyMeta(fromRegion);
+    const targetMeta = resolveCurrencyMeta(toRegion);
+    const sourceRate = CURRENCY_EXCHANGE_RATE_MAP[sourceMeta.code.toLowerCase()] || 1;
+    const targetRate = CURRENCY_EXCHANGE_RATE_MAP[targetMeta.code.toLowerCase()] || 1;
+
+    return numericAmount * (targetRate / sourceRate);
+}
+
 function formatCurrencyAmount(amount, region = currentRegion, options = {}) {
     const meta = resolveCurrencyMeta(region);
     const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    const defaultFractionDigits = getCurrencyFractionDigits(region);
     return new Intl.NumberFormat(options.locale || meta.locale, {
         style: 'currency',
         currency: meta.code,
-        minimumFractionDigits: options.minimumFractionDigits ?? 2,
-        maximumFractionDigits: options.maximumFractionDigits ?? 2
+        minimumFractionDigits: options.minimumFractionDigits ?? defaultFractionDigits,
+        maximumFractionDigits: options.maximumFractionDigits ?? Math.max(defaultFractionDigits, options.minimumFractionDigits ?? defaultFractionDigits)
     }).format(numericAmount);
+}
+
+function getVmBaseMonthlyUsd(size = 'micro') {
+    return VM_BASE_MONTHLY_USD[String(size || '').trim().toLowerCase()] || VM_BASE_MONTHLY_USD.micro;
+}
+
+function getVmRegionMultiplier(region = 'us-east-1') {
+    return VM_REGION_PRICE_MULTIPLIERS[String(region || '').trim().toLowerCase()] || 1;
+}
+
+function getVmPricingPreview(size = 'micro', region = 'us-east-1') {
+    const normalizedRegion = String(region || 'us-east-1').trim().toLowerCase();
+    const baseMonthlyUsd = getVmBaseMonthlyUsd(size);
+    const regionMultiplier = getVmRegionMultiplier(normalizedRegion);
+    const monthlyCost = convertCurrencyAmount(baseMonthlyUsd * regionMultiplier, 'usd', normalizedRegion);
+    return {
+        baseMonthlyUsd,
+        currencyRegion: normalizedRegion,
+        hourlyRate: monthlyCost / 730,
+        monthlyCost,
+        regionMultiplier
+    };
+}
+
+function getInvoiceSourceCurrency(invoice = {}) {
+    return normalizeCurrencyKey(invoice.currency || 'usd') || 'usd';
+}
+
+function getInvoiceDisplayCurrency(invoice = {}) {
+    return normalizeCurrencyKey(invoice.currency || invoice.region || currentRegion) || currentRegion;
 }
 
 function syncVmSizePricingLabels(region = currentRegion) {
@@ -728,10 +818,12 @@ function syncVmSizePricingLabels(region = currentRegion) {
     vmSizeSelect.querySelectorAll('option').forEach((option) => {
         const baseLabel = option.dataset.baseLabel || option.textContent.replace(/\s*\(.*\)$/, '').trim();
         const basePrice = Number(option.dataset.basePrice);
+        const baseCurrency = option.dataset.baseCurrency || 'usd';
 
         option.dataset.baseLabel = baseLabel;
         if (Number.isFinite(basePrice)) {
-            option.textContent = `${baseLabel} (${formatCurrencyAmount(basePrice, pricingRegion, { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`;
+            const convertedPrice = convertCurrencyAmount(basePrice * getVmRegionMultiplier(pricingRegion), baseCurrency, pricingRegion);
+            option.textContent = `${baseLabel} (${formatCurrencyAmount(convertedPrice, pricingRegion, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mo)`;
         } else {
             option.textContent = baseLabel;
         }
@@ -2588,7 +2680,9 @@ async function loadVMs() {
         vms.forEach(vm => {
             const badgeClass = vm.status === 'running' ? 'bg-running' :
                 vm.status === 'stopped' ? 'bg-stopped' : 'bg-provisioning';
-            const pricingRegion = vm.currency || vm.region || currentRegion;
+            const pricingRegion = vm.region || currentRegion;
+            const pricingPreview = getVmPricingPreview(vm.size || 'micro', pricingRegion);
+            const hourlyDigits = getCurrencyFractionDigits(pricingRegion) === 0 ? 0 : 4;
 
             tbody.innerHTML += `
                 <tr>
@@ -2596,7 +2690,7 @@ async function loadVMs() {
                     <td>${vm.region || 'us-east-1'}</td>
                     <td>${vm.ip || 'N/A'}</td>
                     <td><span class="badge ${badgeClass}">${vm.status}</span></td>
-                    <td>${formatCurrencyAmount(vm.hourlyRate || 0.0068, pricingRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</td>
+                    <td>${formatCurrencyAmount(pricingPreview.hourlyRate, pricingRegion, { minimumFractionDigits: hourlyDigits, maximumFractionDigits: hourlyDigits })}/hr</td>
                     <td>
                         ${vm.status === 'running' ?
                     `<button class="btn btn-outline" style="font-size:0.7rem; margin-right:5px;" onclick="openVMConsole('${escapeJsString(vm.os || '')}')" title="Open Console">Console</button>` : ''}
@@ -3164,8 +3258,12 @@ async function viewInstanceDetails(id) {
                 <div class="detail-value">${vm.size || 'micro'}</div>
             </div>
             <div class="detail-item">
+                <div class="detail-label">Monthly Estimate</div>
+                <div class="detail-value">${formatCurrencyAmount(getVmPricingPreview(vm.size || 'micro', vm.region || currentRegion).monthlyCost, vm.region || currentRegion, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mo</div>
+            </div>
+            <div class="detail-item">
                 <div class="detail-label">Hourly Rate</div>
-                <div class="detail-value">${formatCurrencyAmount(vm.hourlyRate || 0.0068, vm.currency || vm.region || currentRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</div>
+                <div class="detail-value">${formatCurrencyAmount(getVmPricingPreview(vm.size || 'micro', vm.region || currentRegion).hourlyRate, vm.region || currentRegion, { minimumFractionDigits: getCurrencyFractionDigits(vm.region || currentRegion) === 0 ? 0 : 4, maximumFractionDigits: getCurrencyFractionDigits(vm.region || currentRegion) === 0 ? 0 : 4 })}/hr</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Launch Time</div>
@@ -4839,7 +4937,7 @@ async function loadBilling() {
         list.innerHTML = '';
         let total = 0;
         let unpaidCount = 0;
-        const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => inv.currency || inv.region || currentRegion))];
+        const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => getInvoiceDisplayCurrency(inv)))];
         const billingTotalRegion = invoiceCurrencyRegions.length === 1 ? invoiceCurrencyRegions[0] : currentRegion;
 
         if (invoices.length === 0) {
@@ -4852,8 +4950,12 @@ async function loadBilling() {
             `;
         } else {
             invoices.forEach(inv => {
+                const invoiceDisplayCurrency = getInvoiceDisplayCurrency(inv);
+                const invoiceSourceCurrency = getInvoiceSourceCurrency(inv);
+                const displayAmount = convertCurrencyAmount(inv.amount, invoiceSourceCurrency, invoiceDisplayCurrency);
+
                 if (inv.status === 'Unpaid') {
-                    total += inv.amount;
+                    total += convertCurrencyAmount(inv.amount, invoiceSourceCurrency, billingTotalRegion);
                     unpaidCount += 1;
                 }
                 list.innerHTML += `
@@ -4861,7 +4963,7 @@ async function loadBilling() {
                         <td>${formatLocalizedDateShort(inv.createdAt)}</td>
                         <td>${inv.description}</td>
                         <td>${inv.usageHours ? inv.usageHours.toFixed(2) + ' hrs' : 'N/A'}</td>
-                        <td>${formatCurrencyAmount(inv.amount, inv.currency || inv.region || currentRegion)}</td>
+                        <td>${formatCurrencyAmount(displayAmount, invoiceDisplayCurrency)}</td>
                         <td>
                             <span class="badge ${inv.status === 'Paid' ? 'bg-running' : 'bg-provisioning'}">${inv.status}</span>
                             ${inv.status === 'Unpaid' ? `<button class="btn btn-outline" type="button" style="margin-left:8px; font-size:0.8rem;" onclick="payInvoice('${inv._id}')">Pay</button>` : ''}
@@ -5292,9 +5394,11 @@ async function loadDashboardData() {
 
         if (billingResult.status === 'fulfilled' && billingResult.value.ok) {
             const invoices = await billingResult.value.json();
-            const total = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-            const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => inv.currency || inv.region || currentRegion))];
+            const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => getInvoiceDisplayCurrency(inv)))];
             const dashboardTotalRegion = invoiceCurrencyRegions.length === 1 ? invoiceCurrencyRegions[0] : currentRegion;
+            const total = invoices.reduce((sum, inv) => (
+                sum + convertCurrencyAmount(inv.amount, getInvoiceSourceCurrency(inv), dashboardTotalRegion)
+            ), 0);
             const spendEl = document.getElementById('dash-spend');
             if (spendEl) spendEl.innerText = formatCurrencyAmount(total, dashboardTotalRegion);
 
@@ -5337,7 +5441,9 @@ function createCostChart(invoices, displayRegion = currentRegion) {
     const dailyCosts = last7Days.map(date => {
         return invoices
             .filter(inv => formatLocalizedDate(inv.createdAt, { month: 'short', day: 'numeric' }) === date)
-            .reduce((sum, inv) => sum + inv.amount, 0);
+            .reduce((sum, inv) => (
+                sum + convertCurrencyAmount(inv.amount, getInvoiceSourceCurrency(inv), displayRegion)
+            ), 0);
     });
 
     costChart = new Chart(ctx, {
@@ -7722,6 +7828,7 @@ function loadRegions() {
                 <h4>${r.name}</h4>
                 <p style="color:#64748b; margin:10px 0;">${r.code}</p>
                 <p style="color:#64748b; margin:0 0 10px;">Currency: ${getCurrencyCodeForRegion(r.code)}</p>
+                <p style="color:#64748b; margin:0 0 10px;">Micro VM: ${formatCurrencyAmount(getVmPricingPreview('micro', r.code).monthlyCost, r.code, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mo</p>
                 <span class="badge ${badgeClass}">${r.status}</span>
             </div>
         `;

@@ -15,6 +15,22 @@ const REGION_CURRENCY_MAP = {
   'sa-east-1': { code: 'brl', locale: 'pt-BR' }
 };
 
+const CURRENCY_EXCHANGE_RATE_MAP = {
+  usd: 1,
+  gbp: 0.79,
+  eur: 0.92,
+  inr: 83.5,
+  sgd: 1.35,
+  jpy: 149,
+  aud: 1.52,
+  cad: 1.36,
+  brl: 5.08
+};
+
+const CURRENCY_FRACTION_DIGITS_MAP = {
+  jpy: 0
+};
+
 const DEFAULT_CURRENCY_META = REGION_CURRENCY_MAP.us;
 
 function normalizeCurrencyKey(value = '') {
@@ -40,21 +56,65 @@ function resolveCurrencyLocale(value = '', fallback = DEFAULT_CURRENCY_META.loca
   return meta.locale || fallback;
 }
 
+function resolveCurrencyRate(value = '', fallback = 1) {
+  const meta = resolveCurrencyMeta(value);
+  return CURRENCY_EXCHANGE_RATE_MAP[meta.code] || fallback;
+}
+
+function getCurrencyFractionDigits(value = '') {
+  const meta = resolveCurrencyMeta(value);
+  return CURRENCY_FRACTION_DIGITS_MAP[meta.code] ?? 2;
+}
+
+function roundCurrencyAmount(amount, value = '') {
+  const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  const digits = getCurrencyFractionDigits(value);
+  const factor = 10 ** digits;
+  return Math.round(numericAmount * factor) / factor;
+}
+
+function convertCurrencyAmount(amount, fromValue = 'usd', toValue = 'usd') {
+  const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  const sourceRate = resolveCurrencyRate(fromValue);
+  const targetRate = resolveCurrencyRate(toValue);
+
+  if (!sourceRate || !targetRate) {
+    return numericAmount;
+  }
+
+  return numericAmount * (targetRate / sourceRate);
+}
+
+function toCurrencyMinorUnits(amount, value = '') {
+  const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  const digits = getCurrencyFractionDigits(value);
+  const factor = 10 ** digits;
+  return Math.round(numericAmount * factor);
+}
+
 function formatCurrencyAmount(amount, value = '', options = {}) {
   const meta = resolveCurrencyMeta(value);
   const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
   const locale = options.locale || meta.locale || DEFAULT_CURRENCY_META.locale;
+  const defaultFractionDigits = getCurrencyFractionDigits(meta.code);
+  const minimumFractionDigits = options.minimumFractionDigits ?? defaultFractionDigits;
+  const maximumFractionDigits = options.maximumFractionDigits ?? Math.max(defaultFractionDigits, minimumFractionDigits);
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: meta.code.toUpperCase(),
-    minimumFractionDigits: options.minimumFractionDigits ?? 2,
-    maximumFractionDigits: options.maximumFractionDigits ?? 2
+    minimumFractionDigits,
+    maximumFractionDigits
   }).format(numericAmount);
 }
 
 module.exports = {
+  convertCurrencyAmount,
   formatCurrencyAmount,
+  getCurrencyFractionDigits,
   resolveCurrencyCode,
-  resolveCurrencyLocale
+  resolveCurrencyLocale,
+  resolveCurrencyRate,
+  roundCurrencyAmount,
+  toCurrencyMinorUnits
 };
