@@ -29,6 +29,10 @@ const upload = multer({
 const ALLOWED_STATUS = new Set(['open', 'in-progress', 'closed', 'resolved']);
 const ALLOWED_PRIORITY = new Set(['low', 'medium', 'high']);
 
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function getCurrentUser(req) {
   return User.findById(req.user.id).select('_id name email role');
 }
@@ -85,7 +89,7 @@ function buildSearchQuery(baseQuery, reqQuery) {
   if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo)) query.assignedTo = assignedTo;
 
   if (search) {
-    const regex = new RegExp(search.trim(), 'i');
+    const regex = new RegExp(escapeRegex(search.trim()), 'i');
     query.$or = [{ subject: regex }];
     if (mongoose.Types.ObjectId.isValid(search.trim())) {
       query.$or.push({ _id: new mongoose.Types.ObjectId(search.trim()) });

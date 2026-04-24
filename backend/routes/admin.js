@@ -17,6 +17,10 @@ const ALLOWED_TICKET_PRIORITY = new Set(['low', 'medium', 'high']);
 const ALLOWED_USER_ROLES = new Set(['user', 'admin', 'developer', 'viewer']);
 const uploadsDir = path.join(__dirname, '..', 'uploads', 'tickets');
 
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function removeTicketFiles(ticket) {
   const allAttachments = [
     ...(ticket.attachments || []),
@@ -221,7 +225,7 @@ router.get('/tickets', auth, adminOnly, async (req, res) => {
       query.assignedTo = req.query.assignedTo;
     }
     if (req.query.search) {
-      const regex = new RegExp(req.query.search.trim(), 'i');
+      const regex = new RegExp(escapeRegex(req.query.search.trim()), 'i');
       query.$or = [{ subject: regex }, { description: regex }];
     }
 
