@@ -1132,6 +1132,44 @@ function hasAuthenticatedSession() {
     return Boolean(getActiveAuthToken() && getActiveAuthUser()?.email);
 }
 
+function getUserDisplayName(user = currentUser) {
+    const name = String(user?.name || '').trim();
+    if (name) {
+        return name;
+    }
+
+    const email = String(user?.email || '').trim();
+    if (email) {
+        return email.split('@')[0];
+    }
+
+    return 'Signed in';
+}
+
+function getUserInitials(user = currentUser) {
+    const name = String(user?.name || '').trim();
+    if (name) {
+        const initials = name
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part.charAt(0))
+            .join('')
+            .toUpperCase();
+
+        if (initials) {
+            return initials;
+        }
+    }
+
+    const email = String(user?.email || '').trim();
+    if (email) {
+        return email.slice(0, 2).toUpperCase();
+    }
+
+    return 'BS';
+}
+
 function parseJwtPayload(tokenValue) {
     if (!tokenValue || !tokenValue.includes('.')) {
         return null;
@@ -1513,7 +1551,17 @@ function updateNav() {
     if (currentUser) {
         nav.className = 'nav-links nav-links-private';
         nav.innerHTML = `
-            <span class="nav-user-email">${currentUser.email}</span>
+            <span class="nav-status-chip">
+                <span class="nav-status-dot" aria-hidden="true"></span>
+                <span>Workspace active</span>
+            </span>
+            <div class="nav-user-card">
+                <span class="nav-user-avatar" aria-hidden="true">${escapeHtml(getUserInitials(currentUser))}</span>
+                <div class="nav-user-copy">
+                    <strong>${escapeHtml(getUserDisplayName(currentUser))}</strong>
+                    <span>${escapeHtml(currentUser.email || 'Signed in')}</span>
+                </div>
+            </div>
             <button class="btn-logout" onclick="logout()">Logout</button>
         `;
         document.body.classList.add('sidebar-visible');
@@ -1528,6 +1576,8 @@ function updateNav() {
         nav.className = 'nav-links nav-links-public nav-links-public-minimal';
         nav.innerHTML = `
             <span class="nav-context-pill">Cloud Control Plane</span>
+            <a href="#" class="nav-link nav-link-ghost" onclick="router('login'); return false;">Sign In</a>
+            <a href="#" class="nav-link nav-link-cta" onclick="router('register'); return false;">Start Free Trial</a>
         `;
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
