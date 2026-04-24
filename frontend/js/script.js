@@ -1544,12 +1544,8 @@ function updateNav() {
         }
     } else {
         document.body.classList.remove('sidebar-visible', 'sidebar-collapsed');
-        nav.className = 'nav-links nav-links-public nav-links-public-minimal';
-        nav.innerHTML = `
-            <span class="nav-context-pill">Cloud Control Plane</span>
-            <a href="#" class="nav-link nav-link-ghost" onclick="router('login'); return false;">Sign In</a>
-            <a href="#" class="nav-link nav-link-cta" onclick="router('register'); return false;">Start Free Trial</a>
-        `;
+        nav.className = 'nav-links nav-links-hidden';
+        nav.innerHTML = '';
         setSidebarOpen(false);
         if (adminLink) adminLink.style.display = 'none';
     }

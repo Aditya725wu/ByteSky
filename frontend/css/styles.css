@@ -104,6 +104,10 @@ nav.nav-scrolled {
     flex-wrap: nowrap;
 }
 
+.nav-links-hidden {
+    display: none;
+}
+
 .nav-links-private {
     gap: 8px;
 }
@@ -295,32 +299,32 @@ body:not(.sidebar-visible) nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 2px 0 14px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    min-height: 68px;
+    gap: 10px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    min-height: 64px;
 }
 
 .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
 }
 
 .sidebar-brand-mark {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(180deg, rgba(239, 246, 255, 0.96) 0%, rgba(219, 234, 254, 0.88) 100%);
-    border: 1px solid rgba(37, 99, 235, 0.14);
-    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
+    background: linear-gradient(180deg, rgba(239, 246, 255, 0.9) 0%, rgba(226, 232, 240, 0.7) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.1);
     flex: 0 0 auto;
     overflow: hidden;
-    padding: 5px;
+    padding: 4px;
 }
 
 .sidebar-brand-mark img {
@@ -338,25 +342,22 @@ body:not(.sidebar-visible) nav {
 
 .sidebar-brand-copy strong {
     color: #0f172a;
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-weight: 800;
+    line-height: 1.1;
     white-space: nowrap;
 }
 
 .sidebar-eyebrow {
-    color: #64748b;
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-weight: 700;
+    display: none;
 }
 
 .sidebar-collapse-btn {
-    width: 32px;
-    height: 32px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.66);
+    background: rgba(255, 255, 255, 0.82);
     color: #475569;
     display: inline-flex;
     align-items: center;
@@ -374,8 +375,8 @@ body:not(.sidebar-visible) nav {
 }
 
 .sidebar-collapse-btn svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     fill: currentColor;
     transition: transform 0.28s ease;
 }
@@ -403,7 +404,7 @@ body:not(.sidebar-visible) nav {
 }
 
 .sidebar a {
-    padding: 12px 14px;
+    padding: 11px 14px;
     text-decoration: none;
     color: #475569;
     border-left: 4px solid transparent;
@@ -417,7 +418,7 @@ body:not(.sidebar-visible) nav {
     position: relative;
     overflow: hidden;
     font-weight: 500;
-    min-height: 46px;
+    min-height: 44px;
     outline: none;
 }
 
