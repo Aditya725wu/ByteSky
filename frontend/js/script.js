@@ -1551,17 +1551,7 @@ function updateNav() {
     if (currentUser) {
         nav.className = 'nav-links nav-links-private';
         nav.innerHTML = `
-            <span class="nav-status-chip">
-                <span class="nav-status-dot" aria-hidden="true"></span>
-                <span>Workspace active</span>
-            </span>
-            <div class="nav-user-card">
-                <span class="nav-user-avatar" aria-hidden="true">${escapeHtml(getUserInitials(currentUser))}</span>
-                <div class="nav-user-copy">
-                    <strong>${escapeHtml(getUserDisplayName(currentUser))}</strong>
-                    <span>${escapeHtml(currentUser.email || 'Signed in')}</span>
-                </div>
-            </div>
+            <span class="nav-welcome">Welcome, ${escapeHtml(getUserDisplayName(currentUser))}</span>
             <button class="btn-logout" onclick="logout()">Logout</button>
         `;
         document.body.classList.add('sidebar-visible');
