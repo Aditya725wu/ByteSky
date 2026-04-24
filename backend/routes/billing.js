@@ -8,6 +8,7 @@ const AuditLog = require('../models/AuditLog');
 const auth = require('../middleware/auth');
 const pdfGenerator = require('../utils/pdfGenerator');
 const env = require('../config/env');
+const { resolveCurrencyCode } = require('../utils/currency');
 
 const router = express.Router();
 
@@ -21,6 +22,15 @@ function getStripeClient() {
 
 function canAccessInvoice(invoice, userId) {
   return invoice.user.toString() === userId;
+}
+
+function getInvoiceCurrency(invoice) {
+  return resolveCurrencyCode(invoice?.currency || invoice?.region || 'us-east-1');
+}
+
+function getCheckoutCurrency(invoices = []) {
+  const currencies = [...new Set(invoices.map(getInvoiceCurrency))];
+  return currencies.length === 1 ? currencies[0] : env.stripeCurrency;
 }
 
 async function markInvoicesPaid(invoices, userId, metadata = {}) {
@@ -102,6 +112,8 @@ router.post('/checkout-session', auth, async (req, res) => {
 
     const user = await User.findById(req.user.id).select('email');
 
+    const checkoutCurrency = getCheckoutCurrency(invoices);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       success_url: successUrl,
@@ -112,7 +124,7 @@ router.post('/checkout-session', auth, async (req, res) => {
       line_items: invoices.map((invoice) => ({
         quantity: 1,
         price_data: {
-          currency: env.stripeCurrency,
+          currency: checkoutCurrency,
           product_data: {
             name: invoice.description,
             description: `Invoice ${invoice.invoiceNumber}`
@@ -216,6 +228,7 @@ router.get('/usage/summary', auth, async (req, res) => {
       totalInstances: instances.length,
       totalHours: totalHours.toFixed(2),
       totalCost: totalCost.toFixed(2),
+      currency: resolveCurrencyCode(instances[0]?.region || 'us-east-1'),
       instances: instances.map((i) => ({
         name: i.name,
         hours: ((i.endTime || new Date()) - (i.startTime || i.createdAt)) / (1000 * 60 * 60)

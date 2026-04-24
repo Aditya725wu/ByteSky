@@ -664,9 +664,9 @@
                         <div>
                             <label>Size</label>
                             <select id="vmSize" style="margin-bottom:0;">
-                                <option value="micro">Micro ($5)</option>
-                                <option value="small">Small ($10)</option>
-                                <option value="large">Large ($40)</option>
+                                <option value="micro" data-base-label="Micro" data-base-price="5">Micro</option>
+                                <option value="small" data-base-label="Small" data-base-price="10">Small</option>
+                                <option value="large" data-base-label="Large" data-base-price="40">Large</option>
                             </select>
                         </div>
                         <div>
@@ -1508,7 +1508,7 @@
                 </div>
                 <div class="card" style="background: #f8fafc; border: 1px solid #cbd5e1;">
                     <h3>Current Balance Due</h3>
-                    <h1 id="billing-total" style="font-size:3rem; color:var(--dark); margin:10px 0;">$0.00</h1>
+                    <h1 id="billing-total" style="font-size:3rem; color:var(--dark); margin:10px 0;">0.00</h1>
                     <button class="btn btn-primary" id="billingPayBtn" type="button" onclick="payBalance()">Pay with
                         Stripe</button>
                     <p id="billing-payment-status" style="margin-top:12px; color:#64748b;">Secure checkout powered by
@@ -1921,7 +1921,7 @@
                     <div class="stat-card">
                         <div>
                             <div class="stat-label">Total Revenue</div>
-                            <div class="stat-val" id="admin-total-revenue">$0</div>
+                            <div class="stat-val" id="admin-total-revenue">0</div>
                         </div>
                     </div>
                     <div class="stat-card">

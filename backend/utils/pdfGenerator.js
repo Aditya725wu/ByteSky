@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const { formatCurrencyAmount } = require('./currency');
 
 exports.generateInvoicePDF = async (invoice, user) => {
   return new Promise((resolve, reject) => {
@@ -36,6 +37,8 @@ exports.generateInvoicePDF = async (invoice, user) => {
     // Items Table
     doc.fontSize(12).text('Items:', { underline: true });
     doc.moveDown(1);
+
+    const currencyRegion = invoice.currency || invoice.region || 'us-east-1';
     
     let y = doc.y;
     doc.fontSize(10).text('Description', 50, y);
@@ -50,8 +53,8 @@ exports.generateInvoicePDF = async (invoice, user) => {
       y = doc.y;
       doc.text(item.description, 50, y);
       doc.text(item.quantity.toString(), 300, y);
-      doc.text(`$${item.unitPrice.toFixed(2)}`, 400, y);
-      doc.text(`$${item.total.toFixed(2)}`, 500, y);
+      doc.text(formatCurrencyAmount(item.unitPrice, currencyRegion), 400, y);
+      doc.text(formatCurrencyAmount(item.total, currencyRegion), 500, y);
       doc.moveDown(1);
     });
     
@@ -59,7 +62,7 @@ exports.generateInvoicePDF = async (invoice, user) => {
     doc.moveDown(1);
     
     // Total
-    doc.fontSize(12).text(`Total Amount: $${invoice.amount.toFixed(2)}`, { align: 'right' });
+    doc.fontSize(12).text(`Total Amount: ${formatCurrencyAmount(invoice.amount, currencyRegion)}`, { align: 'right' });
     doc.text(`Status: ${invoice.status}`, { align: 'right' });
     
     // Footer

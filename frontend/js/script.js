@@ -670,6 +670,93 @@ function normalizeRegion(region) {
     }
 }
 
+const REGION_CURRENCY_MAP = {
+    us: { code: 'USD', locale: 'en-US' },
+    gb: { code: 'GBP', locale: 'en-GB' },
+    in: { code: 'INR', locale: 'en-IN' },
+    de: { code: 'EUR', locale: 'de-DE' },
+    'usd': { code: 'USD', locale: 'en-US' },
+    'gbp': { code: 'GBP', locale: 'en-GB' },
+    'inr': { code: 'INR', locale: 'en-IN' },
+    'eur': { code: 'EUR', locale: 'de-DE' },
+    'aud': { code: 'AUD', locale: 'en-AU' },
+    'brl': { code: 'BRL', locale: 'pt-BR' },
+    'cad': { code: 'CAD', locale: 'en-CA' },
+    'jpy': { code: 'JPY', locale: 'ja-JP' },
+    'sgd': { code: 'SGD', locale: 'en-SG' },
+    'us-east-1': { code: 'USD', locale: 'en-US' },
+    'us-west-2': { code: 'USD', locale: 'en-US' },
+    'eu-west-1': { code: 'EUR', locale: 'en-IE' },
+    'eu-central-1': { code: 'EUR', locale: 'de-DE' },
+    'ap-south-1': { code: 'INR', locale: 'en-IN' },
+    'ap-southeast-1': { code: 'SGD', locale: 'en-SG' },
+    'ap-northeast-1': { code: 'JPY', locale: 'ja-JP' },
+    'ap-southeast-2': { code: 'AUD', locale: 'en-AU' },
+    'ca-central-1': { code: 'CAD', locale: 'en-CA' },
+    'sa-east-1': { code: 'BRL', locale: 'pt-BR' }
+};
+
+function normalizeCurrencyKey(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function resolveCurrencyMeta(region = currentRegion) {
+    const regionKey = normalizeCurrencyKey(region);
+    return REGION_CURRENCY_MAP[regionKey] || REGION_CURRENCY_MAP[currentRegion] || REGION_CURRENCY_MAP.us;
+}
+
+function getCurrencyCodeForRegion(region = currentRegion) {
+    return resolveCurrencyMeta(region).code;
+}
+
+function formatCurrencyAmount(amount, region = currentRegion, options = {}) {
+    const meta = resolveCurrencyMeta(region);
+    const numericAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    return new Intl.NumberFormat(options.locale || meta.locale, {
+        style: 'currency',
+        currency: meta.code,
+        minimumFractionDigits: options.minimumFractionDigits ?? 2,
+        maximumFractionDigits: options.maximumFractionDigits ?? 2
+    }).format(numericAmount);
+}
+
+function syncVmSizePricingLabels(region = currentRegion) {
+    const vmSizeSelect = document.getElementById('vmSize');
+    if (!vmSizeSelect) return;
+
+    const pricingRegion = region || currentRegion;
+    vmSizeSelect.querySelectorAll('option').forEach((option) => {
+        const baseLabel = option.dataset.baseLabel || option.textContent.replace(/\s*\(.*\)$/, '').trim();
+        const basePrice = Number(option.dataset.basePrice);
+
+        option.dataset.baseLabel = baseLabel;
+        if (Number.isFinite(basePrice)) {
+            option.textContent = `${baseLabel} (${formatCurrencyAmount(basePrice, pricingRegion, { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`;
+        } else {
+            option.textContent = baseLabel;
+        }
+    });
+}
+
+function syncCurrencyAwareLabels() {
+    syncVmSizePricingLabels();
+
+    const billingTotal = document.getElementById('billing-total');
+    if (billingTotal && (!billingTotal.textContent || billingTotal.textContent === '$0.00' || billingTotal.textContent === '0.00')) {
+        billingTotal.textContent = formatCurrencyAmount(0, currentRegion);
+    }
+
+    const dashboardSpend = document.getElementById('dash-spend');
+    if (dashboardSpend && (!dashboardSpend.textContent || dashboardSpend.textContent === '$0.00' || dashboardSpend.textContent === '0.00')) {
+        dashboardSpend.textContent = formatCurrencyAmount(0, currentRegion);
+    }
+
+    const adminRevenue = document.getElementById('admin-total-revenue');
+    if (adminRevenue && (!adminRevenue.textContent || adminRevenue.textContent === '$0' || adminRevenue.textContent === '0')) {
+        adminRevenue.textContent = formatCurrencyAmount(0, currentRegion, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+}
+
 function getSavedLanguagePreference() {
     const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (storedLanguage) {
@@ -857,6 +944,7 @@ function applyLanguagePreference(locale = getSavedLanguagePreference(), options 
 
     applyLocalizedText(document);
     syncProfilePreferencesTexts();
+    syncCurrencyAwareLabels();
 
     if (getActivePageId() === 'profile' && currentUser) {
         loadProfileData();
@@ -1641,6 +1729,7 @@ async function saveProfile() {
         localStorage.setItem('bytesky_profile', JSON.stringify(profileData));
         localStorage.setItem(LANGUAGE_STORAGE_KEY, profileData.language);
         localStorage.setItem(REGION_STORAGE_KEY, profileData.region);
+        syncCurrencyAwareLabels();
 
         updateNav();
         loadProfileData();
@@ -2499,6 +2588,7 @@ async function loadVMs() {
         vms.forEach(vm => {
             const badgeClass = vm.status === 'running' ? 'bg-running' :
                 vm.status === 'stopped' ? 'bg-stopped' : 'bg-provisioning';
+            const pricingRegion = vm.currency || vm.region || currentRegion;
 
             tbody.innerHTML += `
                 <tr>
@@ -2506,7 +2596,7 @@ async function loadVMs() {
                     <td>${vm.region || 'us-east-1'}</td>
                     <td>${vm.ip || 'N/A'}</td>
                     <td><span class="badge ${badgeClass}">${vm.status}</span></td>
-                    <td>$${(vm.hourlyRate || 0.0068).toFixed(4)}/hr</td>
+                    <td>${formatCurrencyAmount(vm.hourlyRate || 0.0068, pricingRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</td>
                     <td>
                         ${vm.status === 'running' ?
                     `<button class="btn btn-outline" style="font-size:0.7rem; margin-right:5px;" onclick="openVMConsole('${escapeJsString(vm.os || '')}')" title="Open Console">Console</button>` : ''}
@@ -2653,6 +2743,7 @@ function renderInstances(vms) {
         const uptime = calculateUptime(vm.createdAt);
         const badgeClass = vm.status === 'running' ? 'badge-running' :
             vm.status === 'stopped' ? 'badge-stopped' : 'badge-provisioning';
+        const pricingRegion = vm.currency || vm.region || currentRegion;
 
         tbody.innerHTML += `
             <tr>
@@ -2676,7 +2767,7 @@ function renderInstances(vms) {
                     <small style="color:#64748b">${vm.privateIp || 'Private IP pending'}</small>
                 </td>
                 <td><span class="${badgeClass}">${vm.status}</span></td>
-                <td>$${(vm.hourlyRate || 0.0068).toFixed(4)}/hr</td>
+                <td>${formatCurrencyAmount(vm.hourlyRate || 0.0068, pricingRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</td>
                 <td>${uptime}</td>
                 <td>
                     ${renderInstanceActions(vm)}
@@ -3074,7 +3165,7 @@ async function viewInstanceDetails(id) {
             </div>
             <div class="detail-item">
                 <div class="detail-label">Hourly Rate</div>
-                <div class="detail-value">$${(vm.hourlyRate || 0.0068).toFixed(4)}/hr</div>
+                <div class="detail-value">${formatCurrencyAmount(vm.hourlyRate || 0.0068, vm.currency || vm.region || currentRegion, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}/hr</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Launch Time</div>
@@ -3288,6 +3379,7 @@ function syncVmSubnetOptions(preferredSubnetId = '') {
 
 function handleVmRegionChange() {
     syncVmVpcOptions();
+    syncVmSizePricingLabels();
 }
 
 function handleVmVpcChange() {
@@ -3300,6 +3392,7 @@ function handleVmVpcChange() {
     }
 
     syncVmSubnetOptions();
+    syncVmSizePricingLabels(selectedVpc?.region || regionSelect?.value || currentRegion);
 }
 
 function getNetworkStatusClass(status) {
@@ -4746,6 +4839,8 @@ async function loadBilling() {
         list.innerHTML = '';
         let total = 0;
         let unpaidCount = 0;
+        const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => inv.currency || inv.region || currentRegion))];
+        const billingTotalRegion = invoiceCurrencyRegions.length === 1 ? invoiceCurrencyRegions[0] : currentRegion;
 
         if (invoices.length === 0) {
             list.innerHTML = `
@@ -4766,7 +4861,7 @@ async function loadBilling() {
                         <td>${formatLocalizedDateShort(inv.createdAt)}</td>
                         <td>${inv.description}</td>
                         <td>${inv.usageHours ? inv.usageHours.toFixed(2) + ' hrs' : 'N/A'}</td>
-                        <td>$${inv.amount.toFixed(2)}</td>
+                        <td>${formatCurrencyAmount(inv.amount, inv.currency || inv.region || currentRegion)}</td>
                         <td>
                             <span class="badge ${inv.status === 'Paid' ? 'bg-running' : 'bg-provisioning'}">${inv.status}</span>
                             ${inv.status === 'Unpaid' ? `<button class="btn btn-outline" type="button" style="margin-left:8px; font-size:0.8rem;" onclick="payInvoice('${inv._id}')">Pay</button>` : ''}
@@ -4777,7 +4872,7 @@ async function loadBilling() {
         }
 
         if (totalEl) {
-            totalEl.innerText = '$' + total.toFixed(2);
+            totalEl.innerText = formatCurrencyAmount(total, billingTotalRegion);
         }
         if (statusEl) {
             statusEl.innerText = unpaidCount
@@ -5165,7 +5260,7 @@ async function loadDashboardData() {
         const lbEl = document.getElementById('dash-loadbalancers');
         if (countEl) countEl.innerText = '0';
         if (storageEl) storageEl.innerText = '0 B';
-        if (spendEl) spendEl.innerText = '$0.00';
+        if (spendEl) spendEl.innerText = formatCurrencyAmount(0, currentRegion);
         if (lbEl) lbEl.innerText = '0';
         return;
     }
@@ -5198,10 +5293,12 @@ async function loadDashboardData() {
         if (billingResult.status === 'fulfilled' && billingResult.value.ok) {
             const invoices = await billingResult.value.json();
             const total = invoices.reduce((sum, inv) => sum + inv.amount, 0);
+            const invoiceCurrencyRegions = [...new Set(invoices.map((inv) => inv.currency || inv.region || currentRegion))];
+            const dashboardTotalRegion = invoiceCurrencyRegions.length === 1 ? invoiceCurrencyRegions[0] : currentRegion;
             const spendEl = document.getElementById('dash-spend');
-            if (spendEl) spendEl.innerText = '$' + total.toFixed(2);
+            if (spendEl) spendEl.innerText = formatCurrencyAmount(total, dashboardTotalRegion);
 
-            createCostChart(invoices);
+            createCostChart(invoices, dashboardTotalRegion);
         }
 
         if (loadBalancerResult.status === 'fulfilled' && loadBalancerResult.value.ok) {
@@ -5220,7 +5317,7 @@ async function loadDashboardData() {
     }
 }
 
-function createCostChart(invoices) {
+function createCostChart(invoices, displayRegion = currentRegion) {
     const ctx = document.getElementById('costChart');
     if (!ctx) return;
 
@@ -5248,7 +5345,7 @@ function createCostChart(invoices) {
         data: {
             labels: last7Days,
             datasets: [{
-                label: 'Daily Cost ($)',
+                label: `Daily Cost (${getCurrencyCodeForRegion(displayRegion)})`,
                 data: dailyCosts,
                 borderColor: '#2563eb',
                 backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -5392,7 +5489,7 @@ async function loadAdmin() {
         if (analyticsRes.ok) {
             const data = await analyticsRes.json();
             document.getElementById('admin-total-users').innerText = data.totalUsers || 0;
-            document.getElementById('admin-total-revenue').innerText = '$' + (data.totalRevenue || 0).toFixed(2);
+            document.getElementById('admin-total-revenue').innerText = formatCurrencyAmount(data.totalRevenue || 0, currentRegion);
             document.getElementById('admin-active-instances').innerText = data.runningInstances || 0;
             const totalTicketsEl = document.getElementById('admin-total-tickets');
             const openTicketsEl = document.getElementById('admin-open-tickets');
@@ -5413,7 +5510,7 @@ async function loadAdmin() {
                         data: {
                             labels: data.revenueByRegion.map(r => r._id),
                             datasets: [{
-                                label: 'Revenue ($)',
+                                label: `Revenue (${getCurrencyCodeForRegion(currentRegion)})`,
                                 data: data.revenueByRegion.map(r => r.total),
                                 backgroundColor: '#2563eb'
                             }]
@@ -7624,6 +7721,7 @@ function loadRegions() {
             <div class="card">
                 <h4>${r.name}</h4>
                 <p style="color:#64748b; margin:10px 0;">${r.code}</p>
+                <p style="color:#64748b; margin:0 0 10px;">Currency: ${getCurrencyCodeForRegion(r.code)}</p>
                 <span class="badge ${badgeClass}">${r.status}</span>
             </div>
         `;
